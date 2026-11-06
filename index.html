@@ -181,7 +181,7 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 })();
 </script>
 <script>
-const GAME_V=2; // aumente a cada versão nova
+const GAME_V=3; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
 const H=.5,BASE=3,LIM=3,TOL=.07,MENU_SHIFT=.4,VIEW=2.5;
 
@@ -232,14 +232,14 @@ toon.setVector3('L',new BABYLON.Vector3(.1,.8,-.6));
 const INK=BABYLON.Color3.FromHexString('#1b1a3a');
 
 const GFX=[
-  {nome:'Baixo',scale:1.7,line:false,ow:.07,hatch:0,desc:'Baixo: mais rápido, ideal p/ celular fraco'},
-  {nome:'Médio',scale:1,line:true,ow:.08,hatch:1,desc:'Médio: equilibrado entre beleza e fluidez'},
-  {nome:'Ultra',scale:Math.min(.75,1/(devicePixelRatio||1)),line:true,ow:.1,hatch:1,desc:'Ultra: mais nítido, gasta mais bateria'}
+  {nome:'Baixo',scale:1.7,line:false,ow:.035,hatch:0,desc:'Baixo: mais rápido, ideal p/ celular fraco'},
+  {nome:'Médio',scale:1,line:true,ow:.04,hatch:1,desc:'Médio: equilibrado entre beleza e fluidez'},
+  {nome:'Ultra',scale:Math.min(.75,1/(devicePixelRatio||1)),line:true,ow:.05,hatch:1,desc:'Ultra: mais nítido, gasta mais bateria'}
 ];
 const Q=()=>GFX[cfg.gfx];
 function applyGfx(){
   const q=Q();eng.setHardwareScalingLevel(q.scale);toon.setFloat('hatch',q.hatch);
-  scene.meshes.forEach(m=>{m.renderOutline=q.line&&m.name!=='ring';m.outlineWidth=q.ow;m.outlineColor=INK;});
+  scene.meshes.forEach(m=>{m.renderOutline=q.line&&m.name.indexOf('ring')!==0;m.outlineWidth=q.ow;m.outlineColor=INK;});
   $('gfx').textContent='Gráfico: '+q.nome;
 }
 applyGfx();
@@ -269,6 +269,11 @@ const rm=new BABYLON.StandardMaterial('rm',scene);rm.disableLighting=true;rm.emi
 const ring=BABYLON.MeshBuilder.CreateTorus('ring',{diameter:1,thickness:.07,tessellation:40},scene);
 ring.material=rm;ring.isVisible=false;ring.isPickable=false;ring.renderOutline=false;
 let ringT=0,ringB=1;
+// Linha branca no ar marca a altura do seu recorde
+const rrm=new BABYLON.StandardMaterial('rrm',scene);rrm.disableLighting=true;rrm.emissiveColor=BABYLON.Color3.White();rrm.alpha=.6;
+const recL=BABYLON.MeshBuilder.CreateTorus('ringrec',{diameter:1,thickness:.05,tessellation:48},scene);
+recL.material=rrm;recL.isVisible=false;recL.isPickable=false;recL.renderOutline=false;recL.scaling.set(BASE*1.5,1,BASE*1.5);
+function recLine(){recL.isVisible=best>=6&&score<best;recL.position.set(0,(best+1)*H,0);}
 
 // ---- Som (WebAudio) ----
 let ac;
@@ -324,7 +329,7 @@ let paused=false,plAnt=false;
 function reset(){
   [...stack,...debris,mv].forEach(b=>b&&b.mesh&&b.mesh.dispose());
   hue0=Math.random()*360|0;bgH=hue0;combo=0;score=0;debris=[];popM=null;mood=1;runPerf=0;runBonus=0;
-  $('score').textContent=0;camY=H;hud();
+  $('score').textContent=0;camY=H;hud();recLine();
   stack=[{x:-BASE/2,z:-BASE/2,w:BASE,d:BASE,hue:hue0}];
   stack[0].mesh=mk(stack[0].x,stack[0].z,BASE,BASE,0,hue0);
   spawn();
@@ -369,7 +374,8 @@ function place(){
     burst(cx,lvl+H,cz,nb.w,nb.d,(Math.min(10+combo*5,60)*(cfg.gfx?1:.5))|0,c);
     ring.position.set(cx,lvl+H+.02,cz);ring.isVisible=true;ringT=1;ringB=Math.max(nb.w,nb.d);
   }
-  stack.push(nb);score++;$('score').textContent=score;
+  stack.push(nb);score++;$('score').textContent=score;recLine();
+  if(best>0&&score===best+1){popText('★ Novo recorde! ★',1,8,10);vib([20,40,20]);}
   const s=$('score');s.classList.remove('bump');void s.offsetWidth;s.classList.add('bump');
   hud();spawn();
   if(net.active)net.room.presence({sc:score});
@@ -386,7 +392,7 @@ function gameOver(){
   if(score>best){best=score;try{localStorage.setItem('stackBest',best);}catch(e){}}
   const sk=SK[skinI],ganho=score?Math.max(1,Math.round((score*.5+runPerf*.5)*(sk.mo||1)))+runBonus:0;
   sv.moedas+=ganho;salvar();ach();
-  stack.forEach(b=>b.mesh.setEnabled(true));hud();
+  stack.forEach(b=>b.mesh.setEnabled(true));hud();recL.isVisible=false;
   $('overH').textContent=rec?'NOVO RECORDE!':'Fim de jogo';
   if(rec)popText('★ Recorde! ★',1,9,8);
   if(net.active){net.room.presence({alive:false,t:(performance.now()-net.t0)/1000,sc:score});renderRank();}
@@ -442,7 +448,7 @@ const ROSA=new BABYLON.Color3(1,.36,.58),OURO=new BABYLON.Color3(1,.82,.24),BRAN
 // Gato no bloco: orelhas que mexem, olhos que piscam, carinha por humor e enfeite da skin
 function dressCat(m,w,d,col){
   const sk=SK[skinI],MB=BABYLON.MeshBuilder,top=H/2,ears=[],eyes=[];
-  const add=(me,x,y,z,c,line=true)=>{me.parent=m;me.position.set(x,y,z);me.material=dm(c);me.isPickable=false;me.renderOutline=line&&Q().line;me.outlineWidth=.04;me.outlineColor=INK;return me;};
+  const add=(me,x,y,z,c,line=true)=>{me.parent=m;me.position.set(x,y,z);me.material=dm(c);me.isPickable=false;me.renderOutline=line&&Q().line;me.outlineWidth=.022;me.outlineColor=INK;return me;};
   const ball=(x,y,z,dia,c)=>add(MB.CreateSphere('a',{diameter:dia,segments:8},scene),x,y,z,c);
   const laco=(x,y,z,c,s)=>{ball(x-.14*s,y,z-.14*s,.26*s,c);ball(x+.14*s,y,z+.14*s,.26*s,c);ball(x,y,z,.18*s,c);};
   [-1,1].forEach(s=>ears.push(add(MB.CreateCylinder('o',{diameterTop:0,diameterBottom:.6,height:.6,tessellation:3},scene),s*.3*w-.12*w,top+.3,s*.3*d+.12*d,col)));
