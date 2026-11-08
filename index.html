@@ -107,6 +107,8 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;out
 #snow i{position:absolute;top:-4vh;background:#fff;border-radius:50%;animation:fall linear infinite}
 @keyframes fall{to{transform:translate(4vw,108vh)}}
 @media(prefers-reduced-motion:reduce){#snow i{animation:none}}
+#rankInfo,#amigInfo{flex:5;font-size:2.8vmin;white-space:pre-line;display:flex;align-items:center;justify-content:center;line-height:1.3;padding:0 2vw}
+#nickIn,#frIn{flex:1;font-size:4.4vmin;min-width:0;outline:none}
 </style>
 </head>
 <body>
@@ -153,6 +155,7 @@ Load.ui();
     <button id="mk" class="box btn">Criar sala</button>
     <input id="codeIn" class="box" maxlength="6" placeholder="CÓDIGO" autocomplete="off">
     <button id="jn" class="box btn">Entrar</button>
+    <button id="rankB" class="box btn">Ranking</button>
     <button id="onlBack" class="box btn">Voltar</button>
   </div>
   <div class="grp hide" id="lobby">
@@ -172,6 +175,8 @@ Load.ui();
   </div>
   <div class="grp hide" id="help"><div id="helpInfo" class="box"></div><input id="bkIn" class="box" placeholder="código de backup" autocomplete="off"><button id="bkOut" class="box btn">Gerar backup</button><button id="bkRes" class="box btn">Restaurar</button><button id="helpBack" class="box btn">Voltar</button></div>
   <div class="grp hide" id="modos"><button id="mClas" class="box btn">Clássico</button><button id="mZen" class="box btn">Zen 🌿</button><button id="mRel" class="box btn">Relógio ⏱</button><button id="mDia" class="box btn">Desafio diário</button><button id="mBack" class="box btn">Voltar</button></div>
+  <div class="grp hide" id="rank"><div id="rankInfo" class="box"></div><input id="nickIn" class="box" maxlength="12" placeholder="seu apelido" autocomplete="off"><button id="nickB" class="box btn">Salvar apelido</button><button id="amigB" class="box btn">Amigos</button><button id="rankBack" class="box btn">Voltar</button></div>
+  <div class="grp hide" id="amigos"><div id="amigInfo" class="box"></div><input id="frIn" class="box" maxlength="6" placeholder="código do amigo" autocomplete="off"><button id="frAdd" class="box btn">Adicionar</button><button id="amigBack" class="box btn">Voltar</button></div>
 </div>
 <div id="dev">desenvolvido por N E K</div>
 <div id="over" class="box hide"><span id="overH">Fim de jogo</span><small id="overTxt"></small></div>
@@ -196,7 +201,7 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 })();
 </script>
 <script>
-const GAME_V=4; // aumente a cada versão nova
+const GAME_V=5; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
 const H=.5,BASE=3,LIM=3,TOL=.07,MENU_SHIFT=.4,VIEW=2.5;
 
@@ -439,6 +444,7 @@ function gameOver(){
   if(net.active){net.room.presence({alive:false,t:(performance.now()-net.t0)/1000,sc:score});renderRank();}
   else{$('overTxt').textContent='Pontos: '+score+'  |  Melhor: '+(modo==='relogio'?(sv.bestR||0):modo==='zen'?'-':best)+(ganho?'\n+'+ganho+' 🪙 · +'+(score+runPerf*2)+' XP':'')+'\nToque para jogar de novo';$('home').classList.remove('hide');}
   $('over').classList.remove('hide');
+  if((modo==='classico'||modo==='diario')&&!net.active){sv.rkPend=Math.max(sv.rkPend||0,score);salvar();setTimeout(()=>Rank.sync(),1500);}
 }
 function toMenu(){
   $('over').classList.add('hide');$('home').classList.add('hide');$('score').classList.remove('on');
@@ -602,6 +608,91 @@ function renderMis0(){
   $('misInfo').textContent='🪙 '+sv.moedas+' moedas\nMissões de hoje (renovam todo dia)\n\n'+Mis.ativas().map(m=>(sv.pegas[m.id]?'✔ ':'• ')+m.txt+' ('+Math.min(sv.prog[m.chave]||0,m.meta)+'/'+m.meta+') +'+m.premio+'🪙').join('\n');
 }
 
+// ================= Ranking global (Firebase) =================
+// Cole aqui o firebaseConfig do seu projeto (Configurações do projeto > Seus apps > Web)
+const FB={apiKey:'',authDomain:'',databaseURL:'',projectId:'',appId:''};
+const CODE_CH='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const novoCodigo=()=>Array.from({length:6},()=>CODE_CH[Math.random()*CODE_CH.length|0]).join('');
+const Rank={db:null,uid:null,pronto:null,
+  ativo(){return !!(FB.apiKey&&FB.databaseURL);},
+  carrega(){ // só baixa o Firebase quando precisa (o jogo continua 100% offline)
+    if(this.pronto)return this.pronto;
+    const B='https://www.gstatic.com/firebasejs/10.12.2/',js=u=>new Promise((ok,no)=>{const e=document.createElement('script');e.src=B+u;e.onload=ok;e.onerror=()=>no('rede');document.head.appendChild(e);});
+    return this.pronto=js('firebase-app-compat.js').then(()=>Promise.all([js('firebase-auth-compat.js'),js('firebase-database-compat.js')])).then(async()=>{
+      firebase.initializeApp(FB);const a=firebase.auth();
+      let u=await new Promise(r=>{const off=a.onAuthStateChanged(x=>{off();r(x);});});
+      if(!u)u=(await a.signInAnonymously()).user;
+      this.uid=u.uid;this.db=firebase.database();
+    }).catch(e=>{this.pronto=null;throw e;});
+  },
+  async sync(){ // envia o recorde (e o apelido) quando tem internet
+    if(!this.ativo()||navigator.onLine===false)return;
+    const p=Math.max(sv.rkPend||0,sv.rkBest||0);
+    if(!p||(sv.rkOk&&p<=(sv.rkBest||0)))return;
+    try{
+      await this.carrega();
+      if(!sv.code)sv.code=novoCodigo();
+      if(!sv.nick)sv.nick='Neko'+(100+(Math.random()*900|0));
+      await this.db.ref('ranking/'+this.uid).set({n:sv.nick,s:p,c:sv.code,t:firebase.database.ServerValue.TIMESTAMP});
+      sv.rkBest=p;sv.rkOk=1;salvar();
+    }catch(e){}
+  },
+  async top(){
+    await this.carrega();
+    const sn=await this.db.ref('ranking').orderByChild('s').limitToLast(20).once('value'),a=[];
+    sn.forEach(c=>{a.push(Object.assign({u:c.key},c.val()));});
+    return a.reverse();
+  }
+};
+async function abreRank(){
+  showGrp('rank');const e=$('rankInfo');$('nickIn').value=sv.nick||'';
+  if(!Rank.ativo()){e.textContent='🏆 Ranking global\nAinda não configurado.';return;}
+  if(navigator.onLine===false){e.textContent='Sem internet.\nO ranking precisa de conexão.';return;}
+  e.textContent='Carregando...';
+  try{
+    await Rank.sync();const t=await Rank.top();
+    e.textContent='🏆 Ranking global\n'+(t.length?t.slice(0,8).map((p,i)=>(i+1)+'. '+p.n+' · '+p.s+(p.u===Rank.uid?' ◀':'')).join('\n'):'Ninguém pontuou ainda!')+'\n'+(sv.rkBest?'Seu recorde: '+sv.rkBest:'Jogue o Clássico pra entrar!');
+  }catch(x){e.textContent='Não foi possível carregar o ranking agora.';}
+}
+async function abreAmigos(){
+  showGrp('amigos');const e=$('amigInfo');
+  if(!sv.code)sv.code=novoCodigo();
+  const topo='Seu código: '+sv.code+(sv.rkOk?'':'\n(os amigos só te acham depois da 1ª pontuação)');
+  if(!Rank.ativo()||navigator.onLine===false){e.textContent=topo+'\nPrecisa de internet e do ranking ativo.';return;}
+  e.textContent=topo+'\nCarregando...';
+  try{
+    await Rank.carrega();
+    const rs=await Promise.all((sv.amigos||[]).map(f=>Rank.db.ref('ranking/'+f.u).once('value')));
+    const L=[{n:sv.nick||'Você',s:sv.rkBest||0,eu:1}];
+    rs.forEach(r=>{const v=r.val();if(v)L.push({n:v.n,s:v.s});});
+    L.sort((a,b)=>b.s-a.s);
+    e.textContent=topo+'\n'+L.map((p,i)=>(i+1)+'. '+p.n+' · '+p.s+(p.eu?' ◀':'')).join('\n');
+  }catch(x){e.textContent=topo+'\nNão foi possível carregar.';}
+}
+$('rankB').onclick=abreRank;
+$('rankBack').onclick=()=>showGrp(net.api?'onl':'main');
+$('amigB').onclick=abreAmigos;
+$('amigBack').onclick=abreRank;
+$('nickB').onclick=()=>{
+  const n=$('nickIn').value.replace(/[^\wÀ-ú -]/g,'').trim().slice(0,12);
+  if(n.length<2)return popText('Mínimo 2 letras',2,6,8);
+  sv.nick=n;sv.rkOk=0;salvar();popText('Apelido salvo!',1,6,8);abreRank();
+};
+$('frAdd').onclick=async()=>{
+  const c=$('frIn').value.trim().toUpperCase();
+  if(c.length!==6)return popText('O código tem 6 letras',2,6,8);
+  if(c===sv.code)return popText('Esse é o seu código',2,6,8);
+  if((sv.amigos||[]).length>=20)return popText('Limite de 20 amigos',2,6,8);
+  try{
+    await Rank.carrega();
+    const sn=await Rank.db.ref('ranking').orderByChild('c').equalTo(c).limitToFirst(1).once('value');
+    let achou=null;sn.forEach(x=>{achou={u:x.key,n:x.val().n};});
+    if(!achou)return popText('Código não encontrado',2,6,8);
+    sv.amigos=sv.amigos||[];
+    if(sv.amigos.some(f=>f.u===achou.u))return popText('Já é seu amigo',2,6,8);
+    sv.amigos.push(achou);salvar();$('frIn').value='';popText('Amigo: '+achou.n,1,7,8);abreAmigos();
+  }catch(x){popText('Sem conexão',2,6,8);}
+};
 // ================= Níveis, missões semanais, baú e sorteio =================
 const niv=()=>Math.floor(Math.sqrt((sv.xp||0)/25))+1;
 const TIT=['Filhote','Gatinho','Aprendiz','Equilibrista','Empilhador','Mestre','Sábio','Lenda','Mítico','Neko Supremo'];
@@ -685,10 +776,10 @@ $('novOk').onclick=()=>$('nov').classList.add('hide');
 
 // ---- Online: salas por código (recurso "room" do claude.ai). Vence quem sobrevive mais tempo ----
 const net={api:null,room:null,code:'',host:false,ready:false,active:false,done:false,lastGo:0,t0:0,unsub:null,nick:'Jogador'+(100+Math.random()*900|0)};
-(async()=>{try{net.api=await claude.use('room');}catch(e){}})();
+(async()=>{try{net.api=await claude.use('room');}catch(e){}if(!net.api)$('onlBtn').textContent='Ranking';})();
 const setStatus=t=>{$('bestTxt').textContent=t;};
 const idleStatus=()=>setStatus(best||sv.moedas?'Nv '+niv()+' · Melhor '+best+' · 🪙 '+sv.moedas:'empilhe tudo!');
-const showGrp=id=>{['main','conf','onl','lobby','mis','skn','help','ach','modos'].forEach(g=>$(g).classList.toggle('hide',g!==id));if(id==='main')idleStatus();};
+const showGrp=id=>{['main','conf','onl','lobby','mis','skn','help','ach','modos','rank','amigos'].forEach(g=>$(g).classList.toggle('hide',g!==id));if(id==='main')idleStatus();};
 async function joinRoom(code,host){
   if(!net.api)return setStatus('Online indisponível aqui');
   setStatus('Entrando...');
@@ -739,7 +830,7 @@ function backToLobby(){
   $('menu').classList.remove('out');showGrp('lobby');
   reset();mode='menu';shift=MENU_SHIFT;zoom=1;
 }
-$('onlBtn').onclick=()=>{showGrp('onl');if(!net.api)setStatus('Online: abra pelo link do claude.ai');};
+$('onlBtn').onclick=()=>{if(!net.api)return abreRank();showGrp('onl');};
 $('onlBack').onclick=()=>{showGrp('main');};
 $('mk').onclick=()=>{const c=Array.from({length:5},()=>'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[Math.random()*31|0]).join('');joinRoom(c,true);};
 $('jn').onclick=()=>{const c=$('codeIn').value.trim().toUpperCase();if(c.length>=4)joinRoom(c,false);};
@@ -776,7 +867,8 @@ addEventListener('message',e=>{if(e.data&&e.data.ota)popText(e.data.ota,1,5,12);
 (()=>{const sn=$('snow');for(let i=0;i<30;i++){const e=document.createElement('i'),z=3+Math.random()*5;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(6+Math.random()*7)+'s;animation-delay:-'+Math.random()*12+'s';sn.appendChild(e);}})();
 (()=>{const f=$('fl');for(let i=0;i<16;i++){const e=document.createElement('i'),z=3+Math.random()*6;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(10+Math.random()*10)+'s;animation-delay:-'+Math.random()*16+'s';f.appendChild(e);}})();
 // Bônus diário com sequência de dias (até 7)
-const NOV='• Modos: Zen, Relógio e Desafio diário\n• Níveis, baú diário, sorteio e missões da semana\n• Skins Halloween e Natal\n• Rastro de brilho, efeitos por skin e neve\n• Música muda conforme o cenário\n• Backup do progresso (Config > Como jogar)';
+const NOV='• Ranking global online (precisa de internet)\n• Apelido e código de amigo pra comparar recordes\n• Seus dados continuam salvos no aparelho';
+setTimeout(()=>Rank.sync(),7000);
 setTimeout(()=>{if(sv.ver!==GAME_V&&(sv.ver||sv.st.jogos>0)){$('novT').textContent='✨ Versão '+GAME_V+'\n'+NOV;$('nov').classList.remove('hide');}sv.ver=GAME_V;salvar();},4500);
 (()=>{const k=hojeKey();if(sv.login===k)return;const y=new Date();y.setDate(y.getDate()-1);const yk=y.getFullYear()+'-'+(y.getMonth()+1)+'-'+y.getDate();
   sv.streak=sv.login===yk?(sv.streak||0)+1:1;sv.login=k;const b=10*Math.min(sv.streak,7);sv.moedas+=b;salvar();
