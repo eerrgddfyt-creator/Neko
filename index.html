@@ -201,7 +201,7 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 })();
 </script>
 <script>
-const GAME_V=5; // aumente a cada versão nova
+const GAME_V=6; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
 const H=.5,BASE=3,LIM=3,TOL=.07,MENU_SHIFT=.4,VIEW=2.5;
 
@@ -610,7 +610,7 @@ function renderMis0(){
 
 // ================= Ranking global (Firebase) =================
 // Cole aqui o firebaseConfig do seu projeto (Configurações do projeto > Seus apps > Web)
-const FB={apiKey:'',authDomain:'',databaseURL:'',projectId:'',appId:''};
+const FB={apiKey:'AIzaSyAb6oUauUdkGj6cFgptMRhqSbe9UliEaSY',authDomain:'neko-tower.firebaseapp.com',databaseURL:'https://neko-tower-default-rtdb.firebaseio.com',projectId:'neko-tower',appId:'1:255394299359:web:ca35e9f3898f02bfacd86a'};
 const CODE_CH='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const novoCodigo=()=>Array.from({length:6},()=>CODE_CH[Math.random()*CODE_CH.length|0]).join('');
 const Rank={db:null,uid:null,pronto:null,
