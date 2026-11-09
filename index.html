@@ -109,6 +109,29 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;out
 @media(prefers-reduced-motion:reduce){#snow i{animation:none}}
 #rankInfo,#amigInfo{flex:5;font-size:2.8vmin;white-space:pre-line;display:flex;align-items:center;justify-content:center;line-height:1.3;padding:0 2vw}
 #nickIn,#frIn{flex:1;font-size:4.4vmin;min-width:0;outline:none}
+/* telas largas: lista rola e os botões ficam sempre visíveis */
+#menu.wide{left:5vw;width:90vw;max-width:560px;top:calc(env(safe-area-inset-top,0px) + 3vh);height:calc(100vh - 8vh - env(safe-area-inset-top,0px))}
+#menu.wide #logo{display:none}
+#menu.wide .btn,#menu.wide input{flex:none;height:8.5vh;min-height:48px;font-size:min(6vmin,34px)}
+#menu.wide~#dev{opacity:0}
+#logo small{white-space:pre-line;line-height:1.3}
+#roomInfo,#misInfo,#sknInfo,#helpInfo,#achInfo,#rankInfo,#amigInfo{flex:1 1 0;min-height:0;overflow-y:auto;display:block;filter:none;font-family:'Trebuchet MS','Segoe UI',system-ui,sans-serif;font-weight:700;letter-spacing:0;font-size:clamp(14px,3.5vmin,21px);line-height:1.5;text-align:left;padding:1.6vh 4vw;white-space:pre-line}
+#nickIn,#frIn,#bkIn{font-family:'Trebuchet MS','Segoe UI',system-ui,sans-serif;font-weight:700;letter-spacing:0}
+#frIn{text-transform:uppercase}
+#novT{font-family:'Trebuchet MS','Segoe UI',system-ui,sans-serif;font-weight:700;letter-spacing:0;font-size:clamp(14px,3.8vmin,22px)}
+#nov,#tip{filter:none}
+/* tela do baú */
+#bau{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 4vh) 6vw calc(env(safe-area-inset-bottom,0px) + 4vh);pointer-events:none}
+#bau>*{pointer-events:auto}
+#bauTit{font-size:11vmin;color:#fff;-webkit-text-stroke:1.4vmin var(--ink);paint-order:stroke fill;text-shadow:.8vmin .8vmin 0 var(--ink);pointer-events:none}
+#bauBot{display:flex;flex-direction:column;gap:2vh;width:min(84vw,400px)}
+#bauMsg,#rodaRes{filter:none;font-family:'Trebuchet MS','Segoe UI',system-ui,sans-serif;font-weight:700;letter-spacing:0;font-size:clamp(15px,4vmin,22px);padding:1.4vh 4vw;white-space:pre-line}
+#bauBot .btn,#roda .btn{flex:none;padding:1.5vh 0;font-size:6.2vmin}
+#roda{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2vh;width:min(88vw,52vh,420px)}
+#rodaBox{position:relative;width:100%}
+#rodaSvg{width:100%;display:block}
+#rodaPin{position:absolute;top:-4.5vmin;left:50%;transform:translateX(-50%);font-size:9vmin;line-height:1;color:var(--pink);-webkit-text-stroke:.8vmin var(--ink);paint-order:stroke fill;z-index:1}
+#roda .btn,#roda #rodaRes{width:100%}
 </style>
 </head>
 <body>
@@ -175,7 +198,7 @@ Load.ui();
   </div>
   <div class="grp hide" id="help"><div id="helpInfo" class="box"></div><input id="bkIn" class="box" placeholder="código de backup" autocomplete="off"><button id="bkOut" class="box btn">Gerar backup</button><button id="bkRes" class="box btn">Restaurar</button><button id="helpBack" class="box btn">Voltar</button></div>
   <div class="grp hide" id="modos"><button id="mClas" class="box btn">Clássico</button><button id="mZen" class="box btn">Zen 🌿</button><button id="mRel" class="box btn">Relógio ⏱</button><button id="mDia" class="box btn">Desafio diário</button><button id="mBack" class="box btn">Voltar</button></div>
-  <div class="grp hide" id="rank"><div id="rankInfo" class="box"></div><input id="nickIn" class="box" maxlength="12" placeholder="seu apelido" autocomplete="off"><button id="nickB" class="box btn">Salvar apelido</button><button id="amigB" class="box btn">Amigos</button><button id="rankBack" class="box btn">Voltar</button></div>
+  <div class="grp hide" id="rnk"><div id="rankInfo" class="box"></div><input id="nickIn" class="box" maxlength="12" placeholder="seu apelido" autocomplete="off"><button id="nickB" class="box btn">Salvar apelido</button><button id="amigB" class="box btn">Amigos</button><button id="rankBack" class="box btn">Voltar</button></div>
   <div class="grp hide" id="amigos"><div id="amigInfo" class="box"></div><input id="frIn" class="box" maxlength="6" placeholder="código do amigo" autocomplete="off"><button id="frAdd" class="box btn">Adicionar</button><button id="amigBack" class="box btn">Voltar</button></div>
 </div>
 <div id="dev">desenvolvido por N E K</div>
@@ -184,6 +207,11 @@ Load.ui();
 <button id="pz" class="box btn hide">⏸</button>
 <div id="pauseBox" class="hide"><div id="pauseT" class="box">Pausado</div><button id="pcont" class="box btn">Continuar</button><button id="pmenu" class="box btn">Menu</button></div>
 <div id="tip" class="box"></div>
+<div id="bau" class="hide">
+  <div id="bauTit">🎁 Baú diário</div>
+  <div id="roda" class="hide"><div id="rodaBox"><div id="rodaPin">▼</div><svg id="rodaSvg" viewBox="-100 -100 200 200"></svg></div><div id="rodaRes" class="box"></div><button id="rodaBtn" class="box btn">Girar</button><button id="rodaOk" class="box btn hide">Pegar</button></div>
+  <div id="bauBot"><div id="bauMsg" class="box"></div><button id="bauOpen" class="box btn">Abrir baú</button><button id="bauBack" class="box btn">Voltar</button></div>
+</div>
 <div id="rank" class="hide"></div>
 <div id="tmr" class="hide"></div>
 <div id="nov" class="box hide"><div id="novT"></div><button id="novOk" class="box btn">Legal!</button></div>
@@ -201,7 +229,7 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 })();
 </script>
 <script>
-const GAME_V=6; // aumente a cada versão nova
+const GAME_V=7; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
 const H=.5,BASE=3,LIM=3,TOL=.07,MENU_SHIFT=.4,VIEW=2.5;
 
@@ -308,11 +336,37 @@ const recL=BABYLON.MeshBuilder.CreateTorus('ringrec',{diameter:1,thickness:.05,t
 recL.material=rrm;recL.isVisible=false;recL.isPickable=false;recL.renderOutline=false;recL.scaling.set(BASE*1.5,1,BASE*1.5);
 function recLine(){recL.isVisible=best>=6&&score<best&&(modo==='classico'||modo==='diario');recL.position.set(0,(best+1)*H,0);}
 
+// ---- Baú 3D (tela do baú diário): fica longe da torre e usa outra câmera ----
+const toonB=new BABYLON.ShaderMaterial('toonB',scene,'toon',{attributes:['position','normal','color'],uniforms:['world','worldViewProjection','L','hatch','skin','time','fever']});
+toonB.setVector3('L',new BABYLON.Vector3(.1,.8,-.6));['hatch','skin','time','fever'].forEach(k=>toonB.setFloat(k,0));
+const CP=new BABYLON.Vector3(300,0,300);
+const bcam=new BABYLON.FreeCamera('bcam',CP.add(RIG),scene);bcam.setTarget(CP);bcam.mode=BABYLON.Camera.ORTHOGRAPHIC_CAMERA;bcam.minZ=.1;bcam.maxZ=100;
+const bRoot=new BABYLON.TransformNode('bRoot',scene);bRoot.position.copyFrom(CP);
+const lidPivot=new BABYLON.TransformNode('lid',scene);lidPivot.parent=bRoot;lidPivot.position.set(0,1.1,.75);
+function bBox(w,h,d,hex,x,y,z,par){
+  const c3=BABYLON.Color3.FromHexString(hex),c=new BABYLON.Color4(c3.r,c3.g,c3.b,1);
+  const m=BABYLON.MeshBuilder.CreateBox('bx',{width:w,height:h,depth:d,faceColors:[c,c,c,c,c,c]},scene);
+  m.material=toonB;m.parent=par||bRoot;m.position.set(x,y,z);m.isPickable=false;
+  m.renderOutline=Q().line;m.outlineWidth=Q().ow;m.outlineColor=INK;return m;
+}
+bBox(2.4,1.1,1.5,'#b5733f',0,.55,0);bBox(2.5,.16,1.6,'#8a5a2e',0,.08,0);
+bBox(.24,1.12,1.52,'#ffd23f',-.85,.55,0);bBox(.24,1.12,1.52,'#ffd23f',.85,.55,0);
+bBox(2.1,.04,1.2,'#3a2418',0,1.11,0);bBox(1.6,.2,.9,'#ffd23f',0,1.2,0); // interior e tesouro
+bBox(2.4,.5,1.5,'#c98750',0,.25,-.75,lidPivot);bBox(.24,.52,1.52,'#ffd23f',-.85,.25,-.75,lidPivot);bBox(.24,.52,1.52,'#ffd23f',.85,.25,-.75,lidPivot);
+bBox(.42,.5,.1,'#ffd23f',0,.88,-.78);
+bRoot.setEnabled(false);
+let bauOn=false,bFase='idle',bT=0,bRoletaI=0,girando=false;
 // ---- Som (WebAudio) ----
 let ac;
 function beep(f,d){
   if(!cfg.som)return;
-  try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.15,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d);}catch(e){}
+  try{
+    ac=ac||new(window.AudioContext||window.webkitAudioContext)({latencyHint:'playback'});
+    const t=ac.currentTime,o=ac.createOscillator(),g=ac.createGain();
+    o.type='triangle';o.frequency.value=f;
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.12,t+.012);g.gain.exponentialRampToValueAtTime(.0008,t+d);g.gain.linearRampToValueAtTime(0,t+d+.03);
+    o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d+.06);
+  }catch(e){}
 }
 
 // ---- Música de fundo: pad suave + notas de pentatônica, com reverb e filtro (volume baixo, sem estourar) ----
@@ -322,40 +376,41 @@ const PROG=[
   {ch:[[146.83,174.61,220,261.63],[116.54,146.83,174.61,220],[98,116.54,146.83,174.61],[110,146.83,164.81,196]],es:[293.66,349.23,440,523.25,587.33,698.46]},
   {ch:[[164.81,196,246.94,293.66],[130.81,164.81,196,293.66],[110,130.81,164.81,246.94],[146.83,196,220,329.63]],es:[329.63,392,493.88,587.33,659.25,783.99]}
 ];
-const Mus={g:null,bus:null,lp:null,tm:null,t:0,i:0,
+const Mus={g:null,bus:null,lp:null,tm:null,t:0,i:0,on:false,
   init(){
     if(this.g||!ac)return;const c=ac;
     this.g=c.createGain();this.g.gain.value=0;
-    const cp=c.createDynamicsCompressor();cp.threshold.value=-26;cp.ratio.value=6;cp.attack.value=.02;cp.release.value=.4;
+    const cp=c.createDynamicsCompressor();cp.threshold.value=-24;cp.ratio.value=4;cp.attack.value=.01;cp.release.value=.3;
     this.bus=c.createGain();this.lp=c.createBiquadFilter();this.lp.type='lowpass';this.lp.frequency.value=1100;this.lp.Q.value=.2;
-    const len=c.sampleRate*3,buf=c.createBuffer(2,len,c.sampleRate);
-    for(let k=0;k<2;k++){const d=buf.getChannelData(k);for(let n=0;n<len;n++)d[n]=(Math.random()*2-1)*Math.pow(1-n/len,3);}
-    const cv=c.createConvolver();cv.buffer=buf;const wet=c.createGain(),dry=c.createGain();wet.gain.value=.55;dry.gain.value=.7;
-    this.bus.connect(this.lp);this.lp.connect(dry);dry.connect(this.g);this.lp.connect(cv);cv.connect(wet);wet.connect(this.g);
+    // eco suave: bem mais leve pro celular do que um reverb (era isso que fazia estalar)
+    const dl=c.createDelay(1),fb=c.createGain(),lf=c.createBiquadFilter(),wet=c.createGain(),dry=c.createGain();
+    dl.delayTime.value=.34;fb.gain.value=.35;lf.type='lowpass';lf.frequency.value=1300;wet.gain.value=.4;dry.gain.value=.8;
+    this.bus.connect(this.lp);this.lp.connect(dry);dry.connect(this.g);
+    this.lp.connect(dl);dl.connect(lf);lf.connect(fb);fb.connect(dl);lf.connect(wet);wet.connect(this.g);
     this.g.connect(cp);cp.connect(c.destination);
   },
-  nota(f,t,dur,tipo,vol,att){
-    const o=ac.createOscillator(),e=ac.createGain();o.type=tipo;o.frequency.value=f;
+  nota(f,t,dur,vol,att){
+    const o=ac.createOscillator(),e=ac.createGain();o.type='sine';o.frequency.value=f;
     e.gain.setValueAtTime(0,t);e.gain.linearRampToValueAtTime(vol,t+att);e.gain.linearRampToValueAtTime(0,t+dur);
     o.connect(e);e.connect(this.bus);o.start(t);o.stop(t+dur+.05);
   },
   compasso(){
     const P=PROG[this.fase||0],CH=P.ch,ES=P.es,t=this.t;
-    CH[this.i++%4].forEach(f=>{this.nota(f,t,9.5,'sine',.05,2.5);this.nota(f*1.004,t+.1,9.5,'sine',.03,3);});
+    CH[this.i++%4].forEach(f=>this.nota(f,t,9.5,.055,2.5));
     let x=t+1.2;
-    for(let n=0;n<5;n++){if(Math.random()<.8){const f=ES[Math.random()*ES.length|0];this.nota(f,x,2.8,'sine',.05,.03);this.nota(f*2,x,1.2,'sine',.012,.03);}x+=1.2+Math.random()*.9;}
+    for(let n=0;n<5;n++){if(Math.random()<.8)this.nota(ES[Math.random()*ES.length|0],x,2.6,.05,.05);x+=1.2+Math.random()*.9;}
     this.t+=8;
   },
   start(){
     if(!cfg.mus)return;
     try{
-      ac=ac||new(window.AudioContext||window.webkitAudioContext)();this.init();
+      ac=ac||new(window.AudioContext||window.webkitAudioContext)({latencyHint:'playback'});this.init();
       if(ac.state==='suspended')ac.resume();
-      this.g.gain.cancelScheduledValues(ac.currentTime);this.g.gain.setTargetAtTime(.3,ac.currentTime,1.5);
+      if(!this.on){this.on=true;this.g.gain.cancelScheduledValues(ac.currentTime);this.g.gain.setValueAtTime(this.g.gain.value,ac.currentTime);this.g.gain.setTargetAtTime(.22,ac.currentTime,1.5);}
       if(!this.tm){this.t=ac.currentTime+.2;this.tm=setInterval(()=>{if(ac.state!=='running')return;if(this.t<ac.currentTime)this.t=ac.currentTime+.1;while(this.t<ac.currentTime+4)this.compasso();},800);}
     }catch(e){}
   },
-  stop(){if(!this.g)return;this.g.gain.setTargetAtTime(0,ac.currentTime,.5);clearInterval(this.tm);this.tm=null;},
+  stop(){if(!this.g)return;this.on=false;this.g.gain.setTargetAtTime(0,ac.currentTime,.5);clearInterval(this.tm);this.tm=null;},
   mood(p){if(this.lp)this.lp.frequency.setTargetAtTime(p?1900:1100,ac.currentTime,1.2);}
 };
 // ---- Estado ----
@@ -613,6 +668,7 @@ function renderMis0(){
 const FB={apiKey:'AIzaSyAb6oUauUdkGj6cFgptMRhqSbe9UliEaSY',authDomain:'neko-tower.firebaseapp.com',databaseURL:'https://neko-tower-default-rtdb.firebaseio.com',projectId:'neko-tower',appId:'1:255394299359:web:ca35e9f3898f02bfacd86a'};
 const CODE_CH='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const novoCodigo=()=>Array.from({length:6},()=>CODE_CH[Math.random()*CODE_CH.length|0]).join('');
+const MED=i=>['🥇','🥈','🥉'][i]||(i+1)+'.';
 const Rank={db:null,uid:null,pronto:null,
   ativo(){return !!(FB.apiKey&&FB.databaseURL);},
   carrega(){ // só baixa o Firebase quando precisa (o jogo continua 100% offline)
@@ -645,13 +701,13 @@ const Rank={db:null,uid:null,pronto:null,
   }
 };
 async function abreRank(){
-  showGrp('rank');const e=$('rankInfo');$('nickIn').value=sv.nick||'';
+  showGrp('rnk');const e=$('rankInfo');$('nickIn').value=sv.nick||'';
   if(!Rank.ativo()){e.textContent='🏆 Ranking global\nAinda não configurado.';return;}
   if(navigator.onLine===false){e.textContent='Sem internet.\nO ranking precisa de conexão.';return;}
   e.textContent='Carregando...';
   try{
     await Rank.sync();const t=await Rank.top();
-    e.textContent='🏆 Ranking global\n'+(t.length?t.slice(0,8).map((p,i)=>(i+1)+'. '+p.n+' · '+p.s+(p.u===Rank.uid?' ◀':'')).join('\n'):'Ninguém pontuou ainda!')+'\n'+(sv.rkBest?'Seu recorde: '+sv.rkBest:'Jogue o Clássico pra entrar!');
+    e.textContent='🏆 RANKING GLOBAL\n\n'+(t.length?t.slice(0,8).map((p,i)=>MED(i)+'  '+p.n+'  ·  '+p.s+(p.u===Rank.uid?'   ◀ você':'')).join('\n'):'Ninguém pontuou ainda!')+'\n\n'+(sv.rkBest?'Seu recorde: '+sv.rkBest:'Jogue o Clássico pra entrar no ranking!');
   }catch(x){e.textContent='Não foi possível carregar o ranking agora.';}
 }
 async function abreAmigos(){
@@ -666,7 +722,7 @@ async function abreAmigos(){
     const L=[{n:sv.nick||'Você',s:sv.rkBest||0,eu:1}];
     rs.forEach(r=>{const v=r.val();if(v)L.push({n:v.n,s:v.s});});
     L.sort((a,b)=>b.s-a.s);
-    e.textContent=topo+'\n'+L.map((p,i)=>(i+1)+'. '+p.n+' · '+p.s+(p.eu?' ◀':'')).join('\n');
+    e.textContent=topo+'\n\n'+L.map((p,i)=>MED(i)+'  '+p.n+'  ·  '+p.s+(p.eu?'   ◀ você':'')).join('\n');
   }catch(x){e.textContent=topo+'\nNão foi possível carregar.';}
 }
 $('rankB').onclick=abreRank;
@@ -711,17 +767,77 @@ function semUpd(c,v,mx){
   if(ch)salvar();
 }
 function renderMis(){
-  renderMis0();semAtiva();
-  $('misInfo').textContent+='\n\nDa semana:\n'+SEM.map(m=>(sv.sg[m.id]?'✔ ':'• ')+m.txt+' ('+Math.min(sv.sp[m.chave]||0,m.meta)+'/'+m.meta+') +'+m.premio+'🪙').join('\n');
+  semAtiva();
+  const lin=(ok,t,p,m,pr)=>(ok?'✔ ':'• ')+t+'  ('+Math.min(p,m)+'/'+m+')  +'+pr+' 🪙';
+  $('misInfo').textContent='🪙 '+sv.moedas+' moedas\n\n📅 MISSÕES DE HOJE\n'+Mis.ativas().map(m=>lin(sv.pegas[m.id],m.txt,sv.prog[m.chave]||0,m.meta,m.premio)).join('\n')+'\n\n🗓 MISSÕES DA SEMANA\n'+SEM.map(m=>lin(sv.sg[m.id],m.txt,sv.sp[m.chave]||0,m.meta,m.premio)).join('\n');
   $('bauB').textContent=sv.bau===hojeKey()?'🎁 Baú (amanhã)':'🎁 Baú diário';
 }
-$('bauB').onclick=()=>{
-  const k=hojeKey();if(sv.bau===k)return popText('Volte amanhã!',2,7,8);
-  sv.bau=k;const livres=SK.map((_,i)=>i).filter(i=>!sv.donos.includes(i));
-  if(Math.random()<.1&&livres.length){const i=livres[Math.random()*livres.length|0];sv.donos.push(i);popText('🎁 Skin: '+SK[i].nome+'!',1,8,10);}
-  else{const c=20+(Math.random()*61|0);sv.moedas+=c;popText('🎁 +'+c+' 🪙',1,10,10);}
-  beep(660,.3);vib([15,30,15]);salvar();ach();renderMis();
+// ================= Baú diário: baú 3D + roleta =================
+const RODA=[{r:20,w:22},{r:30,w:20},{r:40,w:18},{r:50,w:14},{r:60,w:10},{r:80,w:6},{r:100,w:4},{r:'skin',w:6}];
+(function(){
+  let a=0,h='';const COR=['#ff8fb8','#ffd23f','#7fd4ff','#c9b6ff','#9be3b0'];
+  const P=(an,r)=>[r*Math.sin(an*Math.PI/180),-r*Math.cos(an*Math.PI/180)];
+  RODA.forEach((sg,i)=>{
+    sg.a0=a;sg.a1=a+sg.w*3.6;sg.mid=(sg.a0+sg.a1)/2;a=sg.a1;
+    const p0=P(sg.a0,96),p1=P(sg.a1,96),tp=P(sg.mid,60),rot=sg.mid<=180?sg.mid-90:sg.mid+90;
+    h+='<path d="M0 0L'+p0[0].toFixed(2)+' '+p0[1].toFixed(2)+'A96 96 0 '+(sg.w>50?1:0)+' 1 '+p1[0].toFixed(2)+' '+p1[1].toFixed(2)+'Z" fill="'+(sg.r==='skin'?'#ffb347':COR[i%5])+'" stroke="#1b1a3a" stroke-width="2.5" stroke-linejoin="round"/>';
+    h+='<text x="'+tp[0].toFixed(1)+'" y="'+tp[1].toFixed(1)+'" transform="rotate('+rot.toFixed(1)+' '+tp[0].toFixed(1)+' '+tp[1].toFixed(1)+')" text-anchor="middle" dominant-baseline="middle" font-size="13" font-family="Bangers,Impact,sans-serif" fill="#1b1a3a">'+(sg.r==='skin'?'🎁':'+'+sg.r)+'</text>';
+  });
+  h+='<circle r="12" fill="#fffdf5" stroke="#1b1a3a" stroke-width="3"/>';
+  $('rodaSvg').innerHTML=h;
+})();
+function sorteiaRoda(){let r=Math.random()*100;for(let i=0;i<RODA.length;i++){r-=RODA[i].w;if(r<0)return i;}return 0;}
+function entrega(i){ // entrega o prêmio sorteado
+  const sg=RODA[i];sv.bauI=-1;let t;
+  if(sg.r==='skin'){
+    const livres=SK.map((_,k)=>k).filter(k=>!sv.donos.includes(k)&&SK[k].preco<=250);
+    if(livres.length){const k=livres[Math.random()*livres.length|0];sv.donos.push(k);t='Nova skin: '+SK[k].nome+'!';}
+    else{sv.moedas+=100;t='+100 🪙 (você já tem as skins comuns)';}
+  }else{sv.moedas+=sg.r;t='+'+sg.r+' 🪙';}
+  salvar();ach();return t;
+}
+function pendenteBau(){if(sv.bauI>=0){const t=entrega(sv.bauI);popText('🎁 '+t,1,7,10);}}
+function abreBau(){
+  bauOn=true;bFase='idle';bT=0;girando=false;lidPivot.rotation.x=0;bRoot.rotation.set(0,0,0);bRoot.setEnabled(true);scene.activeCamera=bcam;
+  $('menu').classList.add('out');$('bau').classList.remove('hide');$('roda').classList.add('hide');$('rodaOk').classList.add('hide');$('rodaBtn').classList.remove('hide');
+  $('bauBot').classList.remove('hide');$('bauBack').classList.remove('hide');
+  pendenteBau();
+  const pode=sv.bau!==hojeKey();
+  $('bauOpen').classList.toggle('hide',!pode);
+  $('bauMsg').textContent=pode?'Toque em Abrir pra ganhar um prêmio!':'Você já abriu o baú de hoje.\nVolte amanhã!';
+}
+function fechaBau(){bauOn=false;bRoot.setEnabled(false);scene.activeCamera=cm;$('bau').classList.add('hide');$('menu').classList.remove('out');showGrp('mis');renderMis();}
+function mostraRoda(){$('roda').classList.remove('hide');$('rodaRes').textContent='Toque em Girar!';}
+function bauFrame(dt,now){
+  const asp=eng.getRenderWidth()/eng.getRenderHeight(),hh=Math.max(3.2,2.4/asp),hw=hh*asp;
+  bcam.orthoTop=hh*.95;bcam.orthoBottom=-hh*1.05;bcam.orthoLeft=-hw;bcam.orthoRight=hw;
+  bT+=dt;
+  if(bFase==='idle'){bRoot.position.y=Math.sin(now*2)*.05;bRoot.rotation.y=Math.sin(now*.9)*.12;}
+  else if(bFase==='shake'){
+    bRoot.rotation.y=0;bRoot.rotation.z=Math.sin(bT*38)*.06*(1-Math.min(bT/.8,1));
+    if(bT>=.8){bRoot.rotation.z=0;bFase='open';bT=0;burst(CP.x,1.3,CP.z,1.4,.8,22,OURO);beep(523,.2);vib(25);}
+  }else if(bFase==='open'){
+    const k=Math.min(bT/.7,1),c1=1.70158,c3=c1+1,e=1+c3*Math.pow(k-1,3)+c1*Math.pow(k-1,2);
+    lidPivot.rotation.x=1.9*e;
+    if(bT>=1.1){bFase='done';mostraRoda();}
+  }
+}
+$('bauB').onclick=abreBau;
+$('bauBack').onclick=fechaBau;
+$('bauOpen').onclick=()=>{
+  if(bFase!=='idle'||sv.bau===hojeKey())return;
+  sv.bau=hojeKey();bRoletaI=sorteiaRoda();sv.bauI=bRoletaI;salvar(); // o prêmio já fica guardado, mesmo se fechar o app
+  $('bauBot').classList.add('hide');bFase='shake';bT=0;beep(330,.15);vib(20);
 };
+$('rodaBtn').onclick=()=>{
+  if(girando)return;girando=true;$('rodaBtn').classList.add('hide');
+  const sg=RODA[bRoletaI],th=360*5-(sg.mid+(Math.random()-.5)*(sg.a1-sg.a0)*.6),sv2=$('rodaSvg').style;
+  sv2.transition='none';sv2.transform='rotate(0deg)';void $('rodaSvg').offsetWidth;
+  sv2.transition='transform 4.2s cubic-bezier(.12,.7,.1,1)';sv2.transform='rotate('+th+'deg)';
+  $('rodaRes').textContent='Girando...';
+  setTimeout(()=>{$('rodaRes').textContent='🎉 '+entrega(bRoletaI);$('rodaOk').classList.remove('hide');beep(784,.25);vib([15,30,15]);},4400);
+};
+$('rodaOk').onclick=fechaBau;
 $('gachaB').onclick=()=>{
   if(sv.moedas<120)return popText('Faltam '+(120-sv.moedas)+' moedas',2,7,8);
   const livres=SK.map((_,i)=>i).filter(i=>!sv.donos.includes(i)&&SK[i].preco<=250);
@@ -742,7 +858,7 @@ const ACH=[
 function ach(){ACH.forEach(([id,t,g,m,p])=>{if(!sv.ach[id]&&g()>=m){sv.ach[id]=1;sv.moedas+=p;salvar();popText('🏆 '+t+' +'+p,1,6,18);vib([15,30,15]);}});}
 function renderAch(){
   const n=ACH.filter(a=>sv.ach[a[0]]).length;
-  $('achInfo').textContent='Nv '+niv()+' · '+TIT[Math.min(niv()-1,TIT.length-1)]+' ('+(sv.xp||0)+' XP)\nPartidas '+sv.st.jogos+' · Perfeitos '+sv.st.perf+' · Combo '+sv.st.combo+' · '+Math.round((sv.st.tempo||0)/60)+' min\n🏆 '+n+'/'+ACH.length+' conquistas\n\n'+ACH.map(([id,t,g,m,p])=>(sv.ach[id]?'✔ ':'• ')+t+(sv.ach[id]?'':' ('+Math.min(g(),m)+'/'+m+')')+' +'+p+'🪙').join('\n');
+  $('achInfo').textContent='NÍVEL '+niv()+' · '+TIT[Math.min(niv()-1,TIT.length-1)]+'  ('+(sv.xp||0)+' XP)\nPartidas: '+sv.st.jogos+'   Perfeitos: '+sv.st.perf+'\nMelhor combo: '+sv.st.combo+'   Tempo: '+Math.round((sv.st.tempo||0)/60)+' min\n\n🏆 CONQUISTAS  '+n+'/'+ACH.length+'\n'+ACH.map(([id,t,g,m,p])=>(sv.ach[id]?'✔ ':'• ')+t+(sv.ach[id]?'':'  ('+Math.min(g(),m)+'/'+m+')')+'  +'+p+' 🪙').join('\n');
 }
 $('achB').onclick=()=>{showGrp('ach');renderAch();};
 $('achBack').onclick=()=>{showGrp('mis');renderMis();};
@@ -750,11 +866,11 @@ $('achBack').onclick=()=>{showGrp('mis');renderMis();};
 let prev=sv.skin;
 function renderSkn(){
   const s=SK[prev],dono=sv.donos.includes(prev);
-  $('sknInfo').textContent='🪙 '+sv.moedas+'\n'+s.nome+'\n'+s.bonus+'\n'+(prev===sv.skin?'Equipada':dono?'Você já tem':'Preço: '+s.preco+' moedas');
+  $('sknInfo').textContent='🪙 '+sv.moedas+' moedas\n\n'+s.nome.toUpperCase()+'\n'+s.bonus+'\n\n'+(prev===sv.skin?'✔ Equipada':dono?'Você já tem esta skin':'Preço: '+s.preco+' 🪙');
   $('sknBuy').textContent=prev===sv.skin?'Equipada':dono?'Equipar':'Comprar';
   $('sknNext').textContent='Próxima ('+(prev+1)+'/'+SK.length+')';
 }
-const AJUDA='👆 Toque para soltar o bloco\n🎯 Alinhado = encaixe perfeito (combo)\n✂️ O que passa da torre é cortado\n🔥 5 combos seguidos = Frenesi\n🪙 Moedas compram skins com bônus\n📅 Missões novas todo dia';
+const AJUDA='COMO JOGAR\n👆 Toque pra soltar o bloco\n🎯 Alinhado = encaixe perfeito (combo)\n✂️ O que passa da torre é cortado\n🔥 5 combos seguidos = Frenesi\n\nMODOS\n🌿 Zen: sem game over\n⏱ Relógio: 60s, perfeito dá +2s\n📅 Diário: mesma torre pra todos\n\nEXTRAS\n🪙 Moedas compram skins com bônus\n🎁 Baú e missões novas todo dia';
 $('misBtn').onclick=()=>{showGrp('mis');renderMis();};
 $('misBack').onclick=()=>showGrp('main');
 $('sknBtn').onclick=()=>{prev=sv.skin;showGrp('skn');renderSkn();};
@@ -768,7 +884,7 @@ $('sknBuy').onclick=()=>{
   sv.skin=prev;salvar();renderSkn();
 };
 $('sknBack').onclick=()=>{if(skinI!==sv.skin)setSkin(sv.skin);prev=sv.skin;showGrp('main');};
-$('helpB').onclick=()=>{let m='';try{m=parent.__otaMsg||''}catch(e){}$('helpInfo').textContent=AJUDA+'\n🌿 Zen: sem game over\n⏱ Relógio: 60s, perfeito dá +2s\n📅 Diário: mesma torre pra todos\n\nVersão '+GAME_V+(m?' · '+m:'');showGrp('help');};
+$('helpB').onclick=()=>{let m='';try{m=parent.__otaMsg||''}catch(e){}$('helpInfo').textContent=AJUDA+'\n\nVersão '+GAME_V+(m?' · '+m:'');showGrp('help');};
 $('helpBack').onclick=()=>showGrp('conf');
 $('bkOut').onclick=()=>{try{const c=btoa(unescape(encodeURIComponent(JSON.stringify(sv))));$('bkIn').value=c;$('bkIn').select();let ok=false;try{navigator.clipboard.writeText(c);ok=true;}catch(e){}popText(ok?'Backup copiado!':'Copie o código do campo',1,6,10);}catch(e){popText('Erro no backup',2,6,10);}};
 $('bkRes').onclick=()=>{try{const o=JSON.parse(decodeURIComponent(escape(atob($('bkIn').value.trim()))));if(!o||typeof o.moedas!=='number'||!Array.isArray(o.donos))throw 0;Object.assign(sv,o);salvar();popText('Restaurado! Reiniciando...',1,6,10);setTimeout(()=>location.reload(),1200);}catch(e){popText('Código inválido',2,6,10);}};
@@ -778,8 +894,9 @@ $('novOk').onclick=()=>$('nov').classList.add('hide');
 const net={api:null,room:null,code:'',host:false,ready:false,active:false,done:false,lastGo:0,t0:0,unsub:null,nick:'Jogador'+(100+Math.random()*900|0)};
 (async()=>{try{net.api=await claude.use('room');}catch(e){}if(!net.api)$('onlBtn').textContent='Ranking';})();
 const setStatus=t=>{$('bestTxt').textContent=t;};
-const idleStatus=()=>setStatus(best||sv.moedas?'Nv '+niv()+' · Melhor '+best+' · 🪙 '+sv.moedas:'empilhe tudo!');
-const showGrp=id=>{['main','conf','onl','lobby','mis','skn','help','ach','modos','rank','amigos'].forEach(g=>$(g).classList.toggle('hide',g!==id));if(id==='main')idleStatus();};
+const idleStatus=()=>setStatus(best||sv.moedas?'Nv '+niv()+' · Melhor '+best+'\n🪙 '+sv.moedas:'empilhe tudo!');
+const GRPS=['main','conf','onl','lobby','mis','skn','help','ach','modos','rnk','amigos'],LARGAS=['mis','skn','help','ach','rnk','amigos','lobby'];
+const showGrp=id=>{GRPS.forEach(g=>$(g).classList.toggle('hide',g!==id));$('menu').classList.toggle('wide',LARGAS.indexOf(id)>=0);if(id==='main')idleStatus();};
 async function joinRoom(code,host){
   if(!net.api)return setStatus('Online indisponível aqui');
   setStatus('Entrando...');
@@ -867,7 +984,8 @@ addEventListener('message',e=>{if(e.data&&e.data.ota)popText(e.data.ota,1,5,12);
 (()=>{const sn=$('snow');for(let i=0;i<30;i++){const e=document.createElement('i'),z=3+Math.random()*5;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(6+Math.random()*7)+'s;animation-delay:-'+Math.random()*12+'s';sn.appendChild(e);}})();
 (()=>{const f=$('fl');for(let i=0;i<16;i++){const e=document.createElement('i'),z=3+Math.random()*6;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(10+Math.random()*10)+'s;animation-delay:-'+Math.random()*16+'s';f.appendChild(e);}})();
 // Bônus diário com sequência de dias (até 7)
-const NOV='• Ranking global online (precisa de internet)\n• Apelido e código de amigo pra comparar recordes\n• Seus dados continuam salvos no aparelho';
+const NOV='• Telas reorganizadas e mais fáceis de ler\n• Baú 3D animado com roleta\n• Ranking corrigido (botões e letras)\n• Música sem estalos';
+setTimeout(pendenteBau,3500);
 setTimeout(()=>Rank.sync(),7000);
 setTimeout(()=>{if(sv.ver!==GAME_V&&(sv.ver||sv.st.jogos>0)){$('novT').textContent='✨ Versão '+GAME_V+'\n'+NOV;$('nov').classList.remove('hide');}sv.ver=GAME_V;salvar();},4500);
 (()=>{const k=hojeKey();if(sv.login===k)return;const y=new Date();y.setDate(y.getDate()-1);const yk=y.getFullYear()+'-'+(y.getMonth()+1)+'-'+y.getDate();
@@ -917,6 +1035,7 @@ eng.runRenderLoop(()=>{
   shake=Math.max(0,shake-dt*1.5);punch-=dt*5;
   cm.orthoTop=hh*1.24+sy;cm.orthoBottom=-hh*.76+sy;
   cm.orthoLeft=-hw-shift*hw+sx;cm.orthoRight=hw-shift*hw+sx;
+  if(bauOn)bauFrame(dt,now);
   scene.render();
   if(frames<2&&++frames===2){Load.done('imagem');try{localStorage.setItem('nekoTry',0)}catch(e){}}
   // Auto-otimização: se o celular engasgar, baixa o gráfico sozinho
