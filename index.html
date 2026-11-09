@@ -229,9 +229,9 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 })();
 </script>
 <script>
-const GAME_V=7; // aumente a cada versão nova
+const GAME_V=8; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
-const H=.5,BASE=3,LIM=3,TOL=.07,MENU_SHIFT=.4,VIEW=2.5;
+const H=.5,BASE=3,LIM=2,TOL=.07,MENU_SHIFT=.4,VIEW=2.5;
 
 // ---- Salvamento e opções (guardados no aparelho) ----
 const SAVE_KEY='nekoTowerSave';
@@ -254,9 +254,9 @@ const cm=new BABYLON.FreeCamera('cm',RIG.clone(),scene);
 cm.setTarget(BABYLON.Vector3.Zero());cm.mode=BABYLON.Camera.ORTHOGRAPHIC_CAMERA;cm.minZ=.1;cm.maxZ=100;
 
 // Shader toon: 3 faixas de luz, hachura e uma "pele" para cada skin (0 a 7) + brilho de frenesi
-BABYLON.Effect.ShadersStore.toonVertexShader=`precision highp float;attribute vec3 position;attribute vec3 normal;attribute vec4 color;uniform mat4 world;uniform mat4 worldViewProjection;varying vec3 vN;varying vec4 vC;varying vec3 vP;
-void main(){vN=normalize((world*vec4(normal,0.)).xyz);vC=color;vP=position;gl_Position=worldViewProjection*vec4(position,1.);}`;
-BABYLON.Effect.ShadersStore.toonFragmentShader=`precision highp float;varying vec3 vN;varying vec4 vC;varying vec3 vP;uniform vec3 L;uniform float hatch;uniform float skin;uniform float time;uniform float fever;
+BABYLON.Effect.ShadersStore.toonVertexShader=`precision highp float;attribute vec3 position;attribute vec3 normal;attribute vec4 color;uniform mat4 world;uniform mat4 worldViewProjection;varying vec3 vN;varying vec4 vC;varying vec3 vP;varying float vY;
+void main(){vN=normalize((world*vec4(normal,0.)).xyz);vC=color;vP=position;vY=(world*vec4(position,1.)).y;gl_Position=worldViewProjection*vec4(position,1.);}`;
+BABYLON.Effect.ShadersStore.toonFragmentShader=`precision highp float;varying vec3 vN;varying vec4 vC;varying vec3 vP;varying float vY;uniform vec3 L;uniform float hatch;uniform float skin;uniform float time;uniform float fever;uniform float fogA;uniform float fogB;
 void main(){
   float d=dot(normalize(vN),normalize(L));
   float b=d>.7?1.:d>.3?.8:.62;
@@ -274,17 +274,19 @@ void main(){
   else if(s==11.){if(mod((vP.x+vP.z+vP.y*2.)*3.,1.)<.5)col=mix(col,vec3(1.),.7);}
   col+=fever*.16*vec3(sin(time*5.+vP.y*9.),sin(time*5.+2.+vP.y*9.),sin(time*5.+4.+vP.y*9.));
   vec3 c=clamp(col,0.,1.)*(gl>0.?1.:b);
-  if(hatch>0.&&d<=.3&&gl==0.&&mod(gl_FragCoord.x+gl_FragCoord.y,9.)<2.5)c*=.72;
-  gl_FragColor=vec4(c,1.);
+  if(!top)c*=.9+.1*smoothstep(-.25,.25,vP.y); // degradê suave nas laterais
+  float al=smoothstep(fogB,fogA,vY);               // neblina: some aos poucos embaixo
+  gl_FragColor=vec4(c*al,al);
 }`;
-const toon=new BABYLON.ShaderMaterial('toon',scene,'toon',{attributes:['position','normal','color'],uniforms:['world','worldViewProjection','L','hatch','skin','time','fever']});
-toon.setVector3('L',new BABYLON.Vector3(.1,.8,-.6));
+const toon=new BABYLON.ShaderMaterial('toon',scene,'toon',{attributes:['position','normal','color'],uniforms:['world','worldViewProjection','L','hatch','skin','time','fever','fogA','fogB']});
+toon.setVector3('L',new BABYLON.Vector3(.1,.8,-.6));toon.setFloat('fogA',-1e4);toon.setFloat('fogB',-10001);
 const INK=BABYLON.Color3.FromHexString('#1b1a3a');
 
+const DPR=Math.min(devicePixelRatio||1,2.5);
 const GFX=[
-  {nome:'Baixo',scale:1.7,line:false,ow:.035,hatch:0,desc:'Baixo: mais rápido, ideal p/ celular fraco'},
-  {nome:'Médio',scale:1,line:true,ow:.04,hatch:1,desc:'Médio: equilibrado entre beleza e fluidez'},
-  {nome:'Ultra',scale:Math.min(.75,1/(devicePixelRatio||1)),line:true,ow:.05,hatch:1,desc:'Ultra: mais nítido, gasta mais bateria'}
+  {nome:'Baixo',scale:1.25,line:false,ow:.03,hatch:0,desc:'Baixo: mais rápido, ideal p/ celular fraco'},
+  {nome:'Médio',scale:1/Math.min(DPR,2),line:true,ow:.022,hatch:0,desc:'Médio: nítido e equilibrado'},
+  {nome:'Ultra',scale:1/DPR,line:true,ow:.018,hatch:0,desc:'Ultra: máxima nitidez, gasta mais bateria'}
 ];
 const Q=()=>GFX[cfg.gfx];
 function applyGfx(){
@@ -337,8 +339,8 @@ recL.material=rrm;recL.isVisible=false;recL.isPickable=false;recL.renderOutline=
 function recLine(){recL.isVisible=best>=6&&score<best&&(modo==='classico'||modo==='diario');recL.position.set(0,(best+1)*H,0);}
 
 // ---- Baú 3D (tela do baú diário): fica longe da torre e usa outra câmera ----
-const toonB=new BABYLON.ShaderMaterial('toonB',scene,'toon',{attributes:['position','normal','color'],uniforms:['world','worldViewProjection','L','hatch','skin','time','fever']});
-toonB.setVector3('L',new BABYLON.Vector3(.1,.8,-.6));['hatch','skin','time','fever'].forEach(k=>toonB.setFloat(k,0));
+const toonB=new BABYLON.ShaderMaterial('toonB',scene,'toon',{attributes:['position','normal','color'],uniforms:['world','worldViewProjection','L','hatch','skin','time','fever','fogA','fogB']});
+toonB.setVector3('L',new BABYLON.Vector3(.1,.8,-.6));['hatch','skin','time','fever'].forEach(k=>toonB.setFloat(k,0));toonB.setFloat('fogA',-1e4);toonB.setFloat('fogB',-10001);
 const CP=new BABYLON.Vector3(300,0,300);
 const bcam=new BABYLON.FreeCamera('bcam',CP.add(RIG),scene);bcam.setTarget(CP);bcam.mode=BABYLON.Camera.ORTHOGRAPHIC_CAMERA;bcam.minZ=.1;bcam.maxZ=100;
 const bRoot=new BABYLON.TransformNode('bRoot',scene);bRoot.position.copyFrom(CP);
@@ -418,7 +420,7 @@ let stack=[],mv=null,debris=[],combo=0,score=0,hue0=0,bgH=0,runPerf=0,runBonus=0
 let mode='menu';
 let camY=H,shift=MENU_SHIFT,zoom=1,overK=1,panT0=0,overT=0,popM=null,pop=0,mood=1,fev=0,shake=0,punch=0;
 
-let paused=false,plAnt=false,modo='classico',tmpR=60,tmrAnt=false,tsAnt=-1;
+let paused=false,plAnt=false,modo='classico',tmpR=60,tmrAnt=false,tsAnt=-1,cullT=-1;
 function reset(){
   [...stack,...debris,mv].forEach(b=>b&&b.mesh&&b.mesh.dispose());
   hue0=modo==='diario'?hashDia():Math.random()*360|0;tmpR=60;bgH=hue0;combo=0;score=0;debris=[];popM=null;mood=1;runPerf=0;runBonus=0;
@@ -429,24 +431,23 @@ function reset(){
 }
 function spawn(){
   const n=stack.length,top=stack[n-1],axis=n%2?'x':'z',fromLeft=n%4<2;
-  const boss=n%25===0&&modo!=='zen',base=modo==='zen'?2.6:Math.min(2.5+n*.06,5.5);
-  mv={x:top.x,z:top.z,w:top.w,d:top.d,hue:(hue0+n*7)%360,axis,dir:fromLeft?1:-1,speed:base*(SK[skinI].lento||1)*(boss?1.4:1)*(modo==='diario'?1.1:1),boss};
-  if(boss&&mode==='play')popText('⚠ BLOCO CHEFE!',2,9,12);
-  mv[axis]=fromLeft?-LIM:LIM;
+  const base=(modo==='zen'?2.6:Math.min(2.5+n*.06,5.5))*.75; // um pouco mais devagar porque o percurso ficou mais curto
+  mv={x:top.x,z:top.z,w:top.w,d:top.d,hue:(hue0+n*7)%360,axis,dir:fromLeft?1:-1,speed:base*(SK[skinI].lento||1)*(modo==='diario'?1.1:1)};
+  mv[axis]=(fromLeft?-LIM:LIM)-(axis==='x'?mv.w:mv.d)/2;
   mv.mesh=mk(mv.x,mv.z,mv.w,mv.d,n*H,mv.hue);
   dressCat(mv.mesh,mv.w,mv.d,skinColor(n,mv.hue));
   const tc=skinColor(n,mv.hue);trail.color1.copyFromFloats(tc.r,tc.g,tc.b,.9);trail.emitter=mv.mesh;trail.emitRate=cfg.gfx?16:0;
 }
 function fall(x,z,w,d,y,hue){debris.push({mesh:mk(x,z,w,d,y,hue),vy:0});}
 // Só desenha os blocos que aparecem na tela (otimização para torres altas)
-function cull(){const lo=stack.length*H-15;stack.forEach((b,i)=>b.mesh.setEnabled(i*H>=lo));}
+function cull(){const lo=stack.length*H-6;stack.forEach((b,i)=>{b.mesh.setEnabled(i*H>=lo);b.mesh.renderOutline=Q().line&&i>=stack.length-3;});} // some quem já está na neblina
 
 function place(){
   const sk=SK[skinI],top=stack[stack.length-1],m=mv,a=m.axis,sz=a==='x'?'w':'d';
   const d=m[a]-top[a],lvl=stack.length*H,nb={x:m.x,z:m.z,w:m.w,d:m.d,hue:m.hue};
   let perfect=false;
   if(Math.abs(d)<=TOL*(sk.tol||1)){
-    perfect=true;nb[a]=top[a];combo++;runPerf++;runBonus+=sk.pp||0;sv.st.perf++;sv.st.combo=Math.max(sv.st.combo,combo);if(m.boss){runBonus+=15;popText('Chefe derrotado! +15 🪙',1,7,16);}if(modo==='relogio')tmpR=Math.min(tmpR+2,99);
+    perfect=true;nb[a]=top[a];combo++;runPerf++;runBonus+=sk.pp||0;sv.st.perf++;sv.st.combo=Math.max(sv.st.combo,combo);if(modo==='relogio')tmpR=Math.min(tmpR+2,99);
     if(combo>=(sk.cres||4)&&nb[sz]<BASE){const g=Math.min(.12,BASE-nb[sz]);nb[sz]+=g;nb[a]-=g/2;}
     beep(ESC[Math.min(combo-1,11)],.32);vib(combo>=5?[10,25,10]:12);
     comboFx(combo);mood=1+.1*Math.min(combo,6);punch=1;
@@ -464,6 +465,7 @@ function place(){
   }
   m.mesh.dispose();
   nb.mesh=mk(nb.x,nb.z,nb.w,nb.d,lvl,nb.hue);
+  if(popM&&!popM.isDisposed())popM.scaling.set(1,1,1);
   popM=nb.mesh;pop=perfect?1:.55;
   if(perfect){
     const cx=nb.x+nb.w/2,cz=nb.z+nb.d/2,c=skinColor(stack.length,nb.hue);
@@ -552,7 +554,7 @@ const ROSA=new BABYLON.Color3(1,.36,.58),OURO=new BABYLON.Color3(1,.82,.24),BRAN
 // Gato no bloco: orelhas que mexem, olhos que piscam, carinha por humor e enfeite da skin
 function dressCat(m,w,d,col){
   const sk=SK[skinI],MB=BABYLON.MeshBuilder,top=H/2,ears=[],eyes=[];
-  const add=(me,x,y,z,c,line=true)=>{me.parent=m;me.position.set(x,y,z);me.material=dm(c);me.isPickable=false;me.renderOutline=line&&Q().line;me.outlineWidth=.022;me.outlineColor=INK;return me;};
+  const add=(me,x,y,z,c,line=true)=>{me.parent=m;me.position.set(x,y,z);me.material=dm(c);me.isPickable=false;me.renderOutline=line&&Q().line;me.outlineWidth=.014;me.outlineColor=INK;return me;};
   const ball=(x,y,z,dia,c)=>add(MB.CreateSphere('a',{diameter:dia,segments:8},scene),x,y,z,c);
   const laco=(x,y,z,c,s)=>{ball(x-.14*s,y,z-.14*s,.26*s,c);ball(x+.14*s,y,z+.14*s,.26*s,c);ball(x,y,z,.18*s,c);};
   [-1,1].forEach(s=>ears.push(add(MB.CreateCylinder('o',{diameterTop:0,diameterBottom:.6,height:.6,tessellation:3},scene),s*.3*w-.12*w,top+.3,s*.3*d+.12*d,col)));
@@ -984,7 +986,7 @@ addEventListener('message',e=>{if(e.data&&e.data.ota)popText(e.data.ota,1,5,12);
 (()=>{const sn=$('snow');for(let i=0;i<30;i++){const e=document.createElement('i'),z=3+Math.random()*5;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(6+Math.random()*7)+'s;animation-delay:-'+Math.random()*12+'s';sn.appendChild(e);}})();
 (()=>{const f=$('fl');for(let i=0;i<16;i++){const e=document.createElement('i'),z=3+Math.random()*6;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(10+Math.random()*10)+'s;animation-delay:-'+Math.random()*16+'s';f.appendChild(e);}})();
 // Bônus diário com sequência de dias (até 7)
-const NOV='• Telas reorganizadas e mais fáceis de ler\n• Baú 3D animado com roleta\n• Ranking corrigido (botões e letras)\n• Música sem estalos';
+const NOV='• Blocos vão até o mesmo limite dos dois lados\n• Neblina embaixo da torre\n• Gráficos mais nítidos e blocos lisos\n• Bordas pretas bem mais finas\n• Bloco chefe removido\n• Jogo mais leve: só desenha o que aparece';
 setTimeout(pendenteBau,3500);
 setTimeout(()=>Rank.sync(),7000);
 setTimeout(()=>{if(sv.ver!==GAME_V&&(sv.ver||sv.st.jogos>0)){$('novT').textContent='✨ Versão '+GAME_V+'\n'+NOV;$('nov').classList.remove('hide');}sv.ver=GAME_V;salvar();},4500);
@@ -1009,20 +1011,22 @@ eng.runRenderLoop(()=>{
   }
   if(mv&&(mode==='menu'||mode==='pan'||mode==='play')){
     mv[mv.axis]+=mv.dir*mv.speed*dt;
-    if(mv[mv.axis]>LIM){mv[mv.axis]=LIM;mv.dir=-1;}
-    if(mv[mv.axis]<-LIM){mv[mv.axis]=-LIM;mv.dir=1;}
+    const hs=(mv.axis==='x'?mv.w:mv.d)/2,cc=mv[mv.axis]+hs; // posição do centro do bloco
+    if(cc>LIM){mv[mv.axis]=LIM-hs;mv.dir=-1;}
+    if(cc<-LIM){mv[mv.axis]=-LIM-hs;mv.dir=1;}
     mv.mesh.position.x=mv.x+mv.w/2;mv.mesh.position.z=mv.z+mv.d/2;
     const c=mv.mesh.cat;
     if(c){const bl=now%3.4<.13;c.eyes.forEach(e=>e.scaling.y=e._by*mood*(bl?.12:1));c.ears.forEach((e,i)=>e.rotation.z=Math.sin(now*5+i*2)*.1);}
     if(mode==='menu'){mv.mesh.rotation.z=Math.sin(now*3)*.07;mv.mesh.scaling.y=1+Math.sin(now*6)*.05;}else if(mv.mesh.rotation.z){mv.mesh.rotation.z=0;mv.mesh.scaling.y=1;}
   }
   debris.forEach(b=>{b.vy+=14*dt;b.mesh.position.y-=b.vy*dt;});
-  debris=debris.filter(b=>b.mesh.position.y>camY-12||(b.mesh.dispose(),false));
+  debris=debris.filter(b=>b.mesh.position.y>camY-7||(b.mesh.dispose(),false));
   if(popM&&!popM.isDisposed()){const p=Math.max(pop,0);popM.scaling.set(1+.12*p,1-.2*p,1+.12*p);pop-=dt*4;if(pop<=0){popM.scaling.set(1,1,1);popM=null;}}
   if(ringT>0){ringT-=dt*2.2;const k=1-Math.max(ringT,0),s=ringB*(1+k*1.3);ring.scaling.set(s,1,s);rm.alpha=Math.max(ringT,0)*.9;if(ringT<=0)ring.isVisible=false;}
   mood+=(1-mood)*Math.min(dt*.6,1);
   fev+=((combo>=5?1:0)-fev)*Math.min(dt*3,1);
   toon.setFloat('time',now%600);toon.setFloat('fever',fev);
+  const cs=Math.floor(now);if(cs!==cullT){cullT=cs;if(mode!=='over')cull();}
 
   // Câmera: sobe com a torre; no fim de jogo afasta para mostrar a torre inteira
   const asp=eng.getRenderWidth()/eng.getRenderHeight(),hh0=Math.max(3.4,VIEW/asp)*zoom,ov=mode==='over'&&stack.length>=12;
@@ -1030,6 +1034,7 @@ eng.runRenderLoop(()=>{
   const hh=hh0*overK*(1-.035*Math.max(punch,0)),hw=hh*asp;
   camY+=((ov?stack.length*H/2-.34*hh:stack.length*H)-camY)*Math.min(dt*5,1);
   cm.position.set(RIG.x,RIG.y+camY,RIG.z);
+  toon.setFloat('fogA',ov?-1e4:camY-1.4);toon.setFloat('fogB',ov?-10001:camY-5);
   scenery(ov?stack.length:camY/H);
   const sw=Math.sin(now*.8)*Math.min(score/60,1)*.1,sx=(Math.random()-.5)*shake+sw,sy=(Math.random()-.5)*shake;
   shake=Math.max(0,shake-dt*1.5);punch-=dt*5;
