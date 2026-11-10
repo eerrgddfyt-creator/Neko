@@ -153,6 +153,30 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;out
 .sd i{width:2.4vmin;height:2.4vmin;border-radius:50%;border:.4vmin solid var(--ink);background:#fffdf5}
 .sd i.own{background:#9be3b0}
 .sd i.on{background:#ff7aa8;transform:scale(1.35)}
+/* cartões de texto: fundo em cada linha pra ler melhor */
+#misInfo,#helpInfo,#achInfo,#rankInfo,#amigInfo{white-space:normal;padding:1.2vh 3vw}
+.sec{display:inline-block;background:#ffd23f;border:.5vmin solid var(--ink);border-radius:2vmin;padding:.4vh 3vw;margin:1.2vh 0 .6vh;font-family:Bangers,Impact,sans-serif;font-weight:400;letter-spacing:.06em;font-size:clamp(15px,4.2vmin,24px)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:2vw;background:#fff;border:.4vmin solid var(--ink);border-radius:2vmin;padding:.9vh 3vw;margin:.7vh 0;font-size:clamp(14px,3.5vmin,20px);line-height:1.3}
+.row em{font-style:normal;white-space:nowrap;background:#ffe9a8;border-radius:1.5vmin;padding:.2vh 2vw;font-size:.9em}
+.row.done{background:#d9f7e2}.row.done em{background:#9be3b0}
+.row.muted{background:#f1ede4;opacity:.85;justify-content:center}
+.coins{font-size:clamp(16px,4.4vmin,26px);margin-bottom:.2vh}
+.chips{display:flex;flex-wrap:wrap;gap:1.2vw;margin:.5vh 0}
+.chips b,.chips span{background:#fff;border:.4vmin solid var(--ink);border-radius:2vmin;padding:.2vh 2.4vw;font-size:clamp(12px,3.1vmin,18px)}
+.rk{display:flex;align-items:center;gap:2.5vw;background:#fff;border:.4vmin solid var(--ink);border-radius:2.4vmin;padding:.9vh 3vw;margin:.7vh 0;font-size:clamp(15px,3.9vmin,22px)}
+.rk .pos{width:9vmin;text-align:center;font-size:1.15em}
+.rk .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rk .nm em{font-style:normal;font-size:.7em;background:#ff7aa8;color:#fff;border-radius:1.4vmin;padding:.1vh 1.6vw;margin-left:1vw}
+.rk .sc{background:#ffd23f;border:.4vmin solid var(--ink);border-radius:1.8vmin;padding:.1vh 2.6vw;min-width:9vmin;text-align:center}
+.rk.me{background:#ffeaf2;border-width:.6vmin}
+.aviso{padding:2vh 2vw;text-align:center;opacity:.8}
+.meu{text-align:center;margin-top:1.2vh}
+.cod{background:#fff;border:.5vmin dashed var(--ink);border-radius:2.4vmin;padding:1vh 3vw;text-align:center;cursor:pointer;margin-bottom:.4vh}
+.cod small{display:block;font-size:clamp(11px,2.8vmin,16px);opacity:.7}
+.cod b{display:block;font-family:Bangers,Impact,sans-serif;font-weight:400;font-size:clamp(26px,8vmin,44px);letter-spacing:.2em}
+#rkRow1,#rkRow2,#frRow{display:flex;gap:2.5vw;flex:none;height:8.5vh}
+#menu.wide #rkRow1 input,#menu.wide #frRow input{flex:1.6;min-width:0;height:100%}
+#menu.wide #rkRow1 .btn,#menu.wide #rkRow2 .btn,#menu.wide #frRow .btn{flex:1;min-width:0;height:100%;font-size:min(5.6vmin,32px)}
 </style>
 </head>
 <body>
@@ -219,8 +243,8 @@ Load.ui();
   </div>
   <div class="grp hide" id="help"><div id="helpInfo" class="box"></div><input id="bkIn" class="box" placeholder="código de backup" autocomplete="off"><button id="bkOut" class="box btn">Gerar backup</button><button id="bkRes" class="box btn">Restaurar</button><button id="helpBack" class="box btn">Voltar</button></div>
   <div class="grp hide" id="modos"><div id="modoInfo" class="box">👆 Toque na tela pra soltar o bloco.\nQuanto mais alinhado, melhor o encaixe!</div><button id="mClas" class="box btn mod"><b>Clássico</b><small>Empilhe até errar. Vale pro ranking.</small></button><button id="mZen" class="box btn mod"><b>Zen 🌿</b><small>Sem game over e sem pressa.</small></button><button id="mRel" class="box btn mod"><b>Relógio ⏱</b><small>60s. Perfeito dá +2s, errar tira 3s.</small></button><button id="mDia" class="box btn mod"><b id="mDiaT">Desafio diário 📅</b><small>Mesma torre pra todos. 20 blocos = 60 🪙</small></button><button id="mBack" class="box btn">Voltar</button></div>
-  <div class="grp hide" id="rnk"><div id="rankInfo" class="box"></div><input id="nickIn" class="box" maxlength="12" placeholder="seu apelido" autocomplete="off"><button id="nickB" class="box btn">Salvar apelido</button><button id="amigB" class="box btn">Amigos</button><button id="rankBack" class="box btn">Voltar</button></div>
-  <div class="grp hide" id="amigos"><div id="amigInfo" class="box"></div><input id="frIn" class="box" maxlength="6" placeholder="código do amigo" autocomplete="off"><button id="frAdd" class="box btn">Adicionar</button><button id="amigBack" class="box btn">Voltar</button></div>
+  <div class="grp hide" id="rnk"><div id="rankInfo" class="box"></div><div id="rkRow1"><input id="nickIn" class="box" maxlength="12" placeholder="seu apelido" autocomplete="off"><button id="nickB" class="box btn">Salvar</button></div><div id="rkRow2"><button id="amigB" class="box btn">👥 Amigos</button><button id="rankBack" class="box btn">Voltar</button></div></div>
+  <div class="grp hide" id="amigos"><div id="amigInfo" class="box"></div><div id="frRow"><input id="frIn" class="box" maxlength="6" placeholder="código do amigo" autocomplete="off"><button id="frAdd" class="box btn">Adicionar</button></div><button id="amigBack" class="box btn">Voltar</button></div>
 </div>
 <div id="dev">desenvolvido por N E K</div>
 <div id="over" class="box hide"><span id="overH">Fim de jogo</span><small id="overTxt"></small></div>
@@ -250,9 +274,10 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 })();
 </script>
 <script>
-const GAME_V=9; // aumente a cada versão nova
+const GAME_V=10; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
-const H=.6,BASE=3,LIM=3.10,TOL=.12,MENU_SHIFT=.4,VIEW=2.2,VEL=3.45; // VEL = velocidade fixa dos blocos (antes começava em 1,92 e ia subindo; 1,92 x 1,07 = 2,05)
+const H=.6,BASE=3,LIM=3.10,TOL=.12,MENU_SHIFT=.4,VIEW=2.2,VEL=3.45; // VEL = velocidade fixa dos blocos
+const INIT=8; // blocos já empilhados quando a partida começa (como no Stack)
 
 // ---- Salvamento e opções (guardados no aparelho) ----
 const SAVE_KEY='nekoTowerSave';
@@ -277,25 +302,25 @@ cm.setTarget(BABYLON.Vector3.Zero());cm.mode=BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
 // Shader toon: 3 faixas de luz, hachura e uma "pele" para cada skin (0 a 7) + brilho de frenesi
 BABYLON.Effect.ShadersStore.toonVertexShader=`precision highp float;attribute vec3 position;attribute vec3 normal;attribute vec4 color;uniform mat4 world;uniform mat4 worldViewProjection;varying vec3 vN;varying vec4 vC;varying vec3 vP;varying float vY;
 void main(){vN=normalize((world*vec4(normal,0.)).xyz);vC=color;vP=position;vY=(world*vec4(position,1.)).y;gl_Position=worldViewProjection*vec4(position,1.);}`;
-BABYLON.Effect.ShadersStore.toonFragmentShader=`precision highp float;varying vec3 vN;varying vec4 vC;varying vec3 vP;varying float vY;uniform vec3 L;uniform float hatch;uniform float skin;uniform float time;uniform float fever;uniform float fogA;uniform float fogB;uniform vec3 fogC1;uniform vec3 fogC2;uniform vec3 fogC3;uniform float uH;
+BABYLON.Effect.ShadersStore.toonFragmentShader=`precision highp float;varying vec3 vN;varying vec4 vC;varying vec3 vP;varying float vY;uniform vec3 L;uniform float hatch;uniform float skin;uniform float time;uniform float fever;uniform float fogA;uniform float fogB;uniform vec3 fogC1;uniform vec3 fogC2;uniform vec3 fogC3;uniform float uH;uniform float bh;
 void main(){
   float d=dot(normalize(vN),normalize(L));
   float b=d>.7?1.:d>.3?.8:.62;
   vec3 col=vC.rgb;float s=floor(skin+.5);bool top=vN.y>.5;float gl=0.;
   if(s==1.){if(mod((vP.x+vP.z+vP.y*2.)*2.6,1.)<.5)col=mix(col,vec3(1.),.6);}
-  else if(s==2.){col=top?vec3(1.,.56,.44):vec3(.98,.96,.9);if(!top&&abs(vP.y)<.1)col=vec3(.1,.2,.15);}
+  else if(s==2.){col=top?vec3(1.,.56,.44):vec3(.98,.96,.9);if(!top&&abs(vP.y)<bh*.2)col=vec3(.1,.2,.15);}
   else if(s==3.){bool rib=(abs(vN.x)>.5&&abs(vP.z)<.16)||(abs(vN.z)>.5&&abs(vP.x)<.16)||(top&&(abs(vP.x)<.16||abs(vP.z)<.16));if(rib)col=vec3(1.,.82,.24);}
   else if(s==4.){vec3 q=floor(vP/.3);if(mod(q.x+q.y+q.z,2.)<1.)col*=.86;col=floor(col*5.)/5.;}
-  else if(s==5.){vec3 g=col;col=vec3(.07,.06,.16);if(abs(vP.y)>.19||(top&&(mod(vP.x*3.,1.)<.09||mod(vP.z*3.,1.)<.09))){col=g;gl=1.;}}
+  else if(s==5.){vec3 g=col;col=vec3(.07,.06,.16);if(abs(vP.y)>bh*.38||(top&&(mod(vP.x*3.,1.)<.09||mod(vP.z*3.,1.)<.09))){col=g;gl=1.;}}
   else if(s==6.){col=mix(vec3(.12,.06,.3),col*.75,.35+.3*sin(vP.x*3.+vP.z*2.+time));vec3 q=floor(vP*9.);float h=fract(sin(dot(q,vec3(12.9,78.2,37.7)))*43758.5);if(h>.93){col=vec3(1.,.97,.8)*(.75+.25*sin(time*4.+h*50.));gl=1.;}}
   else if(s==7.){col=vec3(1.,.78,.2);col=mix(col,vec3(1.,.97,.75),smoothstep(.8,1.,sin((vP.x+vP.z+vP.y*2.)*3.-time*2.5)));}
   else if(s==8.){col=mix(vec3(.62,.88,1.),vec3(1.),smoothstep(.7,1.,sin(vP.x*8.+vP.z*6.+vP.y*4.)));}
   else if(s==9.){col=.55+.45*cos(6.2832*(vec3(0.,.33,.67)+(vP.x+vP.z)*.25+vP.y*1.5+time*.15));}
-  else if(s==10.){if(abs(vP.y)>.2)col*=.45;}
+  else if(s==10.){if(abs(vP.y)>bh*.4)col*=.45;}
   else if(s==11.){if(mod((vP.x+vP.z+vP.y*2.)*3.,1.)<.5)col=mix(col,vec3(1.),.7);}
   col+=fever*.16*vec3(sin(time*5.+vP.y*9.),sin(time*5.+2.+vP.y*9.),sin(time*5.+4.+vP.y*9.));
   vec3 c=clamp(col,0.,1.)*(gl>0.?1.:b);
-  if(!top)c*=.9+.1*smoothstep(-.25,.25,vP.y); // degradê suave nas laterais
+  if(!top)c*=.9+.1*smoothstep(-bh*.5,bh*.5,vP.y); // degradê suave nas laterais
   float tf=smoothstep(fogB,fogA,vY);                 // 1 = sem neblina, 0 = dentro da neblina
   float sy=1.-gl_FragCoord.y/uH;                     // posição na tela (0 = topo)
   vec3 fc=sy<.62?mix(fogC1,fogC2,sy/.62):mix(fogC2,fogC3,(sy-.62)/.38); // cor do céu nesse ponto
@@ -303,8 +328,8 @@ void main(){
   float al=smoothstep(0.,.45,tf);                    // ...e só no fim fica transparente
   gl_FragColor=vec4(c*al,al);
 }`;
-const toon=new BABYLON.ShaderMaterial('toon',scene,'toon',{attributes:['position','normal','color'],uniforms:['world','worldViewProjection','L','hatch','skin','time','fever','fogA','fogB','fogC1','fogC2','fogC3','uH']});
-toon.setVector3('L',new BABYLON.Vector3(.1,.8,-.6));toon.setFloat('fogA',-1e4);toon.setFloat('fogB',-10001);toon.setFloat('uH',1);
+const toon=new BABYLON.ShaderMaterial('toon',scene,'toon',{attributes:['position','normal','color'],uniforms:['world','worldViewProjection','L','hatch','skin','time','fever','fogA','fogB','fogC1','fogC2','fogC3','uH','bh']});
+toon.setVector3('L',new BABYLON.Vector3(.1,.8,-.6));toon.setFloat('fogA',-1e4);toon.setFloat('fogB',-10001);toon.setFloat('uH',1);toon.setFloat('bh',H);
 const INK=BABYLON.Color3.FromHexString('#1b1a3a');
 
 const DPR=Math.min(devicePixelRatio||1,2.5);
@@ -361,11 +386,11 @@ let ringT=0,ringB=1;
 const rrm=new BABYLON.StandardMaterial('rrm',scene);rrm.disableLighting=true;rrm.emissiveColor=BABYLON.Color3.White();rrm.alpha=.6;
 const recL=BABYLON.MeshBuilder.CreateTorus('ringrec',{diameter:1,thickness:.05,tessellation:48},scene);
 recL.material=rrm;recL.isVisible=false;recL.isPickable=false;recL.renderOutline=false;recL.scaling.set(BASE*1.5,1,BASE*1.5);
-function recLine(){recL.isVisible=best>=6&&score<best&&(modo==='classico'||modo==='diario');recL.position.set(0,(best+1)*H,0);}
+function recLine(){recL.isVisible=best>=6&&score<best&&(modo==='classico'||modo==='diario');recL.position.set(0,(best+INIT+1)*H,0);}
 
 // ---- Baú 3D (tela do baú diário): fica longe da torre e usa outra câmera ----
-const toonB=new BABYLON.ShaderMaterial('toonB',scene,'toon',{attributes:['position','normal','color'],uniforms:['world','worldViewProjection','L','hatch','skin','time','fever','fogA','fogB','fogC1','fogC2','fogC3','uH']});
-toonB.setVector3('L',new BABYLON.Vector3(.1,.8,-.6));['hatch','skin','time','fever'].forEach(k=>toonB.setFloat(k,0));toonB.setFloat('fogA',-1e4);toonB.setFloat('fogB',-10001);toonB.setFloat('uH',1);
+const toonB=new BABYLON.ShaderMaterial('toonB',scene,'toon',{attributes:['position','normal','color'],uniforms:['world','worldViewProjection','L','hatch','skin','time','fever','fogA','fogB','fogC1','fogC2','fogC3','uH','bh']});
+toonB.setVector3('L',new BABYLON.Vector3(.1,.8,-.6));['hatch','skin','time','fever'].forEach(k=>toonB.setFloat(k,0));toonB.setFloat('fogA',-1e4);toonB.setFloat('fogB',-10001);toonB.setFloat('uH',1);toonB.setFloat('bh',.5);
 const CP=new BABYLON.Vector3(300,0,300);
 const bcam=new BABYLON.FreeCamera('bcam',CP.add(RIG),scene);bcam.setTarget(CP);bcam.mode=BABYLON.Camera.ORTHOGRAPHIC_CAMERA;bcam.minZ=.1;bcam.maxZ=100;
 const bRoot=new BABYLON.TransformNode('bRoot',scene);bRoot.position.copyFrom(CP);
@@ -397,6 +422,37 @@ function beep(f,d){
 }
 
 // ---- Música de fundo: pad suave + notas de pentatônica, com reverb e filtro (volume baixo, sem estourar) ----
+// ---- Sons dos encaixes: macios, sem estalos ----
+function sfxCtx(){ac=ac||new(window.AudioContext||window.webkitAudioContext)({latencyHint:'playback'});if(ac.state==='suspended')ac.resume();return ac;}
+function sfxNota(f,t,dur,vol,lpf){
+  const o=ac.createOscillator(),g=ac.createGain(),fl=ac.createBiquadFilter();
+  o.type='sine';o.frequency.value=f;fl.type='lowpass';fl.frequency.value=lpf||3500;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.008);g.gain.exponentialRampToValueAtTime(.0008,t+dur);g.gain.linearRampToValueAtTime(0,t+dur+.03);
+  o.connect(fl);fl.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+dur+.06);
+}
+function sfxPerf(n){ // perfeito: "ding" de sininho que sobe a nota a cada combo
+  if(!cfg.som)return;
+  try{
+    sfxCtx();const t=ac.currentTime+.005,f=ESC[Math.min(n-1,11)];
+    sfxNota(f,t,.55,.13);sfxNota(f*2,t,.3,.04);sfxNota(f*3,t,.15,.015); // nota + brilho
+    if(n>=3)sfxNota(f*1.5,t+.075,.5,.09);                               // combo: segunda notinha
+  }catch(e){}
+}
+function sfxCorte(){ // cortado: "tum" macio + sopro curtinho
+  if(!cfg.som)return;
+  try{
+    sfxCtx();const t=ac.currentTime+.005,o=ac.createOscillator(),g=ac.createGain();
+    o.type='sine';o.frequency.setValueAtTime(240,t);o.frequency.exponentialRampToValueAtTime(110,t+.16);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.2,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+.22);g.gain.linearRampToValueAtTime(0,t+.25);
+    o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+.3);
+    const len=Math.floor(ac.sampleRate*.09),buf=ac.createBuffer(1,len,ac.sampleRate),d=buf.getChannelData(0);
+    for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*(1-i/len);
+    const sr=ac.createBufferSource(),fl=ac.createBiquadFilter(),g2=ac.createGain();
+    sr.buffer=buf;fl.type='bandpass';fl.frequency.value=900;fl.Q.value=.7;
+    g2.gain.setValueAtTime(0,t);g2.gain.linearRampToValueAtTime(.05,t+.01);g2.gain.linearRampToValueAtTime(0,t+.09);
+    sr.connect(fl);fl.connect(g2);g2.connect(ac.destination);sr.start(t);
+  }catch(e){}
+}
 const ESC=[261.63,293.66,329.63,392,440,523.25,587.33,659.25,783.99,880,1046.5,1174.66]; // escala dos encaixes perfeitos
 const PROG=[
   {ch:[[130.81,164.81,196,246.94],[110,130.81,164.81,196],[87.31,110,130.81,164.81],[98,123.47,146.83,164.81]],es:[261.63,293.66,329.63,392,440,523.25,587.33,659.25]},
@@ -443,15 +499,16 @@ const Mus={g:null,bus:null,lp:null,tm:null,t:0,i:0,on:false,
 // ---- Estado ----
 let stack=[],mv=null,debris=[],combo=0,score=0,hue0=0,bgH=0,runPerf=0,runBonus=0;
 let mode='menu';
-let camY=H,shift=MENU_SHIFT,zoom=1,overK=1,panT0=0,overT=0,popM=null,pop=0,mood=1,fev=0,shake=0,punch=0;
+let camY=H,shift=MENU_SHIFT,zoom=1,overK=1,panT0=0,overT=0,popM=null,pop=0,mood=1,fev=0,punch=0;
 
 let paused=false,plAnt=false,modo='classico',tmpR=60,tmrAnt=false,tsAnt=-1,cullT=-1,skinK=0,skinOn=false;
-function reset(){
+function reset(nIni=INIT){
   [...stack,...debris,mv].forEach(b=>b&&b.mesh&&b.mesh.dispose());
   hue0=modo==='diario'?hashDia():Math.random()*360|0;tmpR=60;bgH=hue0;combo=0;score=0;debris=[];popM=null;mood=1;runPerf=0;runBonus=0;
-  $('score').textContent=0;camY=H;hud();recLine();
-  stack=[{x:-BASE/2,z:-BASE/2,w:BASE,d:BASE,hue:hue0}];
-  stack[0].mesh=mk(stack[0].x,stack[0].z,BASE,BASE,0,hue0);
+  $('score').textContent=0;camY=nIni*H;hud();recLine();
+  stack=[];
+  for(let k=0;k<nIni;k++){const b0={x:-BASE/2,z:-BASE/2,w:BASE,d:BASE,hue:(hue0+k*7)%360};b0.mesh=mk(b0.x,b0.z,BASE,BASE,k*H,b0.hue);stack.push(b0);}
+  cull();
   spawn();
 }
 function spawn(){
@@ -474,18 +531,18 @@ function place(){
   if(Math.abs(d)<=TOL*(sk.tol||1)){
     perfect=true;nb[a]=top[a];combo++;runPerf++;runBonus+=sk.pp||0;sv.st.perf++;sv.st.combo=Math.max(sv.st.combo,combo);if(modo==='relogio')tmpR=Math.min(tmpR+2,99);
     if(combo>=(sk.cres||4)&&nb[sz]<BASE){const g=Math.min(.12,BASE-nb[sz]);nb[sz]+=g;nb[a]-=g/2;}
-    beep(ESC[Math.min(combo-1,11)],.32);vib(combo>=5?[10,25,10]:12);
+    sfxPerf(combo);vib(combo>=5?[10,25,10]:12);
     comboFx(combo);mood=1+.1*Math.min(combo,6);punch=1;
     tip('t3','🎯 Encaixe perfeito! Combos dão moedas e fazem o bloco crescer');
     if(combo===5)tip('t4','🔥 Frenesi! O bloco brilha. Não deixe o combo cair!');
   }else{
     combo=0;
-    if(Math.abs(d)>=m[sz]){m.mesh.dispose();fall(m.x,m.z,m.w,m.d,lvl,m.hue);if(modo==='zen'||modo==='relogio'){combo=0;hud();mood=.75;shake=.2;vib(25);beep(220,.15);if(modo==='relogio')tmpR=Math.max(0,tmpR-3);popText('Tente de novo!',2,7,8);spawn();return;}mv=null;return gameOver();}
+    if(Math.abs(d)>=m[sz]){m.mesh.dispose();fall(m.x,m.z,m.w,m.d,lvl,m.hue);if(modo==='zen'||modo==='relogio'){combo=0;hud();mood=.75;vib(25);sfxCorte();if(modo==='relogio')tmpR=Math.max(0,tmpR-3);popText('Tente de novo!',2,7,8);spawn();return;}mv=null;return gameOver();}
     const cut=Math.abs(d),f={x:m.x,z:m.z,w:m.w,d:m.d};
     nb[sz]=m[sz]-cut;
     if(d>0){f[a]=m[a]+nb[sz];f[sz]=cut;}else{nb[a]=top[a];f[sz]=cut;}
     fall(f.x,f.z,f.w,f.d,lvl,m.hue);
-    beep(220,.15);vib(28);mood=.75;shake=.28;
+    sfxCorte();vib(28);mood=.75;
     tip('t2','✂️ O que passa da torre é cortado. Alinhe bem o bloco!');
   }
   m.mesh.dispose();
@@ -510,7 +567,7 @@ function hud(){
   else e.classList.remove('on');
 }
 function gameOver(){
-  mode='over';overT=performance.now();beep(110,.5);vib(80);shake=.5;Mis.add('jogos',1);sv.st.jogos++;
+  mode='over';overT=performance.now();beep(110,.5);vib(80);Mis.add('jogos',1);sv.st.jogos++;
   let rec=false;
   if(modo==='relogio'){if(score>(sv.bestR||0)){sv.bestR=score;rec=score>0;}}
   else if(modo!=='zen'&&score>best){best=score;rec=score>0;try{localStorage.setItem('stackBest',best);}catch(e){}}
@@ -570,11 +627,7 @@ const SK=[
 let skinI=Math.min(sv.skin,SK.length-1);
 toon.setFloat('skin',skinI);
 const skinColor=(n,h)=>SK[skinI].cor(n,h);
-function setSkin(i){ // monta uma torrezinha de 4 blocos só pra mostrar a skin
-  skinI=i;toon.setFloat('skin',i);reset();
-  for(let k=1;k<4;k++){const b0=stack[0],nb={x:b0.x,z:b0.z,w:b0.w,d:b0.d,hue:(hue0+k*7)%360};nb.mesh=mk(nb.x,nb.z,nb.w,nb.d,k*H,nb.hue);stack.push(nb);}
-  if(mv&&mv.mesh)mv.mesh.dispose();spawn();camY=stack.length*H;
-}
+function setSkin(i){skinI=i;toon.setFloat('skin',i);reset(4);camY=stack.length*H;} // torrezinha de 4 blocos só pra mostrar a skin
 
 const dmCache={};
 const dm=c=>dmCache[c.toHexString()]||(dmCache[c.toHexString()]=Object.assign(new BABYLON.StandardMaterial('dm',scene),{diffuseColor:BABYLON.Color3.Black(),specularColor:BABYLON.Color3.Black(),emissiveColor:c}));
@@ -732,31 +785,39 @@ const Rank={db:null,uid:null,pronto:null,
     return a.reverse();
   }
 };
+const esc=x=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sec=t=>'<div class="sec">'+t+'</div>';
+const row=(t,b,c)=>'<div class="row'+(c?' '+c:'')+'"><span>'+t+'</span>'+(b?'<em>'+b+'</em>':'')+'</div>';
+const medalha=i=>['🥇','🥈','🥉'][i]||('<b>'+(i+1)+'º</b>');
+const linhaRank=(i,nome,pts,eu)=>'<div class="rk'+(eu?' me':'')+'"><span class="pos">'+medalha(i)+'</span><span class="nm">'+esc(nome)+(eu?' <em>você</em>':'')+'</span><span class="sc">'+(+pts||0)+'</span></div>';
 async function abreRank(){
   showGrp('rnk');const e=$('rankInfo');$('nickIn').value=sv.nick||'';
-  if(!Rank.ativo()){e.textContent='🏆 Ranking global\nAinda não configurado.';return;}
-  if(navigator.onLine===false){e.textContent='Sem internet.\nO ranking precisa de conexão.';return;}
-  e.textContent='Carregando...';
+  const msg=t=>{e.innerHTML=sec('🏆 Ranking global')+'<div class="aviso">'+t+'</div>';};
+  if(!Rank.ativo()){msg('Ainda não configurado.');return;}
+  if(navigator.onLine===false){msg('Sem internet.<br>O ranking precisa de conexão.');return;}
+  msg('Carregando...');
   try{
     await Rank.sync();const t=await Rank.top();
-    e.textContent='🏆 RANKING GLOBAL\n\n'+(t.length?t.slice(0,8).map((p,i)=>MED(i)+'  '+p.n+'  ·  '+p.s+(p.u===Rank.uid?'   ◀ você':'')).join('\n'):'Ninguém pontuou ainda!')+'\n\n'+(sv.rkBest?'Seu recorde: '+sv.rkBest:'Jogue o Clássico pra entrar no ranking!');
-  }catch(x){e.textContent='Não foi possível carregar o ranking agora.';}
+    e.innerHTML=sec('🏆 Ranking global')+(t.length?t.slice(0,10).map((p,i)=>linhaRank(i,p.n,p.s,p.u===Rank.uid)).join(''):'<div class="aviso">Ninguém pontuou ainda!</div>')+'<div class="meu">'+(sv.rkBest?'Seu recorde: <b>'+sv.rkBest+'</b>':'Jogue o Clássico pra entrar no ranking!')+'</div>';
+  }catch(x){msg('Não foi possível carregar o ranking agora.');}
 }
 async function abreAmigos(){
   showGrp('amigos');const e=$('amigInfo');
   if(!sv.code)sv.code=novoCodigo();
-  const topo='Seu código: '+sv.code+(sv.rkOk?'':'\n(os amigos só te acham depois da 1ª pontuação)');
-  if(!Rank.ativo()||navigator.onLine===false){e.textContent=topo+'\nPrecisa de internet e do ranking ativo.';return;}
-  e.textContent=topo+'\nCarregando...';
+  const cod='<div class="cod"><small>Seu código de amigo (toque pra copiar)</small><b>'+sv.code+'</b>'+(sv.rkOk?'':'<small>Os amigos só te acham depois da 1ª pontuação</small>')+'</div>';
+  const msg=t=>{e.innerHTML=cod+sec('👥 Amigos')+'<div class="aviso">'+t+'</div>';};
+  if(!Rank.ativo()||navigator.onLine===false){msg('Precisa de internet e do ranking ativo.');return;}
+  msg('Carregando...');
   try{
     await Rank.carrega();
     const rs=await Promise.all((sv.amigos||[]).map(f=>Rank.db.ref('ranking/'+f.u).once('value')));
     const L=[{n:sv.nick||'Você',s:sv.rkBest||0,eu:1}];
     rs.forEach(r=>{const v=r.val();if(v)L.push({n:v.n,s:v.s});});
     L.sort((a,b)=>b.s-a.s);
-    e.textContent=topo+'\n\n'+L.map((p,i)=>MED(i)+'  '+p.n+'  ·  '+p.s+(p.eu?'   ◀ você':'')).join('\n');
-  }catch(x){e.textContent=topo+'\nNão foi possível carregar.';}
+    e.innerHTML=cod+sec('👥 Você e seus amigos')+(L.length>1?'':'<div class="aviso">Adicione amigos pelo código deles.</div>')+L.map((p,i)=>linhaRank(i,p.n,p.s,p.eu)).join('');
+  }catch(x){msg('Não foi possível carregar.');}
 }
+$('amigInfo').onclick=ev=>{if(ev.target.closest&&ev.target.closest('.cod')){try{navigator.clipboard.writeText(sv.code);popText('Código copiado!',1,6,8);}catch(e){}}};
 $('rankB').onclick=abreRank;
 $('rankBack').onclick=()=>showGrp(net.api?'onl':'main');
 $('amigB').onclick=abreAmigos;
@@ -800,8 +861,8 @@ function semUpd(c,v,mx){
 }
 function renderMis(){
   semAtiva();
-  const lin=(ok,t,p,m,pr)=>(ok?'✔ ':'• ')+t+'  ('+Math.min(p,m)+'/'+m+')  +'+pr+' 🪙';
-  $('misInfo').textContent='🪙 '+sv.moedas+' moedas\n\n📅 MISSÕES DE HOJE\n'+Mis.ativas().map(m=>lin(sv.pegas[m.id],m.txt,sv.prog[m.chave]||0,m.meta,m.premio)).join('\n')+'\n\n🗓 MISSÕES DA SEMANA\n'+SEM.map(m=>lin(sv.sg[m.id],m.txt,sv.sp[m.chave]||0,m.meta,m.premio)).join('\n');
+  const lin=(ok,t,p,m,pr)=>row(esc(t),(ok?'✔ ':Math.min(p,m)+'/'+m+' · ')+'+'+pr+' 🪙',ok?'done':'');
+  $('misInfo').innerHTML='<div class="coins">🪙 '+sv.moedas+' moedas</div>'+sec('📅 Missões de hoje')+Mis.ativas().map(m=>lin(sv.pegas[m.id],m.txt,sv.prog[m.chave]||0,m.meta,m.premio)).join('')+sec('🗓 Missões da semana')+SEM.map(m=>lin(sv.sg[m.id],m.txt,sv.sp[m.chave]||0,m.meta,m.premio)).join('');
   $('bauB').textContent=sv.bau===hojeKey()?'🎁 Baú (amanhã)':'🎁 Baú diário';
 }
 // ================= Baú diário: baú 3D + roleta =================
@@ -890,7 +951,7 @@ const ACH=[
 function ach(){ACH.forEach(([id,t,g,m,p])=>{if(!sv.ach[id]&&g()>=m){sv.ach[id]=1;sv.moedas+=p;salvar();popText('🏆 '+t+' +'+p,1,6,18);vib([15,30,15]);}});}
 function renderAch(){
   const n=ACH.filter(a=>sv.ach[a[0]]).length;
-  $('achInfo').textContent='NÍVEL '+niv()+' · '+TIT[Math.min(niv()-1,TIT.length-1)]+'  ('+(sv.xp||0)+' XP)\nPartidas: '+sv.st.jogos+'   Perfeitos: '+sv.st.perf+'\nMelhor combo: '+sv.st.combo+'   Tempo: '+Math.round((sv.st.tempo||0)/60)+' min\n\n🏆 CONQUISTAS  '+n+'/'+ACH.length+'\n'+ACH.map(([id,t,g,m,p])=>(sv.ach[id]?'✔ ':'• ')+t+(sv.ach[id]?'':'  ('+Math.min(g(),m)+'/'+m+')')+'  +'+p+' 🪙').join('\n');
+  $('achInfo').innerHTML='<div class="chips"><b>Nv '+niv()+'</b><span>'+TIT[Math.min(niv()-1,TIT.length-1)]+'</span><span>'+(sv.xp||0)+' XP</span></div><div class="chips"><span>Partidas '+sv.st.jogos+'</span><span>Perfeitos '+sv.st.perf+'</span><span>Combo '+sv.st.combo+'</span><span>'+Math.round((sv.st.tempo||0)/60)+' min</span></div>'+sec('🏆 Conquistas '+n+'/'+ACH.length)+ACH.map(([id,t,g,m,p])=>row(t,(sv.ach[id]?'✔ ':Math.min(g(),m)+'/'+m+' · ')+'+'+p+' 🪙',sv.ach[id]?'done':'')).join('');
 }
 $('achB').onclick=()=>{showGrp('ach');renderAch();};
 $('achBack').onclick=()=>{showGrp('mis');renderMis();};
@@ -917,7 +978,12 @@ $('sknBuy').onclick=()=>{
   sv.skin=prev;salvar();renderSkn();
 };
 $('sknBack').onclick=()=>{if(skinI!==sv.skin)setSkin(sv.skin);prev=sv.skin;showGrp('main');};
-$('helpB').onclick=()=>{let m='';try{m=parent.__otaMsg||''}catch(e){}$('helpInfo').textContent=AJUDA+'\n\nVersão '+GAME_V+(m?' · '+m:'');showGrp('help');};
+const AJ=[
+  ['Como jogar',[['👆','Toque pra soltar o bloco'],['🎯','Alinhado = encaixe perfeito (combo)'],['✂️','O que passa da torre é cortado'],['🔥','5 combos seguidos = Frenesi']]],
+  ['Modos',[['🌿','Zen: sem game over'],['⏱','Relógio: 60s, perfeito dá +2s'],['📅','Diário: mesma torre pra todos']]],
+  ['Extras',[['🪙','Moedas compram skins com bônus'],['🎁','Baú e missões novas todo dia']]]
+];
+$('helpB').onclick=()=>{let m='';try{m=parent.__otaMsg||''}catch(e){}$('helpInfo').innerHTML=AJ.map(([t,l])=>sec(t)+l.map(([i,x])=>row(i+' '+x)).join('')).join('')+row('Versão '+GAME_V+(m?' · '+esc(m):''),'','muted');showGrp('help');};
 $('helpBack').onclick=()=>showGrp('conf');
 $('bkOut').onclick=()=>{try{const c=btoa(unescape(encodeURIComponent(JSON.stringify(sv))));$('bkIn').value=c;$('bkIn').select();let ok=false;try{navigator.clipboard.writeText(c);ok=true;}catch(e){}popText(ok?'Backup copiado!':'Copie o código do campo',1,6,10);}catch(e){popText('Erro no backup',2,6,10);}};
 $('bkRes').onclick=()=>{try{const o=JSON.parse(decodeURIComponent(escape(atob($('bkIn').value.trim()))));if(!o||typeof o.moedas!=='number'||!Array.isArray(o.donos))throw 0;Object.assign(sv,o);salvar();popText('Restaurado! Reiniciando...',1,6,10);setTimeout(()=>location.reload(),1200);}catch(e){popText('Código inválido',2,6,10);}};
@@ -1015,7 +1081,7 @@ addEventListener('message',e=>{if(e.data&&e.data.ota)popText(e.data.ota,1,5,12);
 (()=>{const sn=$('snow');for(let i=0;i<30;i++){const e=document.createElement('i'),z=3+Math.random()*5;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(6+Math.random()*7)+'s;animation-delay:-'+Math.random()*12+'s';sn.appendChild(e);}})();
 (()=>{const f=$('fl');for(let i=0;i<16;i++){const e=document.createElement('i'),z=3+Math.random()*6;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(10+Math.random()*10)+'s;animation-delay:-'+Math.random()*16+'s';f.appendChild(e);}})();
 // Bônus diário com sequência de dias (até 7)
-const NOV='• Nova loja de skins: a skin aparece em cima e o painel fica embaixo\n• Neblina mais limpa, na cor do céu\n• Dicas do começo da partida saíram: agora estão na tela de modos\n• Velocidade fixa dos blocos (7% mais rápida que a inicial)';
+const NOV='• Sem tremor de tela\n• Sons novos de perfeito e de corte, bem mais suaves\n• A partida já começa com a torre e a neblina\n• Blocos não balançam mais no menu e na loja\n• Novo visual: Ranking, Amigos, Missões e Como jogar';
 setTimeout(pendenteBau,3500);
 setTimeout(()=>Rank.sync(),7000);
 setTimeout(()=>{if(sv.ver!==GAME_V&&(sv.ver||sv.st.jogos>0)){$('novT').textContent='✨ Versão '+GAME_V+'\n'+NOV;$('nov').classList.remove('hide');}sv.ver=GAME_V;salvar();},4500);
@@ -1049,7 +1115,6 @@ eng.runRenderLoop(()=>{
     mv.mesh.position.x=mv.x+mv.w/2;mv.mesh.position.z=mv.z+mv.d/2;
     const c=mv.mesh.cat;
     if(c){const bl=now%3.4<.13;c.eyes.forEach(e=>e.scaling.y=e._by*mood*(bl?.12:1));c.ears.forEach((e,i)=>e.rotation.z=Math.sin(now*5+i*2)*.1);}
-    if(mode==='menu'){mv.mesh.rotation.z=Math.sin(now*3)*.07;mv.mesh.scaling.y=1+Math.sin(now*6)*.05;}else if(mv.mesh.rotation.z){mv.mesh.rotation.z=0;mv.mesh.scaling.y=1;}
   }
   debris.forEach(b=>{b.vy+=14*dt;b.mesh.position.y-=b.vy*dt;});
   debris=debris.filter(b=>b.mesh.position.y>camY-7||(b.mesh.dispose(),false));
@@ -1069,8 +1134,8 @@ eng.runRenderLoop(()=>{
   cm.position.set(RIG.x,RIG.y+camY,RIG.z);
   const nf=ov||skinOn;toon.setFloat('fogA',nf?-1e4:camY-1.4);toon.setFloat('fogB',nf?-10001:camY-5);toon.setFloat('uH',eng.getRenderHeight());
   scenery(ov?stack.length:camY/H);
-  const sw=Math.sin(now*.8)*Math.min(score/60,1)*.1,sx=(Math.random()-.5)*shake+sw,sy=(Math.random()-.5)*shake;
-  shake=Math.max(0,shake-dt*1.5);punch-=dt*5;
+  const sw=Math.sin(now*.8)*Math.min(score/60,1)*.1,sx=sw,sy=0;
+  punch-=dt*5;
   cm.orthoTop=hh*(1.24-.6*skinK)+sy;cm.orthoBottom=-hh*(.76+.6*skinK)+sy;
   const sh=shift*(1-skinK);cm.orthoLeft=-hw-sh*hw+sx;cm.orthoRight=hw-sh*hw+sx;
   if(bauOn)bauFrame(dt,now);
@@ -1082,4 +1147,4 @@ eng.runRenderLoop(()=>{
 addEventListener('resize',()=>eng.resize());
 </script>
 </body>
-                                                                        </html>
+</html>
