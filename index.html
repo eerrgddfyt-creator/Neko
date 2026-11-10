@@ -132,6 +132,27 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;out
 #rodaSvg{width:100%;display:block}
 #rodaPin{position:absolute;top:-4.5vmin;left:50%;transform:translateX(-50%);font-size:9vmin;line-height:1;color:var(--pink);-webkit-text-stroke:.8vmin var(--ink);paint-order:stroke fill;z-index:1}
 #roda .btn,#roda #rodaRes{width:100%}
+/* modos como cartões */
+#modoInfo{flex:none;filter:none;font-family:'Trebuchet MS','Segoe UI',system-ui,sans-serif;font-weight:700;letter-spacing:0;font-size:clamp(14px,3.6vmin,21px);line-height:1.4;text-align:center;padding:1.4vh 4vw;white-space:pre-line}
+#menu.wide .mod{height:12vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6vh;filter:none}
+.mod b{font-size:min(6.4vmin,36px);font-weight:400}
+.mod small{font-family:'Trebuchet MS','Segoe UI',system-ui,sans-serif;font-weight:700;letter-spacing:0;font-size:clamp(12px,3.2vmin,18px)}
+/* loja de skins: painel embaixo, skin aparece em cima */
+#menu.wide.sk{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 2vh);height:auto}
+#menu.sk #sknInfo{flex:none;height:auto;overflow:visible;padding:1.6vh 4vw}
+#sknRow1,#sknRow2{display:flex;gap:2.5vw;flex:none;height:8.5vh}
+#menu.wide #sknRow1 .btn,#menu.wide #sknRow2 .btn{flex:1;min-width:0;height:100%;font-size:min(5.6vmin,32px)}
+.sn{display:flex;justify-content:space-between;align-items:baseline}
+.sn b{font-family:Bangers,Impact,sans-serif;font-size:min(8vmin,44px);letter-spacing:.04em;font-weight:400}
+.sn span{opacity:.6}
+.sb{font-size:clamp(14px,3.6vmin,20px);margin:.4vh 0 1vh}
+.sf{display:flex;justify-content:space-between;align-items:center;gap:2vw}
+.sf .pr,.sf .ok{background:#ffd23f;border:.5vmin solid var(--ink);border-radius:2vmin;padding:.3vh 3vw}
+.sf .ok{background:#9be3b0}
+.sd{display:flex;gap:1.6vmin;justify-content:center;margin-top:1.4vh}
+.sd i{width:2.4vmin;height:2.4vmin;border-radius:50%;border:.4vmin solid var(--ink);background:#fffdf5}
+.sd i.own{background:#9be3b0}
+.sd i.on{background:#ff7aa8;transform:scale(1.35)}
 </style>
 </head>
 <body>
@@ -188,7 +209,7 @@ Load.ui();
   </div>
   <div class="grp hide" id="mis"><div id="misInfo" class="box"></div><button id="achB" class="box btn">🏆 Conquistas</button><button id="bauB" class="box btn">🎁 Baú diário</button><button id="misBack" class="box btn">Voltar</button></div>
   <div class="grp hide" id="ach"><div id="achInfo" class="box"></div><button id="achBack" class="box btn">Voltar</button></div>
-  <div class="grp hide" id="skn"><div id="sknInfo" class="box"></div><button id="sknNext" class="box btn">Próxima</button><button id="sknBuy" class="box btn">Equipar</button><button id="gachaB" class="box btn">🎰 Sorteio (120)</button><button id="sknBack" class="box btn">Voltar</button></div>
+  <div class="grp hide" id="skn"><div id="sknInfo" class="box"></div><div id="sknRow1"><button id="sknPrev" class="box btn">◀</button><button id="sknNext" class="box btn">▶</button></div><div id="sknRow2"><button id="sknBuy" class="box btn">Equipar</button><button id="gachaB" class="box btn">🎰 Sorteio (120)</button></div><button id="sknBack" class="box btn">Voltar</button></div>
   <div class="grp hide" id="conf">
     <button id="snd" class="box btn">Áudio: Tudo</button>
     <button id="vibB" class="box btn">Vibração: Ligada</button>
@@ -197,7 +218,7 @@ Load.ui();
     <button id="back" class="box btn">Voltar</button>
   </div>
   <div class="grp hide" id="help"><div id="helpInfo" class="box"></div><input id="bkIn" class="box" placeholder="código de backup" autocomplete="off"><button id="bkOut" class="box btn">Gerar backup</button><button id="bkRes" class="box btn">Restaurar</button><button id="helpBack" class="box btn">Voltar</button></div>
-  <div class="grp hide" id="modos"><button id="mClas" class="box btn">Clássico</button><button id="mZen" class="box btn">Zen 🌿</button><button id="mRel" class="box btn">Relógio ⏱</button><button id="mDia" class="box btn">Desafio diário</button><button id="mBack" class="box btn">Voltar</button></div>
+  <div class="grp hide" id="modos"><div id="modoInfo" class="box">👆 Toque na tela pra soltar o bloco.\nQuanto mais alinhado, melhor o encaixe!</div><button id="mClas" class="box btn mod"><b>Clássico</b><small>Empilhe até errar. Vale pro ranking.</small></button><button id="mZen" class="box btn mod"><b>Zen 🌿</b><small>Sem game over e sem pressa.</small></button><button id="mRel" class="box btn mod"><b>Relógio ⏱</b><small>60s. Perfeito dá +2s, errar tira 3s.</small></button><button id="mDia" class="box btn mod"><b id="mDiaT">Desafio diário 📅</b><small>Mesma torre pra todos. 20 blocos = 60 🪙</small></button><button id="mBack" class="box btn">Voltar</button></div>
   <div class="grp hide" id="rnk"><div id="rankInfo" class="box"></div><input id="nickIn" class="box" maxlength="12" placeholder="seu apelido" autocomplete="off"><button id="nickB" class="box btn">Salvar apelido</button><button id="amigB" class="box btn">Amigos</button><button id="rankBack" class="box btn">Voltar</button></div>
   <div class="grp hide" id="amigos"><div id="amigInfo" class="box"></div><input id="frIn" class="box" maxlength="6" placeholder="código do amigo" autocomplete="off"><button id="frAdd" class="box btn">Adicionar</button><button id="amigBack" class="box btn">Voltar</button></div>
 </div>
@@ -229,9 +250,9 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 })();
 </script>
 <script>
-const GAME_V=8; // aumente a cada versão nova
+const GAME_V=9; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
-const H=.5,BASE=3,LIM=2,TOL=.07,MENU_SHIFT=.4,VIEW=2.5;
+const H=.5,BASE=3,LIM=2,TOL=.07,MENU_SHIFT=.4,VIEW=2.5,VEL=2.05; // VEL = velocidade fixa dos blocos (antes começava em 1,92 e ia subindo; 1,92 x 1,07 = 2,05)
 
 // ---- Salvamento e opções (guardados no aparelho) ----
 const SAVE_KEY='nekoTowerSave';
@@ -256,7 +277,7 @@ cm.setTarget(BABYLON.Vector3.Zero());cm.mode=BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
 // Shader toon: 3 faixas de luz, hachura e uma "pele" para cada skin (0 a 7) + brilho de frenesi
 BABYLON.Effect.ShadersStore.toonVertexShader=`precision highp float;attribute vec3 position;attribute vec3 normal;attribute vec4 color;uniform mat4 world;uniform mat4 worldViewProjection;varying vec3 vN;varying vec4 vC;varying vec3 vP;varying float vY;
 void main(){vN=normalize((world*vec4(normal,0.)).xyz);vC=color;vP=position;vY=(world*vec4(position,1.)).y;gl_Position=worldViewProjection*vec4(position,1.);}`;
-BABYLON.Effect.ShadersStore.toonFragmentShader=`precision highp float;varying vec3 vN;varying vec4 vC;varying vec3 vP;varying float vY;uniform vec3 L;uniform float hatch;uniform float skin;uniform float time;uniform float fever;uniform float fogA;uniform float fogB;
+BABYLON.Effect.ShadersStore.toonFragmentShader=`precision highp float;varying vec3 vN;varying vec4 vC;varying vec3 vP;varying float vY;uniform vec3 L;uniform float hatch;uniform float skin;uniform float time;uniform float fever;uniform float fogA;uniform float fogB;uniform vec3 fogC1;uniform vec3 fogC2;uniform vec3 fogC3;uniform float uH;
 void main(){
   float d=dot(normalize(vN),normalize(L));
   float b=d>.7?1.:d>.3?.8:.62;
@@ -275,11 +296,15 @@ void main(){
   col+=fever*.16*vec3(sin(time*5.+vP.y*9.),sin(time*5.+2.+vP.y*9.),sin(time*5.+4.+vP.y*9.));
   vec3 c=clamp(col,0.,1.)*(gl>0.?1.:b);
   if(!top)c*=.9+.1*smoothstep(-.25,.25,vP.y); // degradê suave nas laterais
-  float al=smoothstep(fogB,fogA,vY);               // neblina: some aos poucos embaixo
+  float tf=smoothstep(fogB,fogA,vY);                 // 1 = sem neblina, 0 = dentro da neblina
+  float sy=1.-gl_FragCoord.y/uH;                     // posição na tela (0 = topo)
+  vec3 fc=sy<.62?mix(fogC1,fogC2,sy/.62):mix(fogC2,fogC3,(sy-.62)/.38); // cor do céu nesse ponto
+  c=mix(fc,c,smoothstep(0.,.55,tf));                 // primeiro vira cor do céu...
+  float al=smoothstep(0.,.45,tf);                    // ...e só no fim fica transparente
   gl_FragColor=vec4(c*al,al);
 }`;
-const toon=new BABYLON.ShaderMaterial('toon',scene,'toon',{attributes:['position','normal','color'],uniforms:['world','worldViewProjection','L','hatch','skin','time','fever','fogA','fogB']});
-toon.setVector3('L',new BABYLON.Vector3(.1,.8,-.6));toon.setFloat('fogA',-1e4);toon.setFloat('fogB',-10001);
+const toon=new BABYLON.ShaderMaterial('toon',scene,'toon',{attributes:['position','normal','color'],uniforms:['world','worldViewProjection','L','hatch','skin','time','fever','fogA','fogB','fogC1','fogC2','fogC3','uH']});
+toon.setVector3('L',new BABYLON.Vector3(.1,.8,-.6));toon.setFloat('fogA',-1e4);toon.setFloat('fogB',-10001);toon.setFloat('uH',1);
 const INK=BABYLON.Color3.FromHexString('#1b1a3a');
 
 const DPR=Math.min(devicePixelRatio||1,2.5);
@@ -339,8 +364,8 @@ recL.material=rrm;recL.isVisible=false;recL.isPickable=false;recL.renderOutline=
 function recLine(){recL.isVisible=best>=6&&score<best&&(modo==='classico'||modo==='diario');recL.position.set(0,(best+1)*H,0);}
 
 // ---- Baú 3D (tela do baú diário): fica longe da torre e usa outra câmera ----
-const toonB=new BABYLON.ShaderMaterial('toonB',scene,'toon',{attributes:['position','normal','color'],uniforms:['world','worldViewProjection','L','hatch','skin','time','fever','fogA','fogB']});
-toonB.setVector3('L',new BABYLON.Vector3(.1,.8,-.6));['hatch','skin','time','fever'].forEach(k=>toonB.setFloat(k,0));toonB.setFloat('fogA',-1e4);toonB.setFloat('fogB',-10001);
+const toonB=new BABYLON.ShaderMaterial('toonB',scene,'toon',{attributes:['position','normal','color'],uniforms:['world','worldViewProjection','L','hatch','skin','time','fever','fogA','fogB','fogC1','fogC2','fogC3','uH']});
+toonB.setVector3('L',new BABYLON.Vector3(.1,.8,-.6));['hatch','skin','time','fever'].forEach(k=>toonB.setFloat(k,0));toonB.setFloat('fogA',-1e4);toonB.setFloat('fogB',-10001);toonB.setFloat('uH',1);
 const CP=new BABYLON.Vector3(300,0,300);
 const bcam=new BABYLON.FreeCamera('bcam',CP.add(RIG),scene);bcam.setTarget(CP);bcam.mode=BABYLON.Camera.ORTHOGRAPHIC_CAMERA;bcam.minZ=.1;bcam.maxZ=100;
 const bRoot=new BABYLON.TransformNode('bRoot',scene);bRoot.position.copyFrom(CP);
@@ -420,7 +445,7 @@ let stack=[],mv=null,debris=[],combo=0,score=0,hue0=0,bgH=0,runPerf=0,runBonus=0
 let mode='menu';
 let camY=H,shift=MENU_SHIFT,zoom=1,overK=1,panT0=0,overT=0,popM=null,pop=0,mood=1,fev=0,shake=0,punch=0;
 
-let paused=false,plAnt=false,modo='classico',tmpR=60,tmrAnt=false,tsAnt=-1,cullT=-1;
+let paused=false,plAnt=false,modo='classico',tmpR=60,tmrAnt=false,tsAnt=-1,cullT=-1,skinK=0,skinOn=false;
 function reset(){
   [...stack,...debris,mv].forEach(b=>b&&b.mesh&&b.mesh.dispose());
   hue0=modo==='diario'?hashDia():Math.random()*360|0;tmpR=60;bgH=hue0;combo=0;score=0;debris=[];popM=null;mood=1;runPerf=0;runBonus=0;
@@ -431,7 +456,7 @@ function reset(){
 }
 function spawn(){
   const n=stack.length,top=stack[n-1],axis=n%2?'x':'z',fromLeft=n%4<2;
-  const base=(modo==='zen'?2.6:Math.min(2.5+n*.06,5.5))*.75; // um pouco mais devagar porque o percurso ficou mais curto
+  const base=VEL; // velocidade fixa: pra mudar, é só trocar o valor de VEL lá em cima
   mv={x:top.x,z:top.z,w:top.w,d:top.d,hue:(hue0+n*7)%360,axis,dir:fromLeft?1:-1,speed:base*(SK[skinI].lento||1)*(modo==='diario'?1.1:1)};
   mv[axis]=(fromLeft?-LIM:LIM)-(axis==='x'?mv.w:mv.d)/2;
   mv.mesh=mk(mv.x,mv.z,mv.w,mv.d,n*H,mv.hue);
@@ -524,7 +549,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='pl
 
 // Dicas que aparecem só uma vez, na hora certa
 let tipT=0;
-function tip(id,t){if(sv.tips[id])return;sv.tips[id]=1;salvar();const e=$('tip');e.textContent=t;e.classList.add('on');clearTimeout(tipT);tipT=setTimeout(()=>e.classList.remove('on'),3800);}
+function tip(){} // os cards de dica saíram da partida: agora estão na tela de modos e em Config > Como jogar
 
 // ================= Skins (cada uma tem um bônus) =================
 const pal=a=>n=>new BABYLON.Color3(...a[n%a.length]);
@@ -545,7 +570,11 @@ const SK=[
 let skinI=Math.min(sv.skin,SK.length-1);
 toon.setFloat('skin',skinI);
 const skinColor=(n,h)=>SK[skinI].cor(n,h);
-function setSkin(i){skinI=i;toon.setFloat('skin',i);reset();}
+function setSkin(i){ // monta uma torrezinha de 4 blocos só pra mostrar a skin
+  skinI=i;toon.setFloat('skin',i);reset();
+  for(let k=1;k<4;k++){const b0=stack[0],nb={x:b0.x,z:b0.z,w:b0.w,d:b0.d,hue:(hue0+k*7)%360};nb.mesh=mk(nb.x,nb.z,nb.w,nb.d,k*H,nb.hue);stack.push(nb);}
+  if(mv&&mv.mesh)mv.mesh.dispose();spawn();camY=stack.length*H;
+}
 
 const dmCache={};
 const dm=c=>dmCache[c.toHexString()]||(dmCache[c.toHexString()]=Object.assign(new BABYLON.StandardMaterial('dm',scene),{diffuseColor:BABYLON.Color3.Black(),specularColor:BABYLON.Color3.Black(),emissiveColor:c}));
@@ -602,13 +631,14 @@ const INKH='#1b1a3a',SVG=(vb,body)=>'<svg xmlns="http://www.w3.org/2000/svg" vie
   $('moon').style.backgroundImage=uri(SVG('0 0 200 200','<circle cx="100" cy="100" r="92" fill="#fff6d6" stroke="'+INKH+'" stroke-width="7"/><ellipse cx="70" cy="80" rx="20" ry="16" fill="#e8dcae"/><ellipse cx="125" cy="125" rx="26" ry="20" fill="#e8dcae"/><ellipse cx="128" cy="62" rx="12" ry="10" fill="#e8dcae"/>'));
 })();
 const LY={city:$('city').style,clouds:$('clouds').style,stars:$('stars').style,moon:$('moon').style,snow:$('snow').style};
+const hsl2rgb=(h,s,l)=>{s/=100;l/=100;const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l),f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));return[f(0),f(8),f(4)];};
 let ceu='',faseAnt=0,altAnt=-9;
 function scenery(alt){
   if(Math.abs(alt-altAnt)<.004)return;altAnt=alt; // só atualiza o fundo quando a altura muda
   const i=Math.max(0,FASES.filter(p=>alt>=p.de+4).length-1),a=FASES[i],b=FASES[i+1];
   const t=b?ss(b.de-4,b.de+4,alt):0;
   const cs=[0,1,2].map(k=>{const c=a.c[k].map((v,j)=>b?v+(b.c[k][j]-v)*t:v);return'hsl('+c[0].toFixed(0)+','+c[1].toFixed(0)+'%,'+c[2].toFixed(0)+'%)';});
-  if(cs.join()!==ceu){ceu=cs.join();cs.forEach((c,k)=>document.documentElement.style.setProperty('--c'+(k+1),c));}
+  if(cs.join()!==ceu){ceu=cs.join();cs.forEach((c,k)=>{document.documentElement.style.setProperty('--c'+(k+1),c);const m=c.match(/\d+/g),rgb=hsl2rgb(+m[0],+m[1],+m[2]);toon.setColor3('fogC'+(k+1),new BABYLON.Color3(rgb[0],rgb[1],rgb[2]));});}
   LY.city.opacity=1-ss(6,16,alt);LY.city.transform='translateY('+alt*1.4+'vh)';
   LY.clouds.opacity=ss(5,12,alt)*(1-ss(24,32,alt));LY.clouds.transform='translateY('+(alt-6)*1.1+'vh)';
   LY.stars.opacity=ss(20,30,alt);LY.stars.transform='translateY('+alt*.25+'vh)';
@@ -867,15 +897,16 @@ $('achBack').onclick=()=>{showGrp('mis');renderMis();};
 // ================= Telas de Skins e Ajuda =================
 let prev=sv.skin;
 function renderSkn(){
-  const s=SK[prev],dono=sv.donos.includes(prev);
-  $('sknInfo').textContent='🪙 '+sv.moedas+' moedas\n\n'+s.nome.toUpperCase()+'\n'+s.bonus+'\n\n'+(prev===sv.skin?'✔ Equipada':dono?'Você já tem esta skin':'Preço: '+s.preco+' 🪙');
-  $('sknBuy').textContent=prev===sv.skin?'Equipada':dono?'Equipar':'Comprar';
-  $('sknNext').textContent='Próxima ('+(prev+1)+'/'+SK.length+')';
+  const s=SK[prev],dono=sv.donos.includes(prev),eq=prev===sv.skin;
+  const est=eq?'<span class="ok">✔ Equipada</span>':dono?'<span class="ok">Você já tem</span>':'<span class="pr">'+s.preco+' 🪙</span>';
+  $('sknInfo').innerHTML='<div class="sn"><b>'+s.nome+'</b><span>'+(prev+1)+'/'+SK.length+'</span></div><div class="sb">'+s.bonus+'</div><div class="sf">'+est+'<span class="sm">Você tem 🪙 '+sv.moedas+'</span></div><div class="sd">'+SK.map((_,i)=>'<i class="'+(i===prev?'on ':'')+(sv.donos.includes(i)?'own':'')+'"></i>').join('')+'</div>';
+  $('sknBuy').textContent=eq?'Equipada':dono?'Equipar':'Comprar';
 }
 const AJUDA='COMO JOGAR\n👆 Toque pra soltar o bloco\n🎯 Alinhado = encaixe perfeito (combo)\n✂️ O que passa da torre é cortado\n🔥 5 combos seguidos = Frenesi\n\nMODOS\n🌿 Zen: sem game over\n⏱ Relógio: 60s, perfeito dá +2s\n📅 Diário: mesma torre pra todos\n\nEXTRAS\n🪙 Moedas compram skins com bônus\n🎁 Baú e missões novas todo dia';
 $('misBtn').onclick=()=>{showGrp('mis');renderMis();};
 $('misBack').onclick=()=>showGrp('main');
-$('sknBtn').onclick=()=>{prev=sv.skin;showGrp('skn');renderSkn();};
+$('sknBtn').onclick=()=>{prev=sv.skin;showGrp('skn');setSkin(prev);renderSkn();};
+$('sknPrev').onclick=()=>{prev=(prev+SK.length-1)%SK.length;setSkin(prev);renderSkn();};
 $('sknNext').onclick=()=>{prev=(prev+1)%SK.length;setSkin(prev);renderSkn();};
 $('sknBuy').onclick=()=>{
   const s=SK[prev];if(prev===sv.skin)return;
@@ -897,8 +928,8 @@ const net={api:null,room:null,code:'',host:false,ready:false,active:false,done:f
 (async()=>{try{net.api=await claude.use('room');}catch(e){}if(!net.api)$('onlBtn').textContent='Ranking';})();
 const setStatus=t=>{$('bestTxt').textContent=t;};
 const idleStatus=()=>setStatus(best||sv.moedas?'Nv '+niv()+' · Melhor '+best+'\n🪙 '+sv.moedas:'empilhe tudo!');
-const GRPS=['main','conf','onl','lobby','mis','skn','help','ach','modos','rnk','amigos'],LARGAS=['mis','skn','help','ach','rnk','amigos','lobby'];
-const showGrp=id=>{GRPS.forEach(g=>$(g).classList.toggle('hide',g!==id));$('menu').classList.toggle('wide',LARGAS.indexOf(id)>=0);if(id==='main')idleStatus();};
+const GRPS=['main','conf','onl','lobby','mis','skn','help','ach','modos','rnk','amigos'],LARGAS=['mis','skn','help','ach','rnk','amigos','lobby','modos'];
+const showGrp=id=>{GRPS.forEach(g=>$(g).classList.toggle('hide',g!==id));$('menu').classList.toggle('wide',LARGAS.indexOf(id)>=0);$('menu').classList.toggle('sk',id==='skn');skinOn=id==='skn';if(id==='main')idleStatus();};
 async function joinRoom(code,host){
   if(!net.api)return setStatus('Online indisponível aqui');
   setStatus('Entrando...');
@@ -957,15 +988,13 @@ $('start').onclick=()=>net.room&&net.room.presence({go:Date.now()});
 $('leave').onclick=leaveRoom;
 
 // ---- Botões do menu ----
-$('play').onclick=()=>{if(mode!=='menu')return;$('mDia').textContent=sv.diaD===hojeKey()?'Diário ✔':'Desafio diário';showGrp('modos');};
+$('play').onclick=()=>{if(mode!=='menu')return;$('mDiaT').textContent=sv.diaD===hojeKey()?'Diário ✔ (feito hoje)':'Desafio diário 📅';showGrp('modos');};
 $('mBack').onclick=()=>showGrp('main');
 function hashDia(){let n=0;for(const c of hojeKey())n=(n*31+c.charCodeAt(0))>>>0;return n%360;}
 function iniciar(m){
   if(mode!=='menu')return;modo=m;reset();
   mode='pan';panT0=performance.now();beep(523,.2);
   $('menu').classList.add('out');$('score').classList.add('on');
-  const T={zen:['mz','🌿 Zen: sem game over e sem pressa. Se errar, tente de novo!'],relogio:['mr','⏱ Relógio: 60s! Perfeito dá +2s, errar tira 3s'],diario:['md','📅 Desafio diário: chegue a 20 blocos e ganhe 60 🪙. A torre é a mesma pra todos!']}[m];
-  if(T)setTimeout(()=>tip(T[0],T[1]),1300);
 }
 $('mClas').onclick=()=>iniciar('classico');$('mZen').onclick=()=>iniciar('zen');$('mRel').onclick=()=>iniciar('relogio');$('mDia').onclick=()=>iniciar('diario');
 $('cfg').onclick=()=>showGrp('conf');
@@ -986,7 +1015,7 @@ addEventListener('message',e=>{if(e.data&&e.data.ota)popText(e.data.ota,1,5,12);
 (()=>{const sn=$('snow');for(let i=0;i<30;i++){const e=document.createElement('i'),z=3+Math.random()*5;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(6+Math.random()*7)+'s;animation-delay:-'+Math.random()*12+'s';sn.appendChild(e);}})();
 (()=>{const f=$('fl');for(let i=0;i<16;i++){const e=document.createElement('i'),z=3+Math.random()*6;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(10+Math.random()*10)+'s;animation-delay:-'+Math.random()*16+'s';f.appendChild(e);}})();
 // Bônus diário com sequência de dias (até 7)
-const NOV='• Blocos vão até o mesmo limite dos dois lados\n• Neblina embaixo da torre\n• Gráficos mais nítidos e blocos lisos\n• Bordas pretas bem mais finas\n• Bloco chefe removido\n• Jogo mais leve: só desenha o que aparece';
+const NOV='• Nova loja de skins: a skin aparece em cima e o painel fica embaixo\n• Neblina mais limpa, na cor do céu\n• Dicas do começo da partida saíram: agora estão na tela de modos\n• Velocidade fixa dos blocos (7% mais rápida que a inicial)';
 setTimeout(pendenteBau,3500);
 setTimeout(()=>Rank.sync(),7000);
 setTimeout(()=>{if(sv.ver!==GAME_V&&(sv.ver||sv.st.jogos>0)){$('novT').textContent='✨ Versão '+GAME_V+'\n'+NOV;$('nov').classList.remove('hide');}sv.ver=GAME_V;salvar();},4500);
@@ -1010,10 +1039,13 @@ eng.runRenderLoop(()=>{
     if(p>=1){mode='play';if(net.active)net.t0=performance.now();tip('t1','👆 Toque na tela para soltar o bloco!');}
   }
   if(mv&&(mode==='menu'||mode==='pan'||mode==='play')){
-    mv[mv.axis]+=mv.dir*mv.speed*dt;
-    const hs=(mv.axis==='x'?mv.w:mv.d)/2,cc=mv[mv.axis]+hs; // posição do centro do bloco
-    if(cc>LIM){mv[mv.axis]=LIM-hs;mv.dir=-1;}
-    if(cc<-LIM){mv[mv.axis]=-LIM-hs;mv.dir=1;}
+    if(skinOn&&mode==='menu'){mv[mv.axis]=stack[stack.length-1][mv.axis];} // na loja o bloco fica parado em cima da torre
+    else{
+      mv[mv.axis]+=mv.dir*mv.speed*dt;
+      const hs=(mv.axis==='x'?mv.w:mv.d)/2,cc=mv[mv.axis]+hs; // posição do centro do bloco
+      if(cc>LIM){mv[mv.axis]=LIM-hs;mv.dir=-1;}
+      if(cc<-LIM){mv[mv.axis]=-LIM-hs;mv.dir=1;}
+    }
     mv.mesh.position.x=mv.x+mv.w/2;mv.mesh.position.z=mv.z+mv.d/2;
     const c=mv.mesh.cat;
     if(c){const bl=now%3.4<.13;c.eyes.forEach(e=>e.scaling.y=e._by*mood*(bl?.12:1));c.ears.forEach((e,i)=>e.rotation.z=Math.sin(now*5+i*2)*.1);}
@@ -1029,17 +1061,18 @@ eng.runRenderLoop(()=>{
   const cs=Math.floor(now);if(cs!==cullT){cullT=cs;if(mode!=='over')cull();}
 
   // Câmera: sobe com a torre; no fim de jogo afasta para mostrar a torre inteira
-  const asp=eng.getRenderWidth()/eng.getRenderHeight(),hh0=Math.max(3.4,VIEW/asp)*zoom,ov=mode==='over'&&stack.length>=12;
+  skinK+=((skinOn?1:0)-skinK)*Math.min(dt*6,1);
+  const asp=eng.getRenderWidth()/eng.getRenderHeight(),hh0=Math.max(3.4,VIEW/asp)*zoom*(1+.5*skinK),ov=mode==='over'&&stack.length>=12;
   overK+=((ov?Math.max(1,(stack.length*H*.42+1.5)/hh0):1)-overK)*Math.min(dt*2.5,1);
   const hh=hh0*overK*(1-.035*Math.max(punch,0)),hw=hh*asp;
   camY+=((ov?stack.length*H/2-.34*hh:stack.length*H)-camY)*Math.min(dt*5,1);
   cm.position.set(RIG.x,RIG.y+camY,RIG.z);
-  toon.setFloat('fogA',ov?-1e4:camY-1.4);toon.setFloat('fogB',ov?-10001:camY-5);
+  const nf=ov||skinOn;toon.setFloat('fogA',nf?-1e4:camY-1.4);toon.setFloat('fogB',nf?-10001:camY-5);toon.setFloat('uH',eng.getRenderHeight());
   scenery(ov?stack.length:camY/H);
   const sw=Math.sin(now*.8)*Math.min(score/60,1)*.1,sx=(Math.random()-.5)*shake+sw,sy=(Math.random()-.5)*shake;
   shake=Math.max(0,shake-dt*1.5);punch-=dt*5;
-  cm.orthoTop=hh*1.24+sy;cm.orthoBottom=-hh*.76+sy;
-  cm.orthoLeft=-hw-shift*hw+sx;cm.orthoRight=hw-shift*hw+sx;
+  cm.orthoTop=hh*(1.24-.6*skinK)+sy;cm.orthoBottom=-hh*(.76+.6*skinK)+sy;
+  const sh=shift*(1-skinK);cm.orthoLeft=-hw-sh*hw+sx;cm.orthoRight=hw-sh*hw+sx;
   if(bauOn)bauFrame(dt,now);
   scene.render();
   if(frames<2&&++frames===2){Load.done('imagem');try{localStorage.setItem('nekoTry',0)}catch(e){}}
