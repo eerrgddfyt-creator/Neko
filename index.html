@@ -252,7 +252,7 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 <script>
 const GAME_V=9; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
-const H=.5,BASE=3,LIM=2,TOL=.07,MENU_SHIFT=.4,VIEW=2.5,VEL=2.05; // VEL = velocidade fixa dos blocos (antes começava em 1,92 e ia subindo; 1,92 x 1,07 = 2,05)
+const H=.6,BASE=3,LIM=3.10,TOL=.12,MENU_SHIFT=.4,VIEW=2.2,VEL=3.45; // VEL = velocidade fixa dos blocos (antes começava em 1,92 e ia subindo; 1,92 x 1,07 = 2,05)
 
 // ---- Salvamento e opções (guardados no aparelho) ----
 const SAVE_KEY='nekoTowerSave';
@@ -1082,4 +1082,4 @@ eng.runRenderLoop(()=>{
 addEventListener('resize',()=>eng.resize());
 </script>
 </body>
-</html>
+                                                                        </html>
