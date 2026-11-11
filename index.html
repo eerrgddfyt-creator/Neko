@@ -178,6 +178,24 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;out
 #rkRow1,#rkRow2,#frRow{display:flex;gap:2.5vw;flex:none;height:8.5vh}
 #menu.wide #rkRow1 input,#menu.wide #frRow input{flex:1.6;min-width:0;height:100%}
 #menu.wide #rkRow1 .btn,#menu.wide #rkRow2 .btn,#menu.wide #frRow .btn{flex:1;min-width:0;height:100%;font-size:min(5.6vmin,32px)}
+/* loja de skins compacta: o bloco fica visível em cima */
+#bauTop{position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 2vh);right:4vw;padding:1vh 4vw;font-size:5vmin;background:var(--sun);flex:none}
+#menu.sk #sknRow1{display:contents}
+#menu.wide #sknRow1 #sknPrev,#menu.wide #sknRow1 #sknNext{position:fixed;top:30vh;width:15vw;height:15vw;max-width:88px;max-height:88px;min-height:0;padding:0;font-size:7vmin;z-index:4;flex:none}
+#menu.wide #sknRow1 #sknPrev{left:2vw}
+#menu.wide #sknRow1 #sknNext{right:2vw}
+#sknRow2{height:7.2vh}
+#menu.wide #sknRow2 .btn{font-size:min(4.6vmin,26px)}
+#menu.wide.sk #sknBack{height:7.2vh;min-height:44px}
+#menu.sk #sknInfo{padding:1.1vh 4vw}
+.sn b{font-size:min(7vmin,40px)}
+.sb{font-size:clamp(13px,3.3vmin,19px);margin:.2vh 0 .8vh}
+.sf{flex-wrap:wrap}
+.sf .pr,.sf .ok{white-space:nowrap}
+.sf .lock{white-space:normal;font-size:clamp(12px,3vmin,17px)}
+.sf .sm{font-size:clamp(12px,3vmin,17px);white-space:nowrap}
+.sd{margin-top:1vh}
+.rar{background:#000;color:#fff;font-size:clamp(10px,2.6vmin,14px);padding:.2vh 2vw;border-radius:1.4vmin;letter-spacing:.1em;font-family:sans-serif;margin:0 auto 0 2vw;align-self:center;opacity:1!important}
 </style>
 </head>
 <body>
@@ -250,6 +268,7 @@ Load.ui();
 <div id="dev">desenvolvido por N E K</div>
 <div id="over" class="box hide"><span id="overH">Fim de jogo</span><small id="overTxt"></small></div>
 <button id="home" class="box btn hide">☰ Menu</button>
+<button id="bauTop" class="box btn hide">🎁 Baú</button>
 <button id="pz" class="box btn hide">⏸</button>
 <div id="pauseBox" class="hide"><div id="pauseT" class="box">Pausado</div><button id="pcont" class="box btn">Continuar</button><button id="pmenu" class="box btn">Menu</button></div>
 <div id="tip" class="box"></div>
@@ -275,7 +294,7 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 })();
 </script>
 <script>
-const GAME_V=11; // aumente a cada versão nova
+const GAME_V=12; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
 const H=.6,BASE=3,LIM=3.10,TOL=.12,MENU_SHIFT=.4,VIEW=2.2,VEL=3.45; // VEL = velocidade fixa dos blocos
 const INIT=8; // blocos já empilhados quando a partida começa (como no Stack)
@@ -317,8 +336,6 @@ void main(){
   else if(s==7.){col=vec3(1.,.78,.2);col=mix(col,vec3(1.,.97,.75),smoothstep(.8,1.,sin((vP.x+vP.z+vP.y*2.)*3.-time*2.5)));}
   else if(s==8.){col=mix(vec3(.62,.88,1.),vec3(1.),smoothstep(.7,1.,sin(vP.x*8.+vP.z*6.+vP.y*4.)));}
   else if(s==9.){col=.55+.45*cos(6.2832*(vec3(0.,.33,.67)+(vP.x+vP.z)*.25+vP.y*1.5+time*.15));}
-  else if(s==10.){if(abs(vP.y)>bh*.4)col*=.45;}
-  else if(s==11.){if(mod((vP.x+vP.z+vP.y*2.)*3.,1.)<.5)col=mix(col,vec3(1.),.7);}
   else if(s==12.){ // manga: tinta preta pesada, hachura e cortes de espada (1 bloco branco a cada 3 pretos)
     float t=vC.r;bool fx=abs(vN.x)>.5,kk=t<.94;
     vec2 uv=top?vP.xz:(fx?vP.zy:vP.xy);
@@ -337,7 +354,9 @@ void main(){
     if(ax<L2&&abs(uv.y-sl*dx-(top?.35:.16))/sq<.013*(1.-ax/L2))ink=1.-ink;
     col=vec3(1.-ink);gl=1.;
   }
-  col+=(s==12.?0.:fever*.16)*vec3(sin(time*5.+vP.y*9.),sin(time*5.+2.+vP.y*9.),sin(time*5.+4.+vP.y*9.));
+  else if(s==10.){if(abs(vP.y)>bh*.4)col*=.45;}
+  else if(s==11.){if(mod((vP.x+vP.z+vP.y*2.)*3.,1.)<.5)col=mix(col,vec3(1.),.7);}
+  if(s!=12.)col+=fever*.16*vec3(sin(time*5.+vP.y*9.),sin(time*5.+2.+vP.y*9.),sin(time*5.+4.+vP.y*9.));
   vec3 c=clamp(col,0.,1.)*(gl>0.?1.:b);
   if(!top&&s!=12.)c*=.9+.1*smoothstep(-bh*.5,bh*.5,vP.y); // degradê suave nas laterais
   float tf=smoothstep(fogB,fogA,vY);                 // 1 = sem neblina, 0 = dentro da neblina
@@ -369,7 +388,7 @@ function mk(x,z,w,d,y,hue){
   const c3=skinColor(Math.round(y/H),hue),c=new BABYLON.Color4(c3.r,c3.g,c3.b,1);
   const m=BABYLON.MeshBuilder.CreateBox('b',{width:w,height:H,depth:d,faceColors:[c,c,c,c,c,c]},scene);
   m.position.set(x+w/2,y+H/2,z+d/2);m.material=toon;m.isPickable=false;
-  m.renderOutline=Q().line;m.outlineWidth=Q().ow;m.outlineColor=INK;
+  m.renderOutline=Q().line;m.outlineWidth=Q().ow*(skinI===12?1.8:1);m.outlineColor=skinI===12?BABYLON.Color3.Black():INK;
   return m;
 }
 
@@ -397,9 +416,7 @@ trail.minEmitBox=new BABYLON.Vector3(-.5,0,-.5);trail.maxEmitBox=new BABYLON.Vec
 trail.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD;trail.start();
 function burst(x,y,z,w,d,n,c){
   ps.emitter.copyFromFloats(x,y,z);const kk=skinI===12?.45:1;ps.minEmitBox.copyFromFloats(-w*kk/2,0,-d*kk/2);ps.maxEmitBox.copyFromFloats(w*kk/2,0,d*kk/2);
-  if(skinI===12){ps.particleTexture=PTXM;ps.color1.copyFromFloats(1,1,1,1);ps.color2.copyFromFloats(1,1,1,1);}
-  else{ps.particleTexture=PTX[FXMAP[skinI]||0];ps.color1.copyFromFloats(1,.82,.25,1);ps.color2.copyFromFloats(c.r,c.g,c.b,1);}
-  ps.manualEmitCount=n;
+  if(skinI===12){ps.particleTexture=PTXM;ps.minSize=.26;ps.maxSize=.5;ps.color1.copyFromFloats(1,1,1,1);ps.color2.copyFromFloats(1,1,1,1);}else{ps.particleTexture=PTX[FXMAP[skinI]||0];ps.minSize=.16;ps.maxSize=.4;ps.color1.copyFromFloats(1,.82,.25,1);ps.color2.copyFromFloats(c.r,c.g,c.b,1);}ps.manualEmitCount=n;
 }
 const rm=new BABYLON.StandardMaterial('rm',scene);rm.disableLighting=true;rm.emissiveColor=BABYLON.Color3.White();rm.alpha=0;
 const ring=BABYLON.MeshBuilder.CreateTorus('ring',{diameter:1,thickness:.07,tessellation:40},scene);
@@ -454,8 +471,7 @@ function sfxNota(f,t,dur,vol,lpf){
   o.connect(fl);fl.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+dur+.06);
 }
 function sfxPerf(n){ // perfeito: "ding" de sininho que sobe a nota a cada combo
-  if(skinI===12)return sfxPerfManga(n);
-  if(!cfg.som)return;
+  if(!cfg.som)return;if(skinI===12)return sfxPerfManga(n);
   try{
     sfxCtx();const t=ac.currentTime+.005,f=ESC[Math.min(n-1,11)];
     sfxNota(f,t,.55,.13);sfxNota(f*2,t,.3,.04);sfxNota(f*3,t,.15,.015); // nota + brilho
@@ -463,8 +479,7 @@ function sfxPerf(n){ // perfeito: "ding" de sininho que sobe a nota a cada combo
   }catch(e){}
 }
 function sfxCorte(){ // cortado: "tum" macio + sopro curtinho
-  if(skinI===12)return sfxCorteManga();
-  if(!cfg.som)return;
+  if(!cfg.som)return;if(skinI===12)return sfxCorteManga();
   try{
     sfxCtx();const t=ac.currentTime+.005,o=ac.createOscillator(),g=ac.createGain();
     o.type='sine';o.frequency.setValueAtTime(240,t);o.frequency.exponentialRampToValueAtTime(110,t+.16);
@@ -606,7 +621,7 @@ function spawn(){
   mv[axis]=(fromLeft?-LIM:LIM)-(axis==='x'?mv.w:mv.d)/2;
   mv.mesh=mk(mv.x,mv.z,mv.w,mv.d,n*H,mv.hue);
   dressCat(mv.mesh,mv.w,mv.d,skinColor(n,mv.hue));
-  const tc=skinColor(n,mv.hue);trail.color1.copyFromFloats(tc.r,tc.g,tc.b,.9);trail.emitter=mv.mesh;trail.emitRate=cfg.gfx?16:0;
+  const tc=skinI===12?{r:0,g:0,b:0}:skinColor(n,mv.hue);trail.color1.copyFromFloats(tc.r,tc.g,tc.b,.9);trail.emitter=mv.mesh;trail.emitRate=cfg.gfx?16:0;
 }
 function fall(x,z,w,d,y,hue){debris.push({mesh:mk(x,z,w,d,y,hue),vy:0});}
 // Só desenha os blocos que aparecem na tela (otimização para torres altas)
@@ -640,9 +655,7 @@ function place(){
   if(perfect){
     const cx=nb.x+nb.w/2,cz=nb.z+nb.d/2,c=skinColor(stack.length,nb.hue);
     burst(cx,lvl+H,cz,nb.w,nb.d,(Math.min(10+combo*5,60)*(cfg.gfx?1:.5))|0,c);
-    rm.emissiveColor=skinI===12?BABYLON.Color3.Black():BABYLON.Color3.White();
-    ring.position.set(cx,lvl+H+.02,cz);ring.isVisible=true;ringT=1;ringB=Math.max(nb.w,nb.d);
-    if(skinI===12)mgPerf(cx,lvl+H,cz,combo);
+    ring.position.set(cx,lvl+H+.02,cz);ring.isVisible=true;ringT=1;ringB=Math.max(nb.w,nb.d);rm.emissiveColor=skinI===12?BABYLON.Color3.Black():BABYLON.Color3.White();if(skinI===12)mgPerf(cx,lvl+H,cz,combo);
   }
   stack.push(nb);score++;$('score').textContent=score;recLine();
   if(best>0&&score===best+1&&(modo==='classico'||modo==='diario')){popText('★ Novo recorde! ★',1,8,10);vib([20,40,20]);}
@@ -701,7 +714,7 @@ function tip(){} // os cards de dica saíram da partida: agora estão na tela de
 // ================= Skins (cada uma tem um bônus) =================
 const pal=a=>n=>new BABYLON.Color3(...a[n%a.length]);
 const SK=[
-  {nome:'Gatinho',preco:0,cor:(n,h)=>BABYLON.Color3.FromHSV(h,.5,1),olho:'o',acess:'laco',bonus:'Sem bônus. O clássico!'},
+  {nome:'Gatinho',preco:0,cor:(n,h)=>BABYLON.Color3.FromHSV(h,.5,1),olho:'o',acess:'',bonus:'Sem bônus. O clássico!'},
   {nome:'Doces',preco:60,cor:pal([[1,.56,.72],[.56,.89,.78],[1,.89,.48],[.76,.65,1]]),olho:'o',acess:'festa',mo:1.1,bonus:'+10% de moedas por partida'},
   {nome:'Sushi',preco:90,cor:pal([[1,1,1]]),olho:'u',acess:'chef',tol:1.2,bonus:'Encaixe perfeito 20% mais fácil'},
   {nome:'Presente',preco:120,cor:pal([[.95,.36,.42],[.4,.65,1],[.45,.85,.55],[.7,.5,.95]]),olho:'o',acess:'presente',pp:1,bonus:'+1 moeda em cada encaixe perfeito'},
@@ -713,12 +726,13 @@ const SK=[
   {nome:'Arco-íris',preco:700,cor:(n,h)=>BABYLON.Color3.FromHSV(h,.6,1),olho:'o',acess:'rei',mo:1.3,tol:1.15,bonus:'+30% moedas e encaixe 15% mais fácil'},
   {nome:'Halloween',preco:250,cor:pal([[1,.55,.12],[.45,.25,.65],[.16,.12,.22]]),olho:'q',acess:'bruxa',mo:1.15,bonus:'+15% de moedas (evento)'},
   {nome:'Natal',preco:250,cor:pal([[.9,.2,.25],[1,1,1],[.2,.65,.35]]),olho:'o',acess:'gorro',pp:1,bonus:'+1 moeda em cada perfeito (evento)'},
-  {nome:'Kensei Densetsu',preco:1500,cor:pal([[1,1,1],[.88,.88,.88],[.74,.74,.74],[.6,.6,.6]]),olho:'o',acess:'manga',mo:1.4,tol:1.2,pp:1,bonus:'LENDÁRIA: +40% moedas, encaixe 20% mais fácil, +1 🪙 por perfeito e efeitos só dela'}
+  // SKIN MAIS RARA: preço alto + precisa da conquista "100 blocos" (req). Pra mudar o nome, é só trocar 'nome'.
+  {nome:'Kensei Densetsu',preco:5000,req:'b100',raro:'LENDÁRIA',cor:pal([[1,1,1],[.88,.88,.88],[.74,.74,.74],[.6,.6,.6]]),olho:'o',acess:'manga',mo:1.5,tol:1.2,pp:2,bonus:'Mangá preto e branco · sons e efeitos que evoluem até 20 perfeitos · +50% moedas · +2 🪙 por perfeito · encaixe 20% mais fácil'}
 ];
 let skinI=Math.min(sv.skin,SK.length-1);
 toon.setFloat('skin',skinI);
 const skinColor=(n,h)=>SK[skinI].cor(n,h);
-function setSkin(i){skinI=i;toon.setFloat('skin',i);reset(4);camY=stack.length*H;} // torrezinha de 4 blocos só pra mostrar a skin
+function setSkin(i){skinI=i;altAnt=-9;toon.setFloat('skin',i);reset(4);camY=stack.length*H;} // torrezinha de 4 blocos só pra mostrar a skin
 
 const dmCache={};
 const dm=c=>dmCache[c.toHexString()]||(dmCache[c.toHexString()]=Object.assign(new BABYLON.StandardMaterial('dm',scene),{diffuseColor:BABYLON.Color3.Black(),specularColor:BABYLON.Color3.Black(),emissiveColor:c}));
@@ -745,6 +759,7 @@ function dressCat(m,w,d,col){
   if(A==='coroa'||A==='rei'){[-1,0,1].forEach(i=>add(MB.CreateBox('c',{width:.18,height:i?.3:.45,depth:.18},scene),i*.2,top+.2,i*.2,OURO));if(A==='rei')ball(0,top+.55,0,.16,ROSA);}
   if(A==='antena'){add(MB.CreateCylinder('t',{diameter:.06,height:.7,tessellation:6},scene),0,top+.35,0,INK);ball(0,top+.75,0,.22,CIAN);}
   if(A==='halo')add(MB.CreateTorus('h',{diameter:.9,thickness:.08,tessellation:24},scene),0,top+.8,0,OURO,false);
+  if(A==='ahoge'){const h1=add(MB.CreateCylinder('h',{diameter:.07,height:.55,tessellation:6},scene),.05,top+.3,0,INK);h1.rotation.z=-.35;const h2=add(MB.CreateCylinder('h',{diameter:.07,height:.35,tessellation:6},scene),.2,top+.62,0,INK);h2.rotation.z=.6;}
   if(A==='bruxa'){add(MB.CreateCylinder('h',{diameter:.95,height:.06,tessellation:16},scene),0,top+.04,0,PURP);add(MB.CreateCylinder('h',{diameterTop:0,diameterBottom:.6,height:.9,tessellation:12},scene),0,top+.5,0,PURP);}
   if(A==='gorro'){add(MB.CreateCylinder('h',{diameterTop:0,diameterBottom:.6,height:.8,tessellation:12},scene),0,top+.4,0,VERM);ball(0,top+.85,0,.2,BRANCO);}
   if(A==='manga'){ // ahoge (mechinha de anime) + katana nas costas
@@ -1099,7 +1114,8 @@ function abreBau(){
   $('bauOpen').classList.toggle('hide',!pode);
   $('bauMsg').textContent=pode?'Toque em Abrir pra ganhar um prêmio!':'Você já abriu o baú de hoje.\nVolte amanhã!';
 }
-function fechaBau(){bauOn=false;bRoot.setEnabled(false);scene.activeCamera=cm;$('bau').classList.add('hide');$('menu').classList.remove('out');showGrp('mis');renderMis();}
+let bauDe='mis'; // de onde o baú foi aberto (Missões ou loja de skins)
+function fechaBau(){bauOn=false;bRoot.setEnabled(false);scene.activeCamera=cm;$('bau').classList.add('hide');$('menu').classList.remove('out');showGrp(bauDe);if(bauDe==='skn')renderSkn();else renderMis();}
 function mostraRoda(){$('roda').classList.remove('hide');$('rodaRes').textContent='Toque em Girar!';}
 function bauFrame(dt,now){
   const asp=eng.getRenderWidth()/eng.getRenderHeight(),hh=Math.max(3.2,2.4/asp),hw=hh*asp;
@@ -1115,7 +1131,8 @@ function bauFrame(dt,now){
     if(bT>=1.1){bFase='done';mostraRoda();}
   }
 }
-$('bauB').onclick=abreBau;
+$('bauB').onclick=()=>{bauDe='mis';abreBau();};
+$('bauTop').onclick=()=>{bauDe='skn';abreBau();};
 $('bauBack').onclick=fechaBau;
 $('bauOpen').onclick=()=>{
   if(bFase!=='idle'||sv.bau===hojeKey())return;
@@ -1158,10 +1175,11 @@ $('achBack').onclick=()=>{showGrp('mis');renderMis();};
 // ================= Telas de Skins e Ajuda =================
 let prev=sv.skin;
 function renderSkn(){
-  const s=SK[prev],dono=sv.donos.includes(prev),eq=prev===sv.skin;
-  const est=eq?'<span class="ok">✔ Equipada</span>':dono?'<span class="ok">Você já tem</span>':'<span class="pr">'+s.preco+' 🪙</span>';
-  $('sknInfo').innerHTML='<div class="sn"><b>'+s.nome+'</b><span>'+(prev+1)+'/'+SK.length+'</span></div><div class="sb">'+s.bonus+'</div><div class="sf">'+est+'<span class="sm">Você tem 🪙 '+sv.moedas+'</span></div><div class="sd">'+SK.map((_,i)=>'<i class="'+(i===prev?'on ':'')+(sv.donos.includes(i)?'own':'')+'"></i>').join('')+'</div>';
-  $('sknBuy').textContent=eq?'Equipada':dono?'Equipar':'Comprar';
+  const s=SK[prev],dono=sv.donos.includes(prev),eq=prev===sv.skin,trava=s.req&&!sv.ach[s.req]&&!dono;
+  const est=eq?'<span class="ok">✔ Equipada</span>':dono?'<span class="ok">Você já tem</span>':trava?'<span class="pr lock">🔒 '+esc(ACH.find(a=>a[0]===s.req)[1])+' · '+s.preco+' 🪙</span>':'<span class="pr">'+s.preco+' 🪙</span>';
+  $('sknInfo').innerHTML='<div class="sn"><b>'+s.nome+'</b>'+(s.raro?'<span class="rar">★ '+s.raro+'</span>':'')+'<span>'+(prev+1)+'/'+SK.length+'</span></div><div class="sb">'+s.bonus+'</div><div class="sf">'+est+'<span class="sm">🪙 '+sv.moedas+'</span></div><div class="sd">'+SK.map((_,i)=>'<i class="'+(i===prev?'on ':'')+(sv.donos.includes(i)?'own':'')+'"></i>').join('')+'</div>';
+  $('sknBuy').textContent=eq?'Equipada':dono?'Equipar':trava?'Bloqueada':'Comprar';
+  $('bauTop').textContent=sv.bau===hojeKey()?'🎁 Baú':'🎁 Baú ●';
 }
 const AJUDA='COMO JOGAR\n👆 Toque pra soltar o bloco\n🎯 Alinhado = encaixe perfeito (combo)\n✂️ O que passa da torre é cortado\n🔥 5 combos seguidos = Frenesi\n\nMODOS\n🌿 Zen: sem game over\n⏱ Relógio: 60s, perfeito dá +2s\n📅 Diário: mesma torre pra todos\n\nEXTRAS\n🪙 Moedas compram skins com bônus\n🎁 Baú e missões novas todo dia';
 $('misBtn').onclick=()=>{showGrp('mis');renderMis();};
@@ -1172,6 +1190,7 @@ $('sknNext').onclick=()=>{prev=(prev+1)%SK.length;setSkin(prev);renderSkn();};
 $('sknBuy').onclick=()=>{
   const s=SK[prev];if(prev===sv.skin)return;
   if(!sv.donos.includes(prev)){
+    if(s.req&&!sv.ach[s.req])return popText('🔒 Falta a conquista: '+ACH.find(a=>a[0]===s.req)[1],2,6,8);
     if(sv.moedas<s.preco)return popText('Faltam '+(s.preco-sv.moedas)+' moedas',2,7,8);
     sv.moedas-=s.preco;sv.donos.push(prev);beep(660,.2);vib(25);ach();
   }
@@ -1195,7 +1214,7 @@ const net={api:null,room:null,code:'',host:false,ready:false,active:false,done:f
 const setStatus=t=>{$('bestTxt').textContent=t;};
 const idleStatus=()=>setStatus(best||sv.moedas?'Nv '+niv()+' · Melhor '+best+'\n🪙 '+sv.moedas:'empilhe tudo!');
 const GRPS=['main','conf','onl','lobby','mis','skn','help','ach','modos','rnk','amigos'],LARGAS=['mis','skn','help','ach','rnk','amigos','lobby','modos'];
-const showGrp=id=>{GRPS.forEach(g=>$(g).classList.toggle('hide',g!==id));$('menu').classList.toggle('wide',LARGAS.indexOf(id)>=0);$('menu').classList.toggle('sk',id==='skn');skinOn=id==='skn';if(id==='main')idleStatus();};
+const showGrp=id=>{GRPS.forEach(g=>$(g).classList.toggle('hide',g!==id));$('menu').classList.toggle('wide',LARGAS.indexOf(id)>=0);$('menu').classList.toggle('sk',id==='skn');skinOn=id==='skn';$('bauTop').classList.toggle('hide',id!=='skn');if(id==='main')idleStatus();};
 async function joinRoom(code,host){
   if(!net.api)return setStatus('Online indisponível aqui');
   setStatus('Entrando...');
@@ -1281,7 +1300,7 @@ addEventListener('message',e=>{if(e.data&&e.data.ota)popText(e.data.ota,1,5,12);
 (()=>{const sn=$('snow');for(let i=0;i<30;i++){const e=document.createElement('i'),z=3+Math.random()*5;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(6+Math.random()*7)+'s;animation-delay:-'+Math.random()*12+'s';sn.appendChild(e);}})();
 (()=>{const f=$('fl');for(let i=0;i<16;i++){const e=document.createElement('i'),z=3+Math.random()*6;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(10+Math.random()*10)+'s;animation-delay:-'+Math.random()*16+'s';f.appendChild(e);}})();
 // Bônus diário com sequência de dias (até 7)
-const NOV='• Nova skin lendária: Kensei Densetsu (1500 🪙)\n• Manga preto e branco com cortes de espada\n• Som e efeitos que evoluem até 20 perfeitos seguidos';
+const NOV='• Skin lendária refeita: Kensei Densetsu (mangá preto e branco com cortes de espada)\n• Sons e efeitos que evoluem até 20 perfeitos seguidos\n• Baú na loja de skins\n• Loja de skins: o bloco não fica mais escondido\n• Torre não balança mais';
 setTimeout(pendenteBau,3500);
 setTimeout(()=>Rank.sync(),7000);
 setTimeout(()=>{if(sv.ver!==GAME_V&&(sv.ver||sv.st.jogos>0)){$('novT').textContent='✨ Versão '+GAME_V+'\n'+NOV;$('nov').classList.remove('hide');}sv.ver=GAME_V;salvar();},4500);
@@ -1334,9 +1353,9 @@ eng.runRenderLoop(()=>{
   cm.position.set(RIG.x,RIG.y+camY,RIG.z);
   const nf=ov||skinOn;toon.setFloat('fogA',nf?-1e4:camY-1.4);toon.setFloat('fogB',nf?-10001:camY-5);toon.setFloat('uH',eng.getRenderHeight());
   scenery(ov?stack.length:camY/H);
-  const sw=Math.sin(now*.8)*Math.min(score/60,1)*.1,sx=sw,sy=0;
+  const sx=0,sy=0;
   punch-=dt*5;
-  cm.orthoTop=hh*(1.24-.6*skinK)+sy;cm.orthoBottom=-hh*(.76+.6*skinK)+sy;
+  cm.orthoTop=hh*(1.24-.74*skinK)+sy;cm.orthoBottom=-hh*(.76+.74*skinK)+sy;
   const sh=shift*(1-skinK);cm.orthoLeft=-hw-sh*hw+sx;cm.orthoRight=hw-sh*hw+sx;
   if(bauOn)bauFrame(dt,now);
   scene.render();
