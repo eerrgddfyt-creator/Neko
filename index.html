@@ -9,6 +9,7 @@
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&text=%20%210123456789ABCDEFGHIJKLMNOPQRSTUVWXYZx%E3%81%82%E3%81%84%E3%81%92%E3%81%94%E3%81%95%E3%81%97%E3%81%99%E3%81%9F%E3%81%A3%E3%81%B0%E3%81%BE%E3%82%84%E3%82%AB%E3%82%AC%E3%82%AD%E3%82%AF%E3%82%B6%E3%82%B9%E3%82%BA%E3%83%83%E3%83%89%E3%83%90%E3%83%91%E3%83%94%E3%83%A9%E3%83%B3%E3%83%BC%E4%BC%9D%E4%BF%AE%E5%80%92%E5%89%A3%E5%8F%8C%E5%9C%A7%E5%A4%A9%E5%AE%8C%E5%BC%B7%E6%89%8D%E6%9C%80%E6%A5%AD%E6%B1%BA%E7%84%A1%E7%92%A7%E7%9A%84%E7%A5%9E%E7%BE%85%E8%80%85%E8%81%96%E8%87%A8%E8%A6%87%E8%AA%AC%E9%99%8D%E9%AB%98%E9%AC%BC&display=swap">
 <link id="fontcss" rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Bangers&display=swap">
 <style>
 :root{--ink:#1b1a3a;--paper:#fffdf5;--pink:#ff7aa8;--sun:#ffd23f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -274,7 +275,7 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 })();
 </script>
 <script>
-const GAME_V=10; // aumente a cada versão nova
+const GAME_V=11; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
 const H=.6,BASE=3,LIM=3.10,TOL=.12,MENU_SHIFT=.4,VIEW=2.2,VEL=3.45; // VEL = velocidade fixa dos blocos
 const INIT=8; // blocos já empilhados quando a partida começa (como no Stack)
@@ -318,9 +319,27 @@ void main(){
   else if(s==9.){col=.55+.45*cos(6.2832*(vec3(0.,.33,.67)+(vP.x+vP.z)*.25+vP.y*1.5+time*.15));}
   else if(s==10.){if(abs(vP.y)>bh*.4)col*=.45;}
   else if(s==11.){if(mod((vP.x+vP.z+vP.y*2.)*3.,1.)<.5)col=mix(col,vec3(1.),.7);}
-  col+=fever*.16*vec3(sin(time*5.+vP.y*9.),sin(time*5.+2.+vP.y*9.),sin(time*5.+4.+vP.y*9.));
+  else if(s==12.){ // manga: tinta preta pesada, hachura e cortes de espada (1 bloco branco a cada 3 pretos)
+    float t=vC.r;bool fx=abs(vN.x)>.5,kk=t<.94;
+    vec2 uv=top?vP.xz:(fx?vP.zy:vP.xy);
+    float ink=kk?1.:0.;
+    float hl=mod((uv.x+uv.y)*(fx?9.:7.),1.);
+    if(!top){
+      if(kk){if(!fx&&hl<.1)ink=0.;}
+      else if(hl<(fx?.3:.13))ink=1.;
+      if(uv.y>.25)ink=kk?0.:1.;
+    }
+    float sl=t>.94?.55:t>.81?-.6:t>.67?.5:-.5;
+    float u0=t>.94?-.35:t>.81?.3:t>.67?-.2:.4;
+    float dx=uv.x-u0,ax=abs(dx),Ln=top?1.3:.75,sq=sqrt(1.+sl*sl);
+    if(ax<Ln&&abs(uv.y-sl*dx)/sq<(top?.05:.034)*(1.-ax/Ln))ink=1.-ink;
+    float L2=Ln*.55;
+    if(ax<L2&&abs(uv.y-sl*dx-(top?.35:.16))/sq<.013*(1.-ax/L2))ink=1.-ink;
+    col=vec3(1.-ink);gl=1.;
+  }
+  col+=(s==12.?0.:fever*.16)*vec3(sin(time*5.+vP.y*9.),sin(time*5.+2.+vP.y*9.),sin(time*5.+4.+vP.y*9.));
   vec3 c=clamp(col,0.,1.)*(gl>0.?1.:b);
-  if(!top)c*=.9+.1*smoothstep(-bh*.5,bh*.5,vP.y); // degradê suave nas laterais
+  if(!top&&s!=12.)c*=.9+.1*smoothstep(-bh*.5,bh*.5,vP.y); // degradê suave nas laterais
   float tf=smoothstep(fogB,fogA,vY);                 // 1 = sem neblina, 0 = dentro da neblina
   float sy=1.-gl_FragCoord.y/uH;                     // posição na tela (0 = topo)
   vec3 fc=sy<.62?mix(fogC1,fogC2,sy/.62):mix(fogC2,fogC3,(sy-.62)/.38); // cor do céu nesse ponto
@@ -365,6 +384,8 @@ ps.direction1=new BABYLON.Vector3(-2.5,3,-2.5);ps.direction2=new BABYLON.Vector3
 ps.minAngularSpeed=-4;ps.maxAngularSpeed=4;ps.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD;ps.start();
 const mkT=f=>{const t=new BABYLON.DynamicTexture('pt',64,scene,false),x=t.getContext();x.fillStyle=x.strokeStyle='#fff';f(x);t.hasAlpha=true;t.update();return t;};
 const PTX=[ptx,mkT(x=>{x.beginPath();x.moveTo(32,54);x.bezierCurveTo(4,34,10,8,32,22);x.bezierCurveTo(54,8,60,34,32,54);x.fill();}),mkT(x=>{x.beginPath();x.arc(32,32,20,0,7);x.fill();}),mkT(x=>{x.fillRect(14,14,36,36);}),mkT(x=>{x.lineWidth=7;x.lineCap='round';for(let i=0;i<3;i++){const a=i*Math.PI/3;x.beginPath();x.moveTo(32+26*Math.cos(a),32+26*Math.sin(a));x.lineTo(32-26*Math.cos(a),32-26*Math.sin(a));x.stroke();}})];
+// Partícula do manga: brilho branco com contorno de tinta
+const PTXM=(()=>{const t=new BABYLON.DynamicTexture('ptm',64,scene,false),x=t.getContext();x.beginPath();x.moveTo(32,3);x.quadraticCurveTo(35,29,61,32);x.quadraticCurveTo(35,35,32,61);x.quadraticCurveTo(29,35,3,32);x.quadraticCurveTo(29,29,32,3);x.closePath();x.lineJoin='round';x.lineWidth=7;x.strokeStyle='#000';x.stroke();x.fillStyle='#fff';x.fill();t.hasAlpha=true;t.update();return t;})();
 const FXMAP={1:1,2:2,3:2,4:3,5:3,8:4,9:2,10:3,11:4}; // efeito de encaixe de cada skin
 // Rastro de brilhos atrás do bloco em movimento
 const OFF=new BABYLON.Vector3(0,-999,0),trail=new BABYLON.ParticleSystem('trail',80,scene);
@@ -375,8 +396,10 @@ trail.direction1=new BABYLON.Vector3(-.3,.2,-.3);trail.direction2=new BABYLON.Ve
 trail.minEmitBox=new BABYLON.Vector3(-.5,0,-.5);trail.maxEmitBox=new BABYLON.Vector3(.5,0,.5);
 trail.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD;trail.start();
 function burst(x,y,z,w,d,n,c){
-  ps.emitter.copyFromFloats(x,y,z);ps.minEmitBox.copyFromFloats(-w/2,0,-d/2);ps.maxEmitBox.copyFromFloats(w/2,0,d/2);
-  ps.particleTexture=PTX[FXMAP[skinI]||0];ps.color2.copyFromFloats(c.r,c.g,c.b,1);ps.manualEmitCount=n;
+  ps.emitter.copyFromFloats(x,y,z);const kk=skinI===12?.45:1;ps.minEmitBox.copyFromFloats(-w*kk/2,0,-d*kk/2);ps.maxEmitBox.copyFromFloats(w*kk/2,0,d*kk/2);
+  if(skinI===12){ps.particleTexture=PTXM;ps.color1.copyFromFloats(1,1,1,1);ps.color2.copyFromFloats(1,1,1,1);}
+  else{ps.particleTexture=PTX[FXMAP[skinI]||0];ps.color1.copyFromFloats(1,.82,.25,1);ps.color2.copyFromFloats(c.r,c.g,c.b,1);}
+  ps.manualEmitCount=n;
 }
 const rm=new BABYLON.StandardMaterial('rm',scene);rm.disableLighting=true;rm.emissiveColor=BABYLON.Color3.White();rm.alpha=0;
 const ring=BABYLON.MeshBuilder.CreateTorus('ring',{diameter:1,thickness:.07,tessellation:40},scene);
@@ -431,6 +454,7 @@ function sfxNota(f,t,dur,vol,lpf){
   o.connect(fl);fl.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+dur+.06);
 }
 function sfxPerf(n){ // perfeito: "ding" de sininho que sobe a nota a cada combo
+  if(skinI===12)return sfxPerfManga(n);
   if(!cfg.som)return;
   try{
     sfxCtx();const t=ac.currentTime+.005,f=ESC[Math.min(n-1,11)];
@@ -439,6 +463,7 @@ function sfxPerf(n){ // perfeito: "ding" de sininho que sobe a nota a cada combo
   }catch(e){}
 }
 function sfxCorte(){ // cortado: "tum" macio + sopro curtinho
+  if(skinI===12)return sfxCorteManga();
   if(!cfg.som)return;
   try{
     sfxCtx();const t=ac.currentTime+.005,o=ac.createOscillator(),g=ac.createGain();
@@ -451,6 +476,69 @@ function sfxCorte(){ // cortado: "tum" macio + sopro curtinho
     sr.buffer=buf;fl.type='bandpass';fl.frequency.value=900;fl.Q.value=.7;
     g2.gain.setValueAtTime(0,t);g2.gain.linearRampToValueAtTime(.05,t+.01);g2.gain.linearRampToValueAtTime(0,t+.09);
     sr.connect(fl);fl.connect(g2);g2.connect(ac.destination);sr.start(t);
+  }catch(e){}
+}
+// ---- Sons exclusivos da skin Kensei Densetsu: evoluem a cada perfeito, até 20 ----
+// 1-4 koto | 5+ baixo e 2a nota | 10+ taiko e corrida de notas | 15+ flauta e brilho | 20 final com sino, acorde e taiko
+const ESCJ=Array.from({length:20},(_,i)=>164.81*Math.pow(2,(Math.floor(i/5)*12+[0,1,5,7,8][i%5])/12)); // escala japonesa (miyako-bushi), 4 oitavas
+let mgBusN=null;
+function mgBus(){if(!mgBusN){const c=ac.createDynamicsCompressor(),g=ac.createGain();c.threshold.value=-16;c.knee.value=12;c.ratio.value=5;c.attack.value=.003;c.release.value=.25;g.connect(c);c.connect(ac.destination);mgBusN=g;}return mgBusN;}
+function mgNota(f,t,dur,vol,lpf,type,vib){
+  const o=ac.createOscillator(),g=ac.createGain(),fl=ac.createBiquadFilter();
+  o.type=type||'sine';o.frequency.value=f;fl.type='lowpass';fl.frequency.value=lpf||3500;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.008);g.gain.exponentialRampToValueAtTime(.0008,t+dur);g.gain.linearRampToValueAtTime(0,t+dur+.03);
+  o.connect(fl);fl.connect(g);g.connect(mgBus());
+  if(vib){const l=ac.createOscillator(),lg=ac.createGain();l.frequency.value=5.5;lg.gain.value=f*.012;l.connect(lg);lg.connect(o.frequency);l.start(t);l.stop(t+dur+.06);}
+  o.start(t);o.stop(t+dur+.06);
+}
+function mgNoise(t,dur,f0,f1,q,vol,type){ // rajada de ruído filtrado (madeira, sopro, corte)
+  const len=Math.max(64,Math.floor(ac.sampleRate*dur)),buf=ac.createBuffer(1,len,ac.sampleRate),d=buf.getChannelData(0);
+  for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.sin(Math.PI*i/len);
+  const s=ac.createBufferSource(),fl=ac.createBiquadFilter(),g=ac.createGain();
+  s.buffer=buf;fl.type=type||'bandpass';fl.Q.value=q;fl.frequency.setValueAtTime(f0,t);fl.frequency.exponentialRampToValueAtTime(f1,t+dur);
+  g.gain.value=vol;s.connect(fl);fl.connect(g);g.connect(mgBus());s.start(t);
+}
+function sfxKoto(f,t,vol){ // dedilhada de koto: ataque seco e brilho que some rápido
+  mgNota(f,t,.8,vol,2600);mgNota(f*2.005,t,.34,vol*.45,5000);mgNota(f*3.01,t,.16,vol*.2,6000);mgNoise(t,.03,f*4,f*4,3,vol*2);
+}
+function mgTaiko(t,vol){ // tambor grave
+  const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(48,t+.22);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+.35);g.gain.linearRampToValueAtTime(0,t+.38);
+  o.connect(g);g.connect(mgBus());o.start(t);o.stop(t+.42);mgNoise(t,.06,300,150,1,vol*.4);
+}
+function mgFlute(f,t,dur,vol){ // shakuhachi: nota longa com vibrato e sopro
+  mgNota(f,t,dur,vol,2200,'sine',true);mgNoise(t,dur,3000,3000,.8,vol*.3);
+}
+function mgBell(f,t,vol){ // sino de templo
+  [[1,1.7],[2.76,1],[5.4,.6],[8.93,.3]].forEach(([m,d],j)=>mgNota(f*m,t,d,vol/(1+j*1.4),9000));
+}
+let mgPrev=0; // último combo (para o som triste quando um combo grande se perde)
+function sfxPerfManga(n){
+  if(!cfg.som)return;
+  try{
+    sfxCtx();mgPrev=n;
+    const t=ac.currentTime+.005,i=Math.min(n-1,19),f=ESCJ[i],k=Math.min(n,20)/20,v=.11+.05*k;
+    sfxKoto(f,t,v);mgNota(f*4,t+.02,.35,.025+.02*k,8000);
+    if(n>=2)mgNoise(t+.07,.05,1800,1800,3,.2);
+    if(n>=5){mgNota(f/2,t,.35,.09,700,'triangle');sfxKoto(ESCJ[Math.min(i+2,19)],t+.06,v*.8);}
+    if(n>=10){mgTaiko(t,.16);const r=n>=15?4:3;for(let j=1;j<=r;j++)sfxKoto(ESCJ[Math.min(i+j,19)],t+.05*(j+1),v*.55);}
+    if(n>=15){mgFlute(f,t,.7,.08);mgNoise(t,.4,9000,6000,.8,.05,'highpass');}
+    if(n===20){ // final: sino, acorde, taiko e varredura subindo
+      mgBell(329.63,t,.14);
+      [19,17,15,14].forEach(j=>sfxKoto(ESCJ[j],t+.02,.09));
+      mgTaiko(t,.28);mgTaiko(t+.16,.22);mgTaiko(t+.32,.3);
+      mgNoise(t,.5,400,6500,1.2,.1);
+    }
+  }catch(e){}
+}
+function sfxCorteManga(){ // corte de katana; se perdeu um combo grande, koto descendo (triste)
+  if(!cfg.som)return;
+  try{
+    sfxCtx();const t=ac.currentTime+.005,lost=mgPrev;mgPrev=0;
+    mgNoise(t,.16,7000,900,1.2,.16);
+    mgNota(2900,t+.05,.3,.05,6000);mgNota(3110,t+.05,.22,.03,6000);
+    mgNota(190,t+.09,.14,.16,900);mgNoise(t+.1,.05,1100,1100,3,.18);
+    if(lost>=5){const i=Math.min(lost-1,19);[0,2,5].forEach((d,j)=>sfxKoto(ESCJ[Math.max(0,i-d)],t+.14+.09*j,.07));}
   }catch(e){}
 }
 const ESC=[261.63,293.66,329.63,392,440,523.25,587.33,659.25,783.99,880,1046.5,1174.66]; // escala dos encaixes perfeitos
@@ -537,11 +625,11 @@ function place(){
     if(combo===5)tip('t4','🔥 Frenesi! O bloco brilha. Não deixe o combo cair!');
   }else{
     combo=0;
-    if(Math.abs(d)>=m[sz]){m.mesh.dispose();fall(m.x,m.z,m.w,m.d,lvl,m.hue);if(modo==='zen'||modo==='relogio'){combo=0;hud();mood=.75;vib(25);sfxCorte();if(modo==='relogio')tmpR=Math.max(0,tmpR-3);popText('Tente de novo!',2,7,8);spawn();return;}mv=null;return gameOver();}
+    if(Math.abs(d)>=m[sz]){m.mesh.dispose();fall(m.x,m.z,m.w,m.d,lvl,m.hue);if(skinI===12)mgCut(m.x+m.w/2,lvl+H/2,m.z+m.d/2);if(modo==='zen'||modo==='relogio'){combo=0;hud();mood=.75;vib(25);sfxCorte();if(modo==='relogio')tmpR=Math.max(0,tmpR-3);popText('Tente de novo!',2,7,8);spawn();return;}mv=null;return gameOver();}
     const cut=Math.abs(d),f={x:m.x,z:m.z,w:m.w,d:m.d};
     nb[sz]=m[sz]-cut;
     if(d>0){f[a]=m[a]+nb[sz];f[sz]=cut;}else{nb[a]=top[a];f[sz]=cut;}
-    fall(f.x,f.z,f.w,f.d,lvl,m.hue);
+    fall(f.x,f.z,f.w,f.d,lvl,m.hue);if(skinI===12)mgCut(f.x+f.w/2,lvl+H/2,f.z+f.d/2);
     sfxCorte();vib(28);mood=.75;
     tip('t2','✂️ O que passa da torre é cortado. Alinhe bem o bloco!');
   }
@@ -552,7 +640,9 @@ function place(){
   if(perfect){
     const cx=nb.x+nb.w/2,cz=nb.z+nb.d/2,c=skinColor(stack.length,nb.hue);
     burst(cx,lvl+H,cz,nb.w,nb.d,(Math.min(10+combo*5,60)*(cfg.gfx?1:.5))|0,c);
+    rm.emissiveColor=skinI===12?BABYLON.Color3.Black():BABYLON.Color3.White();
     ring.position.set(cx,lvl+H+.02,cz);ring.isVisible=true;ringT=1;ringB=Math.max(nb.w,nb.d);
+    if(skinI===12)mgPerf(cx,lvl+H,cz,combo);
   }
   stack.push(nb);score++;$('score').textContent=score;recLine();
   if(best>0&&score===best+1&&(modo==='classico'||modo==='diario')){popText('★ Novo recorde! ★',1,8,10);vib([20,40,20]);}
@@ -622,7 +712,8 @@ const SK=[
   {nome:'Gelo',preco:180,cor:pal([[.7,.9,1]]),olho:'o',acess:'festa',lento:.88,bonus:'Blocos 12% mais lentos'},
   {nome:'Arco-íris',preco:700,cor:(n,h)=>BABYLON.Color3.FromHSV(h,.6,1),olho:'o',acess:'rei',mo:1.3,tol:1.15,bonus:'+30% moedas e encaixe 15% mais fácil'},
   {nome:'Halloween',preco:250,cor:pal([[1,.55,.12],[.45,.25,.65],[.16,.12,.22]]),olho:'q',acess:'bruxa',mo:1.15,bonus:'+15% de moedas (evento)'},
-  {nome:'Natal',preco:250,cor:pal([[.9,.2,.25],[1,1,1],[.2,.65,.35]]),olho:'o',acess:'gorro',pp:1,bonus:'+1 moeda em cada perfeito (evento)'}
+  {nome:'Natal',preco:250,cor:pal([[.9,.2,.25],[1,1,1],[.2,.65,.35]]),olho:'o',acess:'gorro',pp:1,bonus:'+1 moeda em cada perfeito (evento)'},
+  {nome:'Kensei Densetsu',preco:1500,cor:pal([[1,1,1],[.88,.88,.88],[.74,.74,.74],[.6,.6,.6]]),olho:'o',acess:'manga',mo:1.4,tol:1.2,pp:1,bonus:'LENDÁRIA: +40% moedas, encaixe 20% mais fácil, +1 🪙 por perfeito e efeitos só dela'}
 ];
 let skinI=Math.min(sv.skin,SK.length-1);
 toon.setFloat('skin',skinI);
@@ -631,7 +722,7 @@ function setSkin(i){skinI=i;toon.setFloat('skin',i);reset(4);camY=stack.length*H
 
 const dmCache={};
 const dm=c=>dmCache[c.toHexString()]||(dmCache[c.toHexString()]=Object.assign(new BABYLON.StandardMaterial('dm',scene),{diffuseColor:BABYLON.Color3.Black(),specularColor:BABYLON.Color3.Black(),emissiveColor:c}));
-const ROSA=new BABYLON.Color3(1,.36,.58),OURO=new BABYLON.Color3(1,.82,.24),BRANCO=new BABYLON.Color3(1,1,1),CIAN=new BABYLON.Color3(.2,1,.95),PURP=new BABYLON.Color3(.35,.2,.55),VERM=new BABYLON.Color3(.9,.15,.2);
+const ROSA=new BABYLON.Color3(1,.36,.58),OURO=new BABYLON.Color3(1,.82,.24),BRANCO=new BABYLON.Color3(1,1,1),CIAN=new BABYLON.Color3(.2,1,.95),PURP=new BABYLON.Color3(.35,.2,.55),VERM=new BABYLON.Color3(.9,.15,.2),NEGRO=new BABYLON.Color3(.06,.06,.09);
 
 // Gato no bloco: orelhas que mexem, olhos que piscam, carinha por humor e enfeite da skin
 function dressCat(m,w,d,col){
@@ -642,7 +733,7 @@ function dressCat(m,w,d,col){
   [-1,1].forEach(s=>ears.push(add(MB.CreateCylinder('o',{diameterTop:0,diameterBottom:.6,height:.6,tessellation:3},scene),s*.3*w-.12*w,top+.3,s*.3*d+.12*d,col)));
   const eye=(x,z,face)=>{
     const e=sk.olho==='q'?MB.CreateBox('e',{size:.26},scene):MB.CreateSphere('e',{diameter:.3,segments:8},scene);
-    add(e,x,0,z,INK,false);e._by=sk.olho==='u'?.3:1.4;e._f=face;
+    add(e,x,0,z,(sk.acess==='manga'&&col.r<.94)?BRANCO:INK,false);e._by=sk.olho==='u'?.3:1.4;e._f=face;
     e.scaling.set(face==='x'?.45:1,e._by*mood,face==='z'?.45:1);eyes.push(e);
   };
   eye(w*.28,-d/2,'z');eye(w/2,-d*.28,'x');
@@ -656,6 +747,13 @@ function dressCat(m,w,d,col){
   if(A==='halo')add(MB.CreateTorus('h',{diameter:.9,thickness:.08,tessellation:24},scene),0,top+.8,0,OURO,false);
   if(A==='bruxa'){add(MB.CreateCylinder('h',{diameter:.95,height:.06,tessellation:16},scene),0,top+.04,0,PURP);add(MB.CreateCylinder('h',{diameterTop:0,diameterBottom:.6,height:.9,tessellation:12},scene),0,top+.5,0,PURP);}
   if(A==='gorro'){add(MB.CreateCylinder('h',{diameterTop:0,diameterBottom:.6,height:.8,tessellation:12},scene),0,top+.4,0,VERM);ball(0,top+.85,0,.2,BRANCO);}
+  if(A==='manga'){ // ahoge (mechinha de anime) + katana nas costas
+    add(MB.CreateCylinder('h',{diameter:.07,height:.55,tessellation:6},scene),-.05,top+.3,0,NEGRO).rotation.z=.35;
+    add(MB.CreateCylinder('h',{diameter:.07,height:.4,tessellation:6},scene),.12,top+.62,0,NEGRO).rotation.z=-.6;
+    const kx=-.3*w,kz=.3*d;
+    add(MB.CreateBox('k',{width:.09,height:1.1,depth:.05},scene),kx,top+.6,kz,BRANCO).rotation.z=.45;
+    add(MB.CreateBox('k',{width:.11,height:.32,depth:.07},scene),kx+.3,top+.02,kz,NEGRO).rotation.z=.45;
+  }
   m.cat={ears,eyes};
 }
 
@@ -713,9 +811,111 @@ function popText(txt,n=0,big=11,mt=0){
 }
 function comboFx(n){
   Mis.add('perf',1);Mis.max('combo',n);
+  if(skinI===12){mgCombo(n);return;}
   const w=['PERFEITO!','COMBO x2!','ÓTIMO x3!','INCRÍVEL x4!','LENDÁRIO x5!'];
   popText(n<=5?w[n-1]:'LENDÁRIO x'+n+'!',n,Math.min(10+n,15));
   const r=$('rays');r.classList.remove('on');void r.offsetWidth;r.classList.add('on');
+}
+
+
+// ================= Skin Kensei Densetsu (manga): efeitos de tela =================
+// Regra: nada cobre os blocos. Letras e cortes ficam na faixa de cima da tela; as linhas de velocidade só aparecem acima do bloco.
+const MGJ_P=['ドン!','バーン!','キラッ!','ズバッ!','すごい!','やった!','最高!','ピカッ!','完璧!','決まった!'];
+const MGJ_C=['ザクッ!','ガーン!','しまった!','あっ!','スパッ!','ガクッ!'];
+const MGC_T={3:'すごい!!',4:'やばい!!!',5:'最強!!!!',6:'さすが!!',7:'すげえ!!',8:'天才!!',9:'神業!!',10:'無双!!!',11:'圧倒的!!',12:'覇者!!!',13:'修羅!!!',14:'鬼神!!!!'};
+const mgTxt=n=>n>20?'剣聖!!!!!':n===20?'剣聖降臨!!!!!':n>=15?(n>=18?'伝説!!!!!':'伝説!!!!'):MGC_T[n];
+const MGFONT="'Dela Gothic One','Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif";
+let mgLast=-1,mgSt=-1;
+const mgRnd=(a,b)=>a+Math.random()*(b-a);
+function mgLinesSvg(n,r0,r1){ // linhas de velocidade de manga saindo do centro
+  let p='';
+  for(let i=0;i<n;i++){const a=Math.random()*6.2832,w=.008+Math.random()*.025,ri=mgRnd(r0,r1)*100;
+    p+='<polygon points="'+(Math.cos(a)*ri).toFixed(1)+','+(Math.sin(a)*ri).toFixed(1)+' '+(Math.cos(a-w)*150).toFixed(1)+','+(Math.sin(a-w)*150).toFixed(1)+' '+(Math.cos(a+w)*150).toFixed(1)+','+(Math.sin(a+w)*150).toFixed(1)+'" fill="#000"/>';}
+  return uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="-100 -100 200 200">'+p+'</svg>');
+}
+const MGL=[mgLinesSvg(46,.1,.25),mgLinesSvg(46,.1,.25),mgLinesSvg(70,.1,.25)];
+function mgStar(neg){ // balão de explosão
+  let p='';const N=14;
+  for(let i=0;i<N*2;i++){const a=i*Math.PI/N,r=i%2?mgRnd(28,34):mgRnd(44,49);p+=(Math.cos(a)*r).toFixed(1)+','+(Math.sin(a)*r).toFixed(1)+' ';}
+  return '<svg viewBox="-50 -50 100 100"><polygon points="'+p+'" fill="'+(neg?'#000':'#fff')+'" stroke="'+(neg?'#fff':'#000')+'" stroke-width="'+(neg?3:4)+'" stroke-linejoin="round"/></svg>';
+}
+(function(){
+  const st=document.createElement('style');
+  st.textContent=`
+#mg{position:fixed;inset:0;z-index:4;pointer-events:none;overflow:hidden}
+#mgLayer{position:absolute;inset:0;-webkit-mask-image:linear-gradient(#000 0,#000 38%,transparent 47%);mask-image:linear-gradient(#000 0,#000 38%,transparent 47%)}
+#mgFever{position:absolute;inset:-40% -30% -20% -30%;background-size:100% 100%;opacity:0;transition:opacity .3s}
+#mg.c5 #mgFever{opacity:.4;animation:mgJit .2s steps(2) infinite}
+#mg.c10 #mgFever{opacity:.55;animation:mgJit .14s steps(2) infinite}
+#mg.c15 #mgFever{opacity:.7;animation:mgJit .1s steps(2) infinite}
+@keyframes mgJit{50%{transform:rotate(2.5deg) scale(1.04)}}
+.mgSp{position:absolute;inset:-40% -30% -20% -30%;background-size:100% 100%;animation:mgSp .35s ease-out forwards}
+@keyframes mgSp{0%{opacity:var(--o,.9);transform:scale(1)}100%{opacity:0;transform:scale(1.08)}}
+.mgFl{position:absolute;inset:0;background:#fff;opacity:0;animation:mgFl .6s ease-out forwards}
+@keyframes mgFl{0%{opacity:.8}100%{opacity:0}}
+#mg .bar{position:absolute;left:0;right:0;background:#000;height:0;transition:height .3s}
+#mg .bar.t{top:0}#mg .bar.b{bottom:0}
+#mg.c10 .bar{height:1.2vh}#mg.c15 .bar{height:2.2vh}
+.mgJ,.mgC{position:absolute;display:grid;place-items:center;text-align:center}
+.mgJ{width:32vmin;height:32vmin;margin:-16vmin 0 0 -16vmin;animation:mgJump 1.05s forwards}
+.mgC{left:50%;top:29vh;height:38vmin;margin-top:-19vmin;animation:mgPunch .9s forwards}
+.mgJ svg,.mgC svg{position:absolute;inset:0;width:100%;height:100%}
+.mgJ b,.mgC b{position:relative;font-family:${MGFONT};font-weight:400;line-height:1;color:#000;white-space:nowrap}
+.mgJ.neg b,.mgC.neg b{color:#fff}
+@keyframes mgJump{0%{transform:translateY(0) scale(.2) rotate(-18deg);opacity:0}14%{transform:translateY(-8vmin) scale(1.2) rotate(-6deg);opacity:1}28%{transform:translateY(-3vmin) scale(.95) rotate(-3deg)}42%{transform:translateY(-7vmin) scale(1.05) rotate(-4deg)}58%{transform:translateY(-4vmin) scale(1) rotate(-3deg)}82%{opacity:1}100%{transform:translateY(-10vmin) scale(.9) rotate(-3deg);opacity:0}}
+@keyframes mgPunch{0%{transform:scale(2.2) rotate(-10deg);opacity:0}16%{transform:scale(1) rotate(-3deg);opacity:1}80%{opacity:1}100%{transform:translateY(-4vh) scale(1) rotate(-3deg);opacity:0}}
+.mgSl{position:absolute;width:44vmin;height:1.2vmin;background:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent);animation:mgSl .3s ease-out forwards}
+.mgSl::after{content:'';position:absolute;left:12%;right:34%;top:260%;height:40%;background:#000}
+@keyframes mgSl{0%{transform:translate(-50%,-50%) rotate(var(--r)) scaleX(0);opacity:1}40%{transform:translate(-50%,-50%) rotate(var(--r)) scaleX(1);opacity:1}100%{transform:translate(-50%,-50%) rotate(var(--r)) scaleX(1.1);opacity:0}}
+`;
+  document.head.appendChild(st);
+  const mg=document.createElement('div');mg.id='mg';mg.className='c0';
+  mg.innerHTML='<div id="mgLayer"><div id="mgFever"></div></div><div class="bar t"></div><div class="bar b"></div>';
+  document.body.appendChild(mg);
+  $('mgFever').style.backgroundImage=MGL[2];
+})();
+function mgTick(){ // sequência de perfeitos: 5+ linhas fracas, 10+ mais fortes e barras finas, 15+ ainda mais
+  const on=skinI===12&&mode==='play';
+  if(!on)mgPrev=0;
+  const s=on?(combo>=15?15:combo>=10?10:combo>=5?5:0):0;
+  if(s!==mgSt){mgSt=s;$('mg').className='c'+s;}
+}
+function mgScr(x,y,z){ // posição do bloco na tela (px)
+  try{
+    const v=BABYLON.Vector3.Project(new BABYLON.Vector3(x,y,z),BABYLON.Matrix.Identity(),scene.getTransformMatrix(),cm.viewport.toGlobal(eng.getRenderWidth(),eng.getRenderHeight()));
+    const k=$('c').clientWidth/eng.getRenderWidth();
+    return{x:v.x*k,y:v.y*k};
+  }catch(e){return{x:innerWidth/2,y:innerHeight*.6};}
+}
+function mgZone(p){ // letras e cortes ficam na faixa de cima, longe do bloco e das pontas
+  const W=innerWidth,Hh=innerHeight;
+  return{x:Math.max(W*.3,Math.min(W*.7,p.x)),y:Math.max(Hh*.2,Math.min(Hh*.4,p.y-Hh*.26))};
+}
+const mgAdd=(el,ms,par)=>{(par||$('mg')).appendChild(el);setTimeout(()=>el.remove(),ms);return el;};
+function mgDiv(cls,x,y,html){const e=document.createElement('div');e.className=cls;if(x!==''){e.style.left=x+'px';e.style.top=y+'px';}if(html)e.innerHTML=html;return e;}
+function mgSlash(x,y,r){const s=mgDiv('mgSl',x,y);s.style.setProperty('--r',r+'deg');mgAdd(s,330);}
+function mgJump(x,y,txt,neg){ // letra japonesa pulando na faixa de cima
+  mgAdd(mgDiv('mgJ'+(neg?' neg':''),x,y,mgStar(neg)+'<b style="font-size:'+Math.min(9,27/txt.length).toFixed(1)+'vmin">'+txt+'</b>'),1100);
+}
+function mgPerf(x,y,z,n){
+  const q=mgZone(mgScr(x,y,z));
+  const sp=mgDiv('mgSp','','');sp.style.backgroundImage=MGL[Math.random()*2|0];sp.style.setProperty('--o',Math.min(.5+.025*n,1).toFixed(2));mgAdd(sp,380,$('mgLayer'));
+  if(n>=3){mgSlash(q.x,q.y,-30);mgSlash(q.x,q.y,30);}
+  if(Math.random()<Math.min(.55+n*.03,1)){let i;do{i=Math.random()*MGJ_P.length|0;}while(i===mgLast);mgLast=i;mgJump(q.x,q.y,MGJ_P[i],false);}
+}
+function mgCut(x,y,z){
+  const q=mgZone(mgScr(x,y,z));mgSlash(q.x,q.y,Math.round(mgRnd(-38,-18)));
+  if(Math.random()<.4)mgJump(q.x,q.y,MGJ_C[Math.random()*MGJ_C.length|0],true);
+}
+function mgCombo(n){ // texto no centro de cima a partir de 3 perfeitos; muda a cada nível até 20
+  if(n<3)return;
+  const t=mgTxt(n),neg=n>=10,w=Math.min(64,50+n*.8);
+  const e=mgDiv('mgC'+(neg?' neg':''),'','',mgStar(neg)+'<b style="font-size:'+Math.min(12,40/t.length).toFixed(1)+'vmin">'+t+'</b>');
+  e.style.width=w+'vmin';e.style.marginLeft=(-w/2)+'vmin';mgAdd(e,950);
+  if(n===20){ // final: clarão só na parte de cima e 4 cortes
+    mgAdd(mgDiv('mgFl','',''),650,$('mgLayer'));
+    const W=innerWidth,Hh=innerHeight;[-50,-18,18,50].forEach(r=>mgSlash(W*.5,Hh*.3,r));
+  }
 }
 
 // ================= Missões diárias =================
@@ -1081,7 +1281,7 @@ addEventListener('message',e=>{if(e.data&&e.data.ota)popText(e.data.ota,1,5,12);
 (()=>{const sn=$('snow');for(let i=0;i<30;i++){const e=document.createElement('i'),z=3+Math.random()*5;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(6+Math.random()*7)+'s;animation-delay:-'+Math.random()*12+'s';sn.appendChild(e);}})();
 (()=>{const f=$('fl');for(let i=0;i<16;i++){const e=document.createElement('i'),z=3+Math.random()*6;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(10+Math.random()*10)+'s;animation-delay:-'+Math.random()*16+'s';f.appendChild(e);}})();
 // Bônus diário com sequência de dias (até 7)
-const NOV='• Sem tremor de tela\n• Sons novos de perfeito e de corte, bem mais suaves\n• A partida já começa com a torre e a neblina\n• Blocos não balançam mais no menu e na loja\n• Novo visual: Ranking, Amigos, Missões e Como jogar';
+const NOV='• Nova skin lendária: Kensei Densetsu (1500 🪙)\n• Manga preto e branco com cortes de espada\n• Som e efeitos que evoluem até 20 perfeitos seguidos';
 setTimeout(pendenteBau,3500);
 setTimeout(()=>Rank.sync(),7000);
 setTimeout(()=>{if(sv.ver!==GAME_V&&(sv.ver||sv.st.jogos>0)){$('novT').textContent='✨ Versão '+GAME_V+'\n'+NOV;$('nov').classList.remove('hide');}sv.ver=GAME_V;salvar();},4500);
@@ -1122,7 +1322,7 @@ eng.runRenderLoop(()=>{
   if(ringT>0){ringT-=dt*2.2;const k=1-Math.max(ringT,0),s=ringB*(1+k*1.3);ring.scaling.set(s,1,s);rm.alpha=Math.max(ringT,0)*.9;if(ringT<=0)ring.isVisible=false;}
   mood+=(1-mood)*Math.min(dt*.6,1);
   fev+=((combo>=5?1:0)-fev)*Math.min(dt*3,1);
-  toon.setFloat('time',now%600);toon.setFloat('fever',fev);
+  toon.setFloat('time',now%600);toon.setFloat('fever',fev);mgTick();
   const cs=Math.floor(now);if(cs!==cullT){cullT=cs;if(mode!=='over')cull();}
 
   // Câmera: sobe com a torre; no fim de jogo afasta para mostrar a torre inteira
