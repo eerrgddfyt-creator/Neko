@@ -86,6 +86,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;out
 #ldTxt{font-size:4.4vmin;text-align:center;padding:0 6vw}
 #ldDev,#dev{bottom:calc(env(safe-area-inset-bottom,0px) + 2.5vh);left:0;right:0;text-align:center;font-size:3.6vmin;letter-spacing:.18em;color:#fff;-webkit-text-stroke:.6vmin var(--ink);paint-order:stroke fill;pointer-events:none}
 #ldDev{position:absolute}
+.nekCard{display:inline-block;vertical-align:middle;margin-left:1vmin;padding:.9vmin 2vmin .9vmin 2vmin;background:var(--sun);color:var(--ink);font-size:3.8vmin;-webkit-text-stroke:0;text-shadow:none;transform:rotate(-2deg);pointer-events:none}
 #dev{position:fixed;z-index:3;transition:opacity .5s}
 #menu.out~#dev{opacity:0}
 #pauseBox{position:fixed;z-index:5;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;gap:2vh;width:56vw;max-width:380px}
@@ -202,7 +203,7 @@ body.mgc #city{height:60vh}
 </style>
 </head>
 <body>
-<div id="load"><div id="ldSvg"></div><div id="ldTitle">NEKO TOWER</div><div id="ldBar"><div id="ldFill"></div></div><div id="ldTxt">Carregando...</div><div id="ldDev">desenvolvido por N E K</div><button id="ldRetry" class="box btn hide" style="flex:none;padding:1vh 6vw" onclick="location.reload()">Tentar de novo</button></div>
+<div id="load"><div id="ldSvg"></div><div id="ldTitle">NEKO TOWER</div><div id="ldBar"><div id="ldFill"></div></div><div id="ldTxt">Carregando...</div><div id="ldDev">desenvolvido por <span class="nekCard box">N E K</span></div><button id="ldRetry" class="box btn hide" style="flex:none;padding:1vh 6vw" onclick="location.reload()">Tentar de novo</button></div>
 <script>
 // Torre da tela de carregamento (gerada por código, mais leve)
 (function(){
@@ -268,7 +269,8 @@ Load.ui();
   <div class="grp hide" id="rnk"><div id="rankInfo" class="box"></div><div id="rkRow1"><input id="nickIn" class="box" maxlength="12" placeholder="seu apelido" autocomplete="off"><button id="nickB" class="box btn">Salvar</button></div><div id="rkRow2"><button id="amigB" class="box btn">👥 Amigos</button><button id="rankBack" class="box btn">Voltar</button></div></div>
   <div class="grp hide" id="amigos"><div id="amigInfo" class="box"></div><div id="frRow"><input id="frIn" class="box" maxlength="6" placeholder="código do amigo" autocomplete="off"><button id="frAdd" class="box btn">Adicionar</button></div><button id="amigBack" class="box btn">Voltar</button></div>
 </div>
-<div id="dev">desenvolvido por N E K</div>
+
+<div id="dev">desenvolvido por <span class="nekCard box">N E K</span></div>
 <div id="over" class="box hide"><span id="overH">Fim de jogo</span><small id="overTxt"></small></div>
 <button id="home" class="box btn hide">☰ Menu</button>
 <button id="bauTop" class="box btn hide">🎁 Baú</button>
@@ -297,7 +299,7 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 })();
 </script>
 <script>
-const GAME_V=13; // aumente a cada versão nova
+const GAME_V=14; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
 const H=.6,BASE=3,LIM=3.10,TOL=.12,MENU_SHIFT=.4,VIEW=2.2,VEL=3.45; // VEL = velocidade fixa dos blocos
 const INIT=8; // blocos já empilhados quando a partida começa (como no Stack)
@@ -1462,7 +1464,7 @@ addEventListener('message',e=>{if(e.data&&e.data.ota)popText(e.data.ota,1,5,12);
 (()=>{const sn=$('snow');for(let i=0;i<30;i++){const e=document.createElement('i'),z=3+Math.random()*5;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(6+Math.random()*7)+'s;animation-delay:-'+Math.random()*12+'s';sn.appendChild(e);}})();
 (()=>{const f=$('fl');for(let i=0;i<16;i++){const e=document.createElement('i'),z=3+Math.random()*6;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(10+Math.random()*10)+'s;animation-delay:-'+Math.random()*16+'s';f.appendChild(e);}})();
 // Bônus diário com sequência de dias (até 7)
-const NOV='• Skin Kensei Densetsu: olhos bravos, fundo preto e branco com botão para trocar\n• A lua muda com a skin: abóbora, gorro de Natal ou espada\n• A tela só começa a subir no 3º bloco\n• Mais fluidez nos encaixes perfeitos';
+const NOV='• Credito "N E K" ganhou 1 card amarelo';
 setTimeout(pendenteBau,3500);
 setTimeout(()=>Rank.sync(),7000);
 setTimeout(()=>{if(sv.ver!==GAME_V&&(sv.ver||sv.st.jogos>0)){$('novT').textContent='✨ Versão '+GAME_V+'\n'+NOV;$('nov').classList.remove('hide');}sv.ver=GAME_V;salvar();},4500);
