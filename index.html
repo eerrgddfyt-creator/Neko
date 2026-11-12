@@ -299,7 +299,7 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 })();
 </script>
 <script>
-const GAME_V=14; // aumente a cada versão nova
+const GAME_V=15; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
 const H=.6,BASE=3,LIM=3.10,TOL=.12,MENU_SHIFT=.4,VIEW=2.2,VEL=3.45; // VEL = velocidade fixa dos blocos
 const INIT=8; // blocos já empilhados quando a partida começa (como no Stack)
@@ -1464,7 +1464,7 @@ addEventListener('message',e=>{if(e.data&&e.data.ota)popText(e.data.ota,1,5,12);
 (()=>{const sn=$('snow');for(let i=0;i<30;i++){const e=document.createElement('i'),z=3+Math.random()*5;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(6+Math.random()*7)+'s;animation-delay:-'+Math.random()*12+'s';sn.appendChild(e);}})();
 (()=>{const f=$('fl');for(let i=0;i<16;i++){const e=document.createElement('i'),z=3+Math.random()*6;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(10+Math.random()*10)+'s;animation-delay:-'+Math.random()*16+'s';f.appendChild(e);}})();
 // Bônus diário com sequência de dias (até 7)
-const NOV='• Credito "N E K" ganhou 1 card amarelo';
+const NOV='• Novo sistama de login implantado, faça seu login com email/senha para salvar sua conta e progresso na nuvem podendo conecta-la em qualquer outro dispositivo dispositivo.';
 setTimeout(pendenteBau,3500);
 setTimeout(()=>Rank.sync(),7000);
 setTimeout(()=>{if(sv.ver!==GAME_V&&(sv.ver||sv.st.jogos>0)){$('novT').textContent='✨ Versão '+GAME_V+'\n'+NOV;$('nov').classList.remove('hide');}sv.ver=GAME_V;salvar();},4500);
@@ -1528,6 +1528,311 @@ eng.runRenderLoop(()=>{
   if(mode==='play'&&frames>=2){fpsT+=dt;if(++fpsN>=150){if(fpsT/fpsN>.036&&cfg.gfx>0){cfg.gfx--;applyGfx();saveOpt();popText('Gráfico reduzido p/ ficar liso',2,6,12);}fpsT=fpsN=0;}}
 });
 addEventListener('resize',()=>eng.resize());
+</script>
+<script>
+/* ===== NEKO TOWER: conta (login / criar conta) + save na nuvem ===== */
+(function(){
+'use strict';
+if(typeof sv==='undefined'||typeof Rank==='undefined'){console.warn('login.js: carregue depois do script do jogo');return;}
+
+const g=id=>document.getElementById(id);
+const SAVE='nekoTowerSave';
+
+// ---------------- CSS ----------------
+const st=document.createElement('style');
+st.textContent=`
+#accChip{position:fixed;z-index:3;left:5vw;top:calc(env(safe-area-inset-top,0px) + 1.2vh);flex:none;padding:.7vh 3.4vw;font-size:3.9vmin;background:var(--sun);transform:rotate(-1.5deg);max-width:52vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#acc{position:fixed;inset:0;z-index:30;display:flex;overflow-y:auto;touch-action:pan-y;padding:calc(env(safe-area-inset-top,0px) + 3vh) 5vw calc(env(safe-area-inset-bottom,0px) + 3vh);background:rgba(27,26,58,.55);box-sizing:border-box;-webkit-user-select:none;user-select:none}
+#accCard{margin:auto;width:min(90vw,440px);box-sizing:border-box;background:var(--paper);color:var(--ink);border:clamp(3px,.8vmin,6px) solid var(--ink);border-radius:255px 15px 225px 15px/15px 225px 15px 255px;box-shadow:clamp(4px,1.2vmin,9px) clamp(4px,1.2vmin,9px) 0 var(--ink);padding:2.6vh 6vw 2.8vh;display:flex;flex-direction:column;gap:1.6vh;font-family:'Trebuchet MS','Segoe UI',system-ui,sans-serif;font-weight:700;animation:accIn .45s cubic-bezier(.2,1.5,.4,1) backwards}
+@keyframes accIn{from{opacity:0;transform:translateY(9vh) rotate(-4deg) scale(.88)}}
+#accTit{font-family:Bangers,Impact,sans-serif;font-weight:400;font-size:clamp(34px,9vmin,60px);letter-spacing:.06em;text-align:center;color:#fff;-webkit-text-stroke:clamp(5px,1.3vmin,9px) var(--ink);paint-order:stroke fill;text-shadow:.7vmin .7vmin 0 var(--ink);line-height:1.05;margin-top:-.4vh}
+#accTabs{display:flex;gap:2.5vw}
+#accOut,#accLog{display:flex;flex-direction:column;gap:1.5vh}
+#accForm{display:flex;flex-direction:column;gap:1.4vh;margin:0}
+.axb{flex:none!important;width:100%;min-height:50px;padding:1.1vh 0!important;font-size:clamp(20px,5.6vmin,32px)!important}
+#accTabs .axb{flex:1!important;font-size:clamp(18px,5vmin,28px)!important}
+.axb.on{background:var(--pink)}
+.axb.go{background:var(--sun)}
+.axb[disabled]{opacity:.6;pointer-events:none}
+.axi{width:100%;box-sizing:border-box;min-height:48px;font:700 clamp(16px,4.2vmin,22px) 'Trebuchet MS','Segoe UI',system-ui,sans-serif;padding:1.2vh 4vw;background:#fff;color:var(--ink);border:clamp(2px,.5vmin,4px) solid var(--ink);border-radius:2.4vmin;outline:none;-webkit-user-select:text;user-select:text;touch-action:manipulation}
+.axi::placeholder{color:#1b1a3a88}
+.axi:focus{background:#fff8d6;box-shadow:.5vmin .5vmin 0 var(--ink)}
+.axp{position:relative}
+.axp .axi{padding-right:13vmin}
+.axe{position:absolute;right:1vmin;top:50%;transform:translateY(-50%);width:11vmin;max-width:56px;height:100%;background:none;border:0;font-size:clamp(18px,4.6vmin,26px);padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.axh{font-size:clamp(12px,3.2vmin,17px);text-align:center;line-height:1.35;opacity:.8}
+.axm{font-size:clamp(13px,3.5vmin,19px);text-align:center;line-height:1.3}
+.axm:empty{display:none}
+.axm.err{color:#c4223e}.axm.ok{color:#1f8a4c}
+.axl{background:none;border:0;padding:.4vh;font:700 clamp(13px,3.4vmin,18px) 'Trebuchet MS','Segoe UI',system-ui,sans-serif;color:var(--ink);text-decoration:underline;opacity:.75;cursor:pointer}
+.axn{font-family:Bangers,Impact,sans-serif;font-weight:400;font-size:clamp(30px,8vmin,46px);letter-spacing:.05em;text-align:center;line-height:1}
+.axc{display:flex;flex-wrap:wrap;gap:1.4vw;justify-content:center}
+.axc span,.axc b{background:#fff;border:clamp(2px,.4vmin,3px) solid var(--ink);border-radius:2vmin;padding:.3vh 2.6vw;font-size:clamp(13px,3.3vmin,18px);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.axc b{background:var(--pink);font-weight:700}
+`;
+document.head.appendChild(st);
+
+// ---------------- HTML ----------------
+const wrap=document.createElement('div');
+wrap.innerHTML=`
+<button id="accChip" type="button" class="box btn hide"></button>
+<div id="acc" class="hide"><div id="accCard">
+  <div id="accTit">CONTA</div>
+  <div id="accOut">
+    <div id="accTabs"><button type="button" class="box btn axb on" data-t="in">Entrar</button><button type="button" class="box btn axb" data-t="new">Criar conta</button></div>
+    <div id="accHint" class="axh"></div>
+    <form id="accForm" novalidate>
+      <input id="accNick" class="axi hide" maxlength="12" placeholder="apelido (2 a 12 letras)" autocomplete="nickname" autocapitalize="off" spellcheck="false">
+      <input id="accMail" class="axi" type="email" inputmode="email" placeholder="e-mail" autocomplete="email" autocapitalize="off" spellcheck="false">
+      <div class="axp"><input id="accPass" class="axi" type="password" placeholder="senha (mín. 6)" autocomplete="current-password"><button type="button" id="accEye" class="axe" aria-label="mostrar senha">👁</button></div>
+      <input id="accPass2" class="axi hide" type="password" placeholder="repita a senha" autocomplete="new-password">
+      <button id="accGo" type="submit" class="box btn axb go">Entrar</button>
+      <button id="accForgot" type="button" class="axl">Esqueci minha senha</button>
+    </form>
+  </div>
+  <div id="accLog" class="hide">
+    <div id="accWho"></div>
+    <div id="accSt" class="axh"></div>
+    <button id="accSave" type="button" class="box btn axb go">☁ Salvar agora</button>
+    <button id="accLogout" type="button" class="box btn axb">Sair da conta</button>
+  </div>
+  <div id="accMsg" class="axm"></div>
+  <button id="accClose" type="button" class="box btn axb">Voltar</button>
+</div></div>`;
+while(wrap.firstChild)document.body.appendChild(wrap.firstChild);
+
+// ---------------- Estado ----------------
+let tab='in',busy=false,expired=false,pulled=false,booting=false,loggingOut=false,lastJ='',lastUp=0;
+const fbU=()=>{try{return Rank.db&&firebase.auth().currentUser;}catch(e){return null;}};
+const hora=t=>new Date(t).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+const setMsg=(t,k)=>{const m=g('accMsg');m.textContent=t||'';m.className='axm'+(k?' '+k:'');};
+const setSt=t=>{g('accSt').textContent=t;};
+const stOk=()=>setSt(lastUp?'☁ Salvo na nuvem às '+hora(lastUp):'☁ Conta conectada');
+function setBusy(b){busy=b;const e=g('accGo');e.disabled=b;e.textContent=b?'Aguarde...':(tab==='new'?'Criar conta':'Entrar');}
+
+function erro(e){
+  const c=(e&&e.code)||'';
+  return({
+    'auth/invalid-email':'E-mail inválido',
+    'auth/missing-password':'Digite a senha',
+    'auth/weak-password':'Senha fraca: use 6 ou mais caracteres',
+    'auth/email-already-in-use':'Esse e-mail já tem conta. Use "Entrar"',
+    'auth/credential-already-in-use':'Esse e-mail já tem conta. Use "Entrar"',
+    'auth/user-not-found':'E-mail ou senha incorretos',
+    'auth/wrong-password':'E-mail ou senha incorretos',
+    'auth/invalid-credential':'E-mail ou senha incorretos',
+    'auth/invalid-login-credentials':'E-mail ou senha incorretos',
+    'auth/too-many-requests':'Muitas tentativas. Espere um pouco',
+    'auth/network-request-failed':'Sem conexão com a internet',
+    'auth/operation-not-allowed':'Login por e-mail não está ativado no Firebase',
+    'PERMISSION_DENIED':'Sem permissão na nuvem (confira as regras do banco)'
+  })[c]||(c==='rede'?'Sem conexão com a internet':'Algo deu errado'+(c?' ('+c+')':''));
+}
+
+// ---------------- Juntar progresso (aparelho + nuvem) ----------------
+const uni=(a,b)=>[...new Set([...(a||[]),...(b||[])])];
+function merge(l,c){
+  const lx=l.xp||0,cx=c.xp||0,base=lx>=cx?l:c,oth=base===l?c:l,o=Object.assign({},oth,base);
+  o.xp=Math.max(lx,cx);
+  o.donos=uni(l.donos,c.donos);
+  o.ach=Object.assign({},c.ach,l.ach);
+  const s={};['perf','jogos','score','combo','tempo'].forEach(k=>s[k]=Math.max((l.st||{})[k]||0,(c.st||{})[k]||0));o.st=s;
+  ['bestR','rkBest','rkPend','streak'].forEach(k=>o[k]=Math.max(l[k]||0,c[k]||0));
+  const am=[...(c.amigos||[])];(l.amigos||[]).forEach(f=>{if(!am.some(x=>x.u===f.u))am.push(f);});o.amigos=am;
+  o.nick=c.nick||l.nick;o.code=c.code||l.code;
+  if(!o.donos.includes(o.skin))o.skin=0;
+  return o;
+}
+function ahead(c,cb){
+  return (c.xp||0)>(sv.xp||0)||(cb||0)>best||(c.donos||[]).some(x=>sv.donos.indexOf(x)<0)||Object.keys(c.ach||{}).some(k=>!sv.ach[k]);
+}
+function aplica(o,cb){
+  Object.assign(sv,o);best=Math.max(best,cb||0);
+  try{localStorage.setItem('stackBest',best);}catch(e){}
+  salvarJa();
+}
+
+// ---------------- Nuvem ----------------
+async function up(force){
+  if(!sv.acc||!pulled)return false;
+  if(navigator.onLine===false){setSt('☁ Sem internet — salvo só neste aparelho');return false;}
+  if(!Rank.db)await Rank.carrega();
+  const u=fbU();if(!u||u.isAnonymous)return false;
+  const j=JSON.stringify(sv)+'|'+best;
+  if(!force&&j===lastJ)return true;
+  await Rank.db.ref('saves/'+u.uid).set({d:JSON.stringify(sv),b:best,t:firebase.database.ServerValue.TIMESTAMP});
+  lastJ=j;lastUp=Date.now();stOk();return true;
+}
+async function boot(){ // 1x por abertura: puxa a nuvem antes de começar a enviar (evita sobrescrever com dado velho)
+  if(!sv.acc||booting||pulled||expired||navigator.onLine===false)return;
+  booting=true;
+  try{
+    await Rank.carrega();
+    const u=fbU();
+    if(!u||u.isAnonymous){expired=true;return;}
+    const c=(await Rank.db.ref('saves/'+u.uid).once('value')).val();
+    if(c&&c.d){
+      const cl=JSON.parse(c.d);
+      if(ahead(cl,c.b)){aplica(merge(sv,cl),c.b);if(typeof mode!=='undefined'&&mode==='menu'){location.reload();return;}if(typeof idleStatus==='function')idleStatus();}
+    }
+    pulled=true;up().catch(()=>{});
+  }catch(e){}finally{booting=false;}
+}
+
+// ---------------- Telas ----------------
+function setTab(t){
+  tab=t;const n=t==='new';
+  document.querySelectorAll('#accTabs .axb').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  g('accNick').classList.toggle('hide',!n);g('accPass2').classList.toggle('hide',!n);g('accForgot').classList.toggle('hide',n);
+  g('accPass').autocomplete=n?'new-password':'current-password';
+  g('accHint').textContent=n?'Guarde progresso, moedas e skins na nuvem e jogue em qualquer aparelho.':'Entre pra recuperar seu progresso.';
+  setBusy(false);setMsg('');
+}
+function renderLogged(){
+  const n=niv();
+  g('accWho').innerHTML='<div class="axn">'+esc(sv.nick||'Jogador')+'</div><div class="axc" style="margin-top:1vh"><span>'+esc(sv.acc.e)+'</span></div><div class="axc" style="margin-top:.8vh"><b>Nv '+n+'</b><span>'+esc(TIT[Math.min(n-1,TIT.length-1)])+'</span><span>🪙 '+sv.moedas+'</span></div>';
+  stOk();
+}
+function render(){
+  const logged=!!sv.acc&&!expired;
+  g('accOut').classList.toggle('hide',logged);g('accLog').classList.toggle('hide',!logged);
+  g('accTit').textContent=logged?'MINHA CONTA':'CONTA';
+  if(logged)renderLogged();else if(sv.acc&&!g('accMail').value)g('accMail').value=sv.acc.e;
+}
+async function verify(){
+  setSt('☁ Conectando...');
+  try{
+    await Rank.carrega();
+    const u=fbU();
+    if(!u||u.isAnonymous){expired=true;render();setTab('in');setMsg('Sua sessão expirou. Entre de novo.','err');return;}
+    await boot();render();
+  }catch(e){setSt('☁ Sem conexão — salvo só neste aparelho');}
+}
+function open(){
+  if(typeof mode!=='undefined'&&mode!=='menu')return;
+  g('acc').classList.remove('hide');setTab('in');render();
+  if(sv.acc&&!expired)verify();
+}
+function close(){g('acc').classList.add('hide');if(typeof idleStatus==='function')idleStatus();}
+
+// ---------------- Criar conta / Entrar ----------------
+async function criar(nick,email,pass){
+  await Rank.carrega();
+  const a=firebase.auth(),cred=firebase.auth.EmailAuthProvider.credential(email,pass),u=a.currentUser;
+  if(u&&u.isAnonymous)await u.linkWithCredential(cred); // mantém o mesmo uid: ranking e progresso continuam
+  else await a.createUserWithEmailAndPassword(email,pass);
+  Rank.uid=a.currentUser.uid;
+  sv.acc={e:email};sv.nick=nick;sv.rkOk=0;expired=false;pulled=true;salvarJa();
+  try{await up(true);}catch(e){}
+  Rank.sync();
+}
+async function entrar(email,pass){
+  await Rank.carrega();
+  const a=firebase.auth();
+  await a.signInWithEmailAndPassword(email,pass);
+  const u=a.currentUser;Rank.uid=u.uid;
+  const c=(await Rank.db.ref('saves/'+u.uid).once('value')).val();
+  if(c&&c.d)aplica(merge(sv,JSON.parse(c.d)),c.b);
+  sv.acc={e:email};sv.rkOk=0;expired=false;pulled=true;salvarJa();
+  try{await up(true);}catch(e){}
+}
+
+g('accForm').onsubmit=async ev=>{
+  ev.preventDefault();if(busy)return;
+  const email=g('accMail').value.trim().toLowerCase(),pass=g('accPass').value;
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return setMsg('Digite um e-mail válido','err');
+  if(pass.length<6)return setMsg('A senha precisa ter 6 ou mais caracteres','err');
+  let nick='';
+  if(tab==='new'){
+    nick=g('accNick').value.replace(/[^\wÀ-ú -]/g,'').trim().slice(0,12);
+    if(nick.length<2)return setMsg('O apelido precisa de pelo menos 2 letras','err');
+    if(pass!==g('accPass2').value)return setMsg('As senhas não são iguais','err');
+  }
+  if(navigator.onLine===false)return setMsg('Sem internet','err');
+  const novo=tab==='new';
+  setBusy(true);setMsg(novo?'Criando sua conta...':'Entrando...');
+  try{
+    if(novo)await criar(nick,email,pass);else await entrar(email,pass);
+    beep(784,.25);vib([15,30,15]);
+    if(novo){setBusy(false);g('accPass').value=g('accPass2').value='';render();setMsg('Conta criada! Seu progresso já está na nuvem.','ok');}
+    else{setMsg('Pronto! Carregando seu progresso...','ok');setTimeout(()=>location.reload(),900);}
+  }catch(e){setMsg(erro(e),'err');beep(150,.2);vib(60);setBusy(false);}
+};
+g('accForgot').onclick=async()=>{
+  const email=g('accMail').value.trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return setMsg('Digite seu e-mail acima primeiro','err');
+  try{await Rank.carrega();await firebase.auth().sendPasswordResetEmail(email);setMsg('Enviamos um e-mail pra redefinir a senha. Olhe também o spam.','ok');}
+  catch(e){setMsg(erro(e),'err');}
+};
+g('accEye').onclick=()=>{const t=g('accPass').type==='password'?'text':'password';g('accPass').type=t;g('accPass2').type=t;};
+document.querySelectorAll('#accTabs .axb').forEach(b=>b.onclick=()=>setTab(b.dataset.t));
+
+g('accSave').onclick=async()=>{
+  setMsg('');setSt('☁ Salvando...');
+  try{
+    if(!pulled)await boot();
+    if(!pulled)throw{code:'rede'};
+    await up(true);setMsg('Salvo!','ok');vib(15);
+  }catch(e){setSt('☁ Não salvou');setMsg(erro(e),'err');}
+};
+let lo=0;
+g('accLogout').onclick=async()=>{
+  const b=g('accLogout');
+  if(!lo){
+    b.textContent='Toque de novo pra sair';setMsg('Seu progresso fica salvo na nuvem. Neste aparelho ele será apagado.');
+    lo=setTimeout(()=>{lo=0;b.textContent='Sair da conta';setMsg('');},3500);return;
+  }
+  clearTimeout(lo);lo=0;b.textContent='Salvando...';setMsg('');
+  try{
+    if(!pulled)await boot();
+    if(!pulled)throw{code:'rede'};
+    loggingOut=true;
+    await up(true);
+    await firebase.auth().signOut();
+  }catch(e){loggingOut=false;b.textContent='Sair da conta';setMsg('Não consegui salvar na nuvem: '+erro(e)+'. Tente de novo.','err');return;}
+  clearTimeout(svT);svT=0; // impede o jogo de regravar o save antigo
+  try{localStorage.removeItem(SAVE);localStorage.removeItem('stackBest');}catch(e){}
+  location.reload();
+};
+g('accClose').onclick=close;
+g('acc').addEventListener('pointerdown',e=>{e.stopPropagation();if(e.target===g('acc'))close();});
+addEventListener('keydown',e=>{if(e.key==='Escape'&&!g('acc').classList.contains('hide'))close();});
+
+// ---------------- Botões no menu ----------------
+const chip=g('accChip');chip.onclick=open;
+const cb=document.createElement('button');cb.id='accBtn';cb.className='box btn';cb.textContent='👤 Conta';cb.onclick=open;
+const bk=g('back');if(bk&&bk.parentNode)bk.parentNode.insertBefore(cb,bk);
+setInterval(()=>{ // o chip só aparece no menu principal
+  const ver=!g('load')&&typeof mode!=='undefined'&&mode==='menu'&&!g('main').classList.contains('hide')&&!g('menu').classList.contains('out')&&g('acc').classList.contains('hide');
+  chip.classList.toggle('hide',!ver);
+  if(ver){const t=sv.acc&&!expired?'👤 '+(sv.nick||'Conta'):'👤 Entrar';if(chip.textContent!==t)chip.textContent=t;}
+},400);
+
+// ---------------- Salvamento automático ----------------
+const tick=()=>{
+  if(!sv.acc||loggingOut||expired)return;
+  if(!pulled){boot();return;}
+  up().catch(()=>{});
+};
+setTimeout(tick,6000);setInterval(tick,20000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)tick();});
+addEventListener('pagehide',tick);
+
+window.NekoAuth={open,close,sync:()=>up(true),get logged(){return !!sv.acc&&!expired;}};
+})();
+
+/* ------------------------------------------------------------
+   REGRAS DO REALTIME DATABASE (adicione "saves" dentro de "rules",
+   sem mexer no que você já tem em "ranking"):
+
+   "saves": {
+     "$uid": {
+       ".read":  "auth != null && auth.uid === $uid",
+       ".write": "auth != null && auth.uid === $uid"
+     }
+   }
+   ------------------------------------------------------------ */
+
 </script>
 </body>
 </html>
