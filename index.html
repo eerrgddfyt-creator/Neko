@@ -300,7 +300,7 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 </script>
 <script>
 var ad=false; // <<< ANÚNCIOS: false = desligado (nada de anúncio aparece) · true = ligado (reviver + skins)
-const GAME_V=18; // aumente a cada versão nova
+const GAME_V=19; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
 const H=.6,BASE=3,LIM=3.10,TOL=.12,MENU_SHIFT=.4,VIEW=2.2,VEL=3.45; // VEL = velocidade fixa dos blocos
 const INIT=8; // blocos já empilhados quando a partida começa (como no Stack)
@@ -1894,7 +1894,14 @@ var Ads=(function(){
       window.adBreak({type:'reward',name:'recompensa',beforeReward:show=>show(),adViewed:()=>{ok=true;},adDismissed:()=>{},adBreakDone:done});
     });
   }
-  function disponivel(){return !!ad&&!!(bridge()||admob()||(C.adsensePub&&navigator.onLine!==false)||C.testMode);}
+  const wv=()=>/\bwv\b|Flutter|InAppWebView/i.test(navigator.userAgent);
+  let h2a=null;
+  async function viaH2A(){ // plugin de anúncios do html2app (AdMob)
+    if(!h2a)h2a=import('https://cdn.jsdelivr.net/npm/@yandeu/js-bridge/lib/plugins/ads.js/+esm').then(m=>m.Ads);
+    const A=await h2a;await A.rewarded.setAdUnitId(C.admobRewardedId);await A.rewarded.load();
+    const r=await A.rewarded.show();return !!(r&&r.ok);
+  }
+  function disponivel(){return !!ad&&!!(wv()||bridge()||admob()||(C.adsensePub&&navigator.onLine!==false)||C.testMode);}
   async function rewarded(){
     if(!ad||busy)return false;
     if(usados()>=C.maxPorDia){popText('Limite de anúncios de hoje atingido',2,6,8);return false;}
@@ -1904,6 +1911,7 @@ var Ads=(function(){
     try{
       const b=bridge(),am=admob();
       if(b&&b.showRewarded)ok=!!await b.showRewarded();
+      else if(wv())ok=await viaH2A();
       else if(am)ok=await viaAdmob(am);
       else if(C.adsensePub)ok=await viaAdsense();
       else if(C.testMode)ok=await teste();
@@ -1969,7 +1977,7 @@ var SHARE_CFG={url:'',titulo:'NEKO TOWER'}; // coloque o link do seu jogo/loja e
   const st=document.createElement('style');
   st.textContent=`#shareB{position:fixed;z-index:4;right:4vw;top:calc(env(safe-area-inset-top,0px) + 9.5vh);padding:1vh 4vw;font-size:5vmin;background:var(--sun);flex:none;transform:rotate(1.5deg)}
 #shareV{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.6vh;background:rgba(27,26,58,.92);padding:4vw;color:#fff;font:700 clamp(15px,4vmin,22px) system-ui,sans-serif;text-align:center}
-#shareV img{max-width:80vw;max-height:66vh;border:.8vmin solid #1b1a3a;border-radius:2vmin;-webkit-user-select:auto;user-select:auto;-webkit-touch-callout:default}
+#shareV img{max-width:80vw;max-height:56vh;border:.8vmin solid #1b1a3a;border-radius:2vmin;-webkit-user-select:auto;user-select:auto;-webkit-touch-callout:default}
 #shareV .box{flex:none;padding:1vh 7vw;color:#1b1a3a;min-width:60vw}`;
   document.head.appendChild(st);
   const b=document.createElement('button');b.id='shareB';b.className='box btn hide';b.textContent='📤 Compartilhar';document.body.appendChild(b);
@@ -1993,16 +2001,31 @@ var SHARE_CFG={url:'',titulo:'NEKO TOWER'}; // coloque o link do seu jogo/loja e
   const P=()=>{try{return window.parent&&window.parent!==window?window.parent:null;}catch(e){return null;}};
   const alvo=k=>{try{return window[k]||(P()&&P()[k])||null;}catch(e){return null;}};
   const b64=blob=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(String(f.result).split(',')[1]);f.readAsDataURL(blob);});
-  function mostra(blob,txt){ // plano B: painel com WhatsApp / copiar imagem
+  const ehWV=()=>/\bwv\b|Flutter|InAppWebView/i.test(navigator.userAgent);
+  let _shP=null;
+  async function shareH2A(txt){ // compartilhar nativo do html2app (só texto/link; abre a lista com WhatsApp, Instagram etc.)
+    if(!ehWV())return false;
+    try{
+      if(!_shP)_shP=import('https://cdn.jsdelivr.net/npm/@yandeu/js-bridge/lib/plugins/share.js/+esm').then(m=>m.Share);
+      const S=await _shP;
+      const r=await Promise.race([S.text(txt),new Promise(res=>setTimeout(()=>res('ok'),3000))]);
+      return !(r&&r.ok===false);
+    }catch(e){return false;}
+  }
+  function copiaTxt(t){
+    try{const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0;left:-9999px';document.body.appendChild(a);a.focus();a.select();const ok=document.execCommand('copy');a.remove();return ok;}catch(e){return false;}
+  }
+  function mostra(blob,txt){ // painel: torre grande (para tirar print) + compartilhar texto/link
     const v=document.createElement('div');v.id='shareV';const url=URL.createObjectURL(blob);
-    v.innerHTML='<div>Sua torre está pronta!</div><img src="'+url+'" alt="Minha torre"><button class="box btn" id="shW">💬 WhatsApp</button><button class="box btn" id="shC">📋 Copiar imagem</button><button class="box btn" id="shX">Fechar</button><div id="shM" style="font-size:.85em;opacity:.85;min-height:1.2em"></div>';
+    v.innerHTML='<div>Sua torre está pronta! Tire um print desta tela para postar.</div><img src="'+url+'" alt="Minha torre"><button class="box btn" id="shW">📤 Compartilhar texto</button><button class="box btn" id="shC">📋 Copiar texto</button><button class="box btn" id="shX">Fechar</button><div id="shM" style="font-size:.85em;opacity:.85;min-height:1.2em"></div>';
     document.body.appendChild(v);const m=v.querySelector('#shM');
     v.querySelector('#shX').onclick=()=>{v.remove();URL.revokeObjectURL(url);};
-    v.querySelector('#shW').onclick=()=>{try{window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');}catch(e){m.textContent='Não consegui abrir o WhatsApp';}};
-    v.querySelector('#shC').onclick=async()=>{
-      try{await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);m.textContent='Imagem copiada! Cole no Instagram ou WhatsApp.';}
-      catch(e){m.textContent='Não deu para copiar. Tire um print desta tela.';}
+    v.querySelector('#shW').onclick=async()=>{
+      if(await shareH2A(txt))return;
+      if(!ehWV()){try{window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');return;}catch(e){}}
+      m.textContent=copiaTxt(txt)?'Texto copiado! Cole no WhatsApp ou no Instagram.':'Não consegui abrir o compartilhamento.';
     };
+    v.querySelector('#shC').onclick=()=>{m.textContent=copiaTxt(txt)?'Texto copiado! Cole no WhatsApp ou no Instagram.':'Não deu para copiar.';};
   }
   async function enviar(blob,txt){
     const file=new File([blob],'neko-tower.png',{type:'image/png'});
