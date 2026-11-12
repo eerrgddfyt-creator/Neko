@@ -196,6 +196,8 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;out
 .sf .sm{font-size:clamp(12px,3vmin,17px);white-space:nowrap}
 .sd{margin-top:1vh}
 .rar{background:#000;color:#fff;font-size:clamp(10px,2.6vmin,14px);padding:.2vh 2vw;border-radius:1.4vmin;letter-spacing:.1em;font-family:sans-serif;margin:0 auto 0 2vw;align-self:center;opacity:1!important}
+body.mgc #city{height:60vh}
+#moon{background-repeat:no-repeat}
 .sn{flex-wrap:nowrap;gap:2vw}.sn b{white-space:nowrap}.sn.lg b{font-size:min(5.4vmin,30px)}.sn .rar{flex:none;white-space:nowrap;font-size:clamp(9px,2.3vmin,12px);margin:0 auto 0 1vw}.sn span:last-child{flex:none}
 </style>
 </head>
@@ -295,7 +297,7 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 })();
 </script>
 <script>
-const GAME_V=12; // aumente a cada versão nova
+const GAME_V=13; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
 const H=.6,BASE=3,LIM=3.10,TOL=.12,MENU_SHIFT=.4,VIEW=2.2,VEL=3.45; // VEL = velocidade fixa dos blocos
 const INIT=8; // blocos já empilhados quando a partida começa (como no Stack)
@@ -341,20 +343,23 @@ void main(){
   else if(s==7.){col=vec3(1.,.78,.2);col=mix(col,vec3(1.,.97,.75),smoothstep(.8,1.,sin((vP.x+vP.z+vP.y*2.)*3.-time*2.5)));}
   else if(s==8.){col=mix(vec3(.62,.88,1.),vec3(1.),smoothstep(.7,1.,sin(vP.x*8.+vP.z*6.+vP.y*4.)));}
   else if(s==9.){col=.55+.45*cos(6.2832*(vec3(0.,.33,.67)+(vP.x+vP.z)*.25+vP.y*1.5+time*.15));}
-  else if(s==12.){ // manga limpo: tons chapados, poucas linhas finas e cortes de espada
-    float t=vC.r;bool fx=abs(vN.x)>.5;
+  else if(s==12.){ // manga: tinta preta pesada, hachura e cortes de espada (1 bloco branco a cada 3 pretos)
+    float t=vC.r;bool fx=abs(vN.x)>.5,kk=t<.94;
     vec2 uv=top?vP.xz:(fx?vP.zy:vP.xy);
-    float dk=clamp((1.-t)*2.5,0.,1.);
-    float g=top?1.-.18*dk:(fx?.62-.14*dk:.86-.12*dk);
-    if(!top&&(fx||dk>.6)){float l=abs(fract((uv.x+uv.y)*(fx?7.:5.))-.5);g*=1.-.85*(1.-smoothstep(.02,.06,l));}
+    float ink=kk?1.:0.;
+    float hl=mod((uv.x+uv.y)*(fx?9.:7.),1.);
+    if(!top){
+      if(kk){if(!fx&&hl<.1)ink=0.;}
+      else if(hl<(fx?.3:.13))ink=1.;
+      if(uv.y>.25)ink=kk?0.:1.;
+    }
     float sl=t>.94?.55:t>.81?-.6:t>.67?.5:-.5;
     float u0=t>.94?-.35:t>.81?.3:t>.67?-.2:.4;
     float dx=uv.x-u0,ax=abs(dx),Ln=top?1.3:.75,sq=sqrt(1.+sl*sl);
-    float dist=abs(uv.y-sl*dx)/sq,wd=(top?.05:.034)*(1.-ax/Ln);
-    if(ax<Ln){if(dist<wd)g=0.;else if(dist<wd+.02*(1.-ax/Ln))g=1.;}
-    float L2=Ln*.55,d2=abs(uv.y-sl*dx-(top?.35:.16))/sq,w2=.013*(1.-ax/L2);
-    if(ax<L2){if(d2<w2)g=0.;else if(d2<w2+.012*(1.-ax/L2))g=1.;}
-    col=vec3(g);gl=1.;
+    if(ax<Ln&&abs(uv.y-sl*dx)/sq<(top?.05:.034)*(1.-ax/Ln))ink=1.-ink;
+    float L2=Ln*.55;
+    if(ax<L2&&abs(uv.y-sl*dx-(top?.35:.16))/sq<.013*(1.-ax/L2))ink=1.-ink;
+    col=vec3(1.-ink);gl=1.;
   }
   else if(s==10.){if(abs(vP.y)>bh*.4)col*=.45;}
   else if(s==11.){if(mod((vP.x+vP.z+vP.y*2.)*3.,1.)<.5)col=mix(col,vec3(1.),.7);}
@@ -612,13 +617,13 @@ const Mus={g:null,bus:null,lp:null,tm:null,t:0,i:0,on:false,
 // ---- Estado ----
 let stack=[],mv=null,debris=[],combo=0,score=0,hue0=0,bgH=0,runPerf=0,runBonus=0;
 let mode='menu';
-let camY=H,shift=MENU_SHIFT,zoom=1,overK=1,panT0=0,overT=0,popM=null,pop=0,mood=1,fev=0,punch=0;
+let camBase=1,camY=H,shift=MENU_SHIFT,zoom=1,overK=1,panT0=0,overT=0,popM=null,pop=0,mood=1,fev=0,punch=0;
 
 let paused=false,plAnt=false,modo='classico',tmpR=60,tmrAnt=false,tsAnt=-1,cullT=-1,skinK=0,skinOn=false;
 function reset(nIni=INIT){
   [...stack,...debris,mv].forEach(b=>b&&b.mesh&&b.mesh.dispose());
   hue0=modo==='diario'?hashDia():Math.random()*360|0;tmpR=60;bgH=hue0;combo=0;score=0;debris=[];popM=null;mood=1;runPerf=0;runBonus=0;
-  $('score').textContent=0;camY=nIni*H;hud();recLine();
+  $('score').textContent=0;camY=nIni*H;camBase=nIni;hud();recLine();
   stack=[];
   for(let k=0;k<nIni;k++){const b0={x:-BASE/2,z:-BASE/2,w:BASE,d:BASE,hue:(hue0+k*7)%360};b0.mesh=mk(b0.x,b0.z,BASE,BASE,k*H,b0.hue);b0.mesh.freezeWorldMatrix();stack.push(b0);}
   cull();
@@ -703,7 +708,7 @@ function toMenu(){
   $('menu').classList.remove('out');showGrp('main');modo='classico';reset();mode='menu';shift=MENU_SHIFT;zoom=1;
 }
 function tap(e){
-  if(paused||(e.target.closest&&e.target.closest('#menu,#home,#pz,#pauseBox,#nov')))return;
+  if(paused||(e.target.closest&&e.target.closest('#menu,#home,#pz,#pauseBox,#nov,#bgBtn')))return;
   if(mode==='play')place();
   else if(mode==='over'&&performance.now()-overT>500){
     if(net.active){if(net.done)backToLobby();return;}
@@ -742,14 +747,37 @@ const SK=[
 let skinI=Math.min(sv.skin,SK.length-1);
 toon.setFloat('skin',skinI);
 const skinColor=(n,h)=>SK[skinI].cor(n,h);
-function setSkin(i){skinI=i;bgTema(i===12);altAnt=-9;toon.setFloat('skin',i);reset(4);camY=stack.length*H;} // torrezinha de 4 blocos só pra mostrar a skin
+function setSkin(i){skinI=i;bgAplica();altAnt=-9;toon.setFloat('skin',i);reset(4);camY=stack.length*H;} // torrezinha de 4 blocos só pra mostrar a skin
 
 const dmCache={};
 const dm=c=>dmCache[c.toHexString()]||(dmCache[c.toHexString()]=Object.assign(new BABYLON.StandardMaterial('dm',scene),{diffuseColor:BABYLON.Color3.Black(),specularColor:BABYLON.Color3.Black(),emissiveColor:c}));
 const ROSA=new BABYLON.Color3(1,.36,.58),OURO=new BABYLON.Color3(1,.82,.24),BRANCO=new BABYLON.Color3(1,1,1),CIAN=new BABYLON.Color3(.2,1,.95),PURP=new BABYLON.Color3(.35,.2,.55),VERM=new BABYLON.Color3(.9,.15,.2),NEGRO=new BABYLON.Color3(.06,.06,.09);
 
+// ---- Olhos do manga: só o contorno em ciano, bravos (desenho do usuário) ----
+// textura do olho do mangá: só o contorno em ciano, brava (como o desenho do usuário)
+function eyeTexCanvas(mirror){
+  const c=document.createElement('canvas');c.width=256;c.height=192;
+  const x=c.getContext('2d');
+  if(mirror){x.translate(256,0);x.scale(-1,1);}
+  const X=u=>24+u*208,Y=v=>22+v*140;
+  x.lineJoin='round';x.lineCap='round';x.strokeStyle='#38f5da';x.shadowColor='#38f5da';
+  const draw=()=>{x.beginPath();x.moveTo(X(0),Y(.03));x.lineTo(X(1),Y(.66));x.bezierCurveTo(X(.88),Y(.92),X(.45),Y(1.1),X(.13),Y(.86));x.bezierCurveTo(X(.03),Y(.72),X(0),Y(.3),X(0),Y(.03));x.closePath();x.stroke();};
+  x.lineWidth=15;x.shadowBlur=22;draw();   // brilho
+  x.lineWidth=9;x.shadowBlur=6;draw();     // traço
+  return c;
+}
+
+const mgEyeMats={};
+function mgEyeMat(mirror){
+  if(mgEyeMats[mirror])return mgEyeMats[mirror];
+  const tx=new BABYLON.DynamicTexture('eyet',{width:256,height:192},scene,false);
+  tx.getContext().drawImage(eyeTexCanvas(mirror),0,0);tx.hasAlpha=true;tx.update();
+  const m=new BABYLON.StandardMaterial('eyem'+(mirror?1:0),scene);
+  m.diffuseTexture=tx;m.useAlphaFromDiffuseTexture=true;m.disableLighting=true;m.backFaceCulling=false;
+  return mgEyeMats[mirror]=m;
+}
 const protoCache={};
-const MBC={};['CreateSphere','CreateCylinder','CreateBox','CreateTorus','CreateTube'].forEach(fn=>{
+const MBC={};['CreateSphere','CreateCylinder','CreateBox','CreateTorus','CreateTube','CreatePlane'].forEach(fn=>{
   MBC[fn]=(n,o,sc)=>{const k=fn+(o.path?'tube'+o.radius:JSON.stringify(o));let p=protoCache[k];
     if(!p){p=BABYLON.MeshBuilder[fn](n,o,sc);p.isVisible=false;p.setEnabled(false);p.isPickable=false;protoCache[k]=p;}
     const c=p.clone(n);c.setEnabled(true);c.isVisible=true;return c;};
@@ -762,8 +790,14 @@ function dressCat(m,w,d,col){
   const laco=(x,y,z,c,s)=>{ball(x-.14*s,y,z-.14*s,.26*s,c);ball(x+.14*s,y,z+.14*s,.26*s,c);ball(x,y,z,.18*s,c);};
   [-1,1].forEach(s=>ears.push(add(MB.CreateCylinder('o',{diameterTop:0,diameterBottom:.6,height:.6,tessellation:3},scene),s*.3*w-.12*w,top+.3,s*.3*d+.12*d,col)));
   const eye=(x,z,face)=>{
+    if(sk.acess==='manga'){ // olho bravo em ciano, colado na face do bloco
+      const e=MB.CreatePlane('e',{width:.62,height:.46},scene);
+      add(e,face==='x'?x+.015:x,0,face==='z'?z-.015:z,INK,false);
+      e.material=mgEyeMat(face==='x');e.rotation.y=face==='x'?-Math.PI/2:0;
+      e._by=1;e._f=face;e.scaling.set(1,mood,1);eyes.push(e);return;
+    }
     const e=sk.olho==='q'?MB.CreateBox('e',{size:.26},scene):MB.CreateSphere('e',{diameter:.3,segments:8},scene);
-    add(e,x,0,z,INK,false);if(sk.acess==='manga'){e.renderOutline=Q().line;e.outlineWidth=.035;e.outlineColor=BRANCO;}e._by=sk.olho==='u'?.3:1.4;e._f=face;
+    add(e,x,0,z,INK,false);e._by=sk.olho==='u'?.3:1.4;e._f=face;
     e.scaling.set(face==='x'?.45:1,e._by*mood,face==='z'?.45:1);eyes.push(e);
   };
   eye(w*.28,-d/2,'z');eye(w/2,-d*.28,'x');
@@ -810,12 +844,28 @@ const INKH='#1b1a3a',SVG=(vb,body)=>'<svg xmlns="http://www.w3.org/2000/svg" vie
   BGV.stars=SVG('0 0 300 300',st);$('stars').style.backgroundImage=uri(BGV.stars);
   BGV.moon=SVG('0 0 200 200','<circle cx="100" cy="100" r="92" fill="#fff6d6" stroke="'+INKH+'" stroke-width="7"/><ellipse cx="70" cy="80" rx="20" ry="16" fill="#e8dcae"/><ellipse cx="125" cy="125" rx="26" ry="20" fill="#e8dcae"/><ellipse cx="128" cy="62" rx="12" ry="10" fill="#e8dcae"/>');$('moon').style.backgroundImage=uri(BGV.moon);
 })();
-const CINZA={'#7a5fb5':'#8c8c8c','#ffe27a':'#f4f4f4','#fff6d6':'#f6f6f6','#e8dcae':'#cfcfcf'};
-let bgOn=false;
-function bgTema(on){ // skin de manga: cenário em cinza (trocar a imagem é bem mais leve que um filtro CSS)
-  if(bgOn===on)return;bgOn=on;
+// ---- Lua muda com a skin: abóbora (Halloween), gorro (Natal), espada atrás (manga) ----
+const CRAT=(dy)=>'<ellipse cx="70" cy="'+(80+dy)+'" rx="20" ry="16" fill="#e8dcae"/><ellipse cx="125" cy="'+(125+dy)+'" rx="26" ry="20" fill="#e8dcae"/><ellipse cx="128" cy="'+(62+dy)+'" rx="12" ry="10" fill="#e8dcae"/>';
+const MOONV={
+_n:SVG('0 0 200 200','<circle cx="100" cy="100" r="92" fill="#fff6d6" stroke="'+INKH+'" stroke-width="7"/>'+CRAT(0)),
+ // abóbora de Halloween
+ pumpkin:SVG('0 0 200 200','<g stroke="'+INKH+'" stroke-width="6" stroke-linejoin="round"><ellipse cx="55" cy="114" rx="42" ry="62" fill="#f47a14"/><ellipse cx="145" cy="114" rx="42" ry="62" fill="#f47a14"/><ellipse cx="78" cy="114" rx="40" ry="66" fill="#ff8f1f"/><ellipse cx="122" cy="114" rx="40" ry="66" fill="#ff8f1f"/><ellipse cx="100" cy="114" rx="34" ry="68" fill="#ffa033"/><path d="M92 50 Q93 24 116 14 L125 27 Q108 33 110 52 Z" fill="#4f9a3f"/></g><g fill="#ffe27a" stroke="'+INKH+'" stroke-width="4" stroke-linejoin="round"><path d="M60 104 L86 104 L73 80 Z"/><path d="M114 104 L140 104 L127 80 Z"/><path d="M95 118 L105 118 L100 108 Z"/><path d="M56 130 L72 124 L82 138 L93 125 L107 138 L118 125 L128 138 L144 130 Q132 166 100 168 Q68 166 56 130 Z"/></g>'),
+ // lua de gorro de Natal
+ xmas:SVG('0 0 200 200','<circle cx="100" cy="116" r="76" fill="#fff6d6" stroke="'+INKH+'" stroke-width="7"/>'+CRAT(16).replace(/cx="(\d+)"/g,(m,x)=>'cx="'+(+x*.83+17)+'"').replace(/cy="(\d+)"/g,(m,y)=>'cy="'+(+y*.83+14)+'"')+'<g transform="rotate(-12 100 74)" stroke="'+INKH+'" stroke-width="6" stroke-linejoin="round"><path d="M46 68 Q50 14 116 10 Q140 10 150 28 Q146 52 158 68 Z" fill="#e23c3c"/><rect x="32" y="62" width="136" height="26" rx="13" fill="#fff"/><circle cx="150" cy="26" r="14" fill="#fff"/></g>'),
+ // lua com espada preta e branca atrás (a espada passa por trás e aparece dos dois lados)
+ sword:SVG('-40 -40 280 280','<g transform="rotate(42 100 100)" stroke="'+INKH+'" stroke-width="6" stroke-linejoin="round"><path d="M100 -40 L116 -12 L116 120 L84 120 L84 -12 Z" fill="#fff"/><path d="M100 -14 L100 114" stroke="#8a8a8a" stroke-width="3" fill="none"/><rect x="52" y="120" width="96" height="18" rx="7" fill="'+INKH+'"/><rect x="90" y="138" width="20" height="58" rx="4" fill="'+INKH+'"/><path d="M90 150 L110 158 M90 164 L110 172 M90 178 L110 186" stroke="#fff" stroke-width="3" fill="none"/><circle cx="100" cy="208" r="12" fill="#fff"/></g><circle cx="100" cy="100" r="68" fill="#fff6d6" stroke="'+INKH+'" stroke-width="7"/>'+CRAT(0).replace(/cx="(\d+)"/g,(m,x)=>'cx="'+(+x*.74+26)+'"').replace(/cy="(\d+)"/g,(m,y)=>'cy="'+(+y*.74+26)+'"').replace(/rx="(\d+)"/g,(m,v)=>'rx="'+(+v*.74)+'"').replace(/ry="(\d+)"/g,(m,v)=>'ry="'+(+v*.74)+'"'))
+};
+
+const CINZA={'#7a5fb5':'#4a4a4a','#ffe27a':'#ffffff','#fff6d6':'#f6f6f6','#e8dcae':'#cfcfcf'};
+const pbOn=()=>skinI===12&&sv.pb!==0; // fundo preto e branco só com a skin de manga equipada (o botão na partida liga/desliga)
+const moonSvg=i=>i===10?MOONV.pumpkin:i===11?MOONV.xmas:i===12?MOONV.sword:BGV.moon;
+let bgKey='';
+function bgAplica(){ // trocar a imagem do cenário é bem mais leve que um filtro CSS
+  const on=pbOn(),k=on+'|'+(skinI>=10&&skinI<=12?skinI:0);
+  document.body.classList.toggle('mgc',skinI===12);
+  if(k===bgKey)return;bgKey=k;
   const f=x=>on?x.replace(/#7a5fb5|#ffe27a|#fff6d6|#e8dcae/g,m=>CINZA[m]):x;
-  $('city').style.backgroundImage=uri(f(BGV.city));$('stars').style.backgroundImage=uri(f(BGV.stars));$('moon').style.backgroundImage=uri(f(BGV.moon));
+  $('city').style.backgroundImage=uri(f(BGV.city));$('stars').style.backgroundImage=uri(f(BGV.stars));$('moon').style.backgroundImage=uri(f(moonSvg(skinI)));
   [...$('clouds').children].forEach(c=>c.style.backgroundImage=uri(f(BGV.nuv)));
 }
 const LY={city:$('city').style,clouds:$('clouds').style,stars:$('stars').style,moon:$('moon').style,snow:$('snow').style};
@@ -825,7 +875,7 @@ function scenery(alt){
   if(Math.abs(alt-altAnt)<.015)return;altAnt=alt; // só atualiza o fundo quando a altura muda
   const i=Math.max(0,FASES.filter(p=>alt>=p.de+4).length-1),a=FASES[i],b=FASES[i+1];
   const t=b?ss(b.de-4,b.de+4,alt):0;
-  const cs=[0,1,2].map(k=>{const c=a.c[k].map((v,j)=>b?v+(b.c[k][j]-v)*t:v);return'hsl('+c[0].toFixed(0)+','+(skinI===12?0:c[1]).toFixed(0)+'%,'+c[2].toFixed(0)+'%)';});
+  const cs=[0,1,2].map(k=>{const c=a.c[k].map((v,j)=>b?v+(b.c[k][j]-v)*t:v);return'hsl('+c[0].toFixed(0)+','+(pbOn()?0:c[1]).toFixed(0)+'%,'+c[2].toFixed(0)+'%)';});
   if(cs.join()!==ceu){ceu=cs.join();cs.forEach((c,k)=>{document.documentElement.style.setProperty('--c'+(k+1),c);const m=c.match(/\d+/g),rgb=hsl2rgb(+m[0],+m[1],+m[2]);toon.setColor3('fogC'+(k+1),new BABYLON.Color3(rgb[0],rgb[1],rgb[2]));});}
   LY.city.opacity=1-ss(6,16,alt);LY.city.transform='translateY('+alt*1.4+'vh)';
   LY.clouds.opacity=ss(5,12,alt)*(1-ss(24,32,alt));LY.clouds.transform='translateY('+(alt-6)*1.1+'vh)';
@@ -863,19 +913,20 @@ const MGJ_C=['ザクッ!','ガーン!','しまった!','あっ!','スパッ!','�
 const MGC_T={3:'すごい!!',4:'やばい!!!',5:'最強!!!!',6:'さすが!!',7:'すげえ!!',8:'天才!!',9:'神業!!',10:'無双!!!',11:'圧倒的!!',12:'覇者!!!',13:'修羅!!!',14:'鬼神!!!!'};
 const mgTxt=n=>n>20?'剣聖!!!!!':n===20?'剣聖降臨!!!!!':n>=15?(n>=18?'伝説!!!!!':'伝説!!!!'):MGC_T[n];
 const MGFONT="'Dela Gothic One','Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif";
-let mgLast=-1,mgSt=-1;
+let mgLast=-1,mgSt=-1,mgBtn=null,mgBtnV=0;
+function mgBtnRot(){if(!mgBtn)return;mgBtn.querySelector('span').textContent=pbOn()?'FUNDO: P&B':'FUNDO: NORMAL';mgBtn.classList.toggle('pb',pbOn());}
 const mgRnd=(a,b)=>a+Math.random()*(b-a);
-function mgLinesPng(n,r0,r1){ // linhas de velocidade desenhadas UMA vez numa imagem; some suave onde a camada termina (47% da tela)
-  const W=360,Hh=780,c=document.createElement('canvas');c.width=W;c.height=Hh;
-  const x=c.getContext('2d'),cx=W/2,cy=Hh/2,R=Math.hypot(cx,cy)*1.05;x.fillStyle='#000';
+function mgLinesPng(n,r0,r1){ // linhas de velocidade desenhadas UMA vez, só para a faixa de cima da tela (47%); some suave na borda de baixo
+  const W=360,Hh=366,c=document.createElement('canvas');c.width=W;c.height=Hh;
+  const x=c.getContext('2d'),cx=W/2,cy=Hh*.85,R=Math.hypot(cx,Hh)*1.05;x.fillStyle='#000';
   for(let i=0;i<n;i++){const a=Math.random()*6.2832,w=.008+Math.random()*.025,ri=mgRnd(r0,r1)*R;
     x.beginPath();x.moveTo(cx+Math.cos(a)*ri,cy+Math.sin(a)*ri);x.lineTo(cx+Math.cos(a-w)*R*1.2,cy+Math.sin(a-w)*R*1.2);x.lineTo(cx+Math.cos(a+w)*R*1.2,cy+Math.sin(a+w)*R*1.2);x.closePath();x.fill();}
   x.globalCompositeOperation='destination-in';
-  const g=x.createLinearGradient(0,Hh*.4875,0,Hh*.544);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');
+  const g=x.createLinearGradient(0,Hh*.81,0,Hh);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');
   x.fillStyle=g;x.fillRect(0,0,W,Hh);
   return c.toDataURL('image/png');
 }
-const MGP=[mgLinesPng(46,.1,.25),mgLinesPng(46,.1,.25),mgLinesPng(70,.1,.25)];
+const MGP=[mgLinesPng(46,.08,.2),mgLinesPng(46,.08,.2),mgLinesPng(70,.08,.2)];
 MGP.forEach(u=>{const im=new Image();im.src=u;if(im.decode)im.decode().catch(()=>{});}); // já decodifica na abertura
 function mgStar(neg){ // balão de explosão
   let p='';const N=14;
@@ -888,7 +939,7 @@ function mgStar(neg){ // balão de explosão
 #mg{position:fixed;inset:0;z-index:4;pointer-events:none;overflow:hidden}
 #mgLayer{position:absolute;left:0;right:0;top:0;height:47%;overflow:hidden}
 .mgv0{background-image:url(${MGP[0]})}.mgv1{background-image:url(${MGP[1]})}.mgv2{background-image:url(${MGP[2]})}
-#mgFever,.mgSp{position:absolute;left:-30vw;top:-40vh;width:160vw;height:160vh;background-size:100% 100%;will-change:transform,opacity}
+#mgFever,.mgSp{position:absolute;inset:0;background-size:100% 100%;will-change:transform,opacity}
 #mgFever{opacity:0;transition:opacity .3s}
 #mg.c5 #mgFever{opacity:.4;animation:mgJit .2s steps(2) infinite}
 #mg.c10 #mgFever{opacity:.55;animation:mgJit .14s steps(2) infinite}
@@ -898,9 +949,14 @@ function mgStar(neg){ // balão de explosão
 @keyframes mgSp{0%{opacity:var(--o,.9);transform:scale(1)}100%{opacity:0;transform:scale(1.08)}}
 .mgFl{position:absolute;inset:0;background:#fff;opacity:0;animation:mgFl .6s ease-out forwards}
 @keyframes mgFl{0%{opacity:.8}100%{opacity:0}}
-#mg .bar{position:absolute;left:0;right:0;background:#000;height:0;transition:height .3s}
-#mg .bar.t{top:0}#mg .bar.b{bottom:0}
-#mg.c10 .bar{height:1.2vh}#mg.c15 .bar{height:2.2vh}
+#mg .bar{position:absolute;left:0;right:0;background:#000;height:2.2vh;transition:transform .3s;will-change:transform}
+#mg .bar.t{top:0;transform:translateY(-100%)}#mg .bar.b{bottom:0;transform:translateY(100%)}
+#bgBtn{position:fixed;right:4vw;top:calc(env(safe-area-inset-top,0px) + 5.4vh);z-index:99999;display:none;align-items:center;gap:6px;padding:5px 11px;background:#fffdf5;border:2px solid #1b1a3a;border-radius:12px;box-shadow:2px 2px 0 #1b1a3a;font-family:Bangers,Impact,sans-serif;font-size:15px;letter-spacing:.06em;color:#1b1a3a;line-height:1;cursor:pointer;touch-action:manipulation}
+#bgBtn.on{display:flex}
+#bgBtn:active{transform:translate(2px,2px);box-shadow:0 0 0 #1b1a3a}
+#bgBtn i{width:12px;height:12px;border-radius:50%;border:2px solid #1b1a3a;background:conic-gradient(#ff5a7a,#ffd23f,#5fd38d,#7fd4ff,#ff5a7a)}
+#bgBtn.pb i{background:linear-gradient(90deg,#000 50%,#fff 50%)}
+#mg.c10 .bar.t{transform:translateY(-45%)}#mg.c10 .bar.b{transform:translateY(45%)}#mg.c15 .bar{transform:none}
 .mgJ,.mgC{position:absolute;display:grid;place-items:center;text-align:center;will-change:transform,opacity}
 .mgJ{width:32vmin;height:32vmin;margin:-16vmin 0 0 -16vmin;animation:mgJump 1.05s forwards}
 .mgC{left:50%;top:29vh;height:38vmin;margin-top:-19vmin;animation:mgPunch .9s forwards}
@@ -923,7 +979,13 @@ function mgStar(neg){ // balão de explosão
   // aquece a fonte japonesa (e a fonte do sistema) na abertura: sem isso o 1º balão travava o jogo carregando fonte
   const w=document.createElement('div');w.style.cssText='position:fixed;left:-200vw;top:0;opacity:0;pointer-events:none;font:20px '+MGFONT;
   w.textContent=MGJ_P.join('')+MGJ_C.join('')+Object.values(MGC_T).join('')+'剣聖降臨伝説!';document.body.appendChild(w);
-  bgTema(skinI===12);
+  bgAplica();
+  // botão P&B / normal (só aparece na partida, com a skin de manga equipada)
+  const bb=document.createElement('button');bb.id='bgBtn';bb.type='button';bb.innerHTML='<i></i><span></span>';document.body.appendChild(bb);
+  mgBtn=bb;
+  bb.addEventListener('pointerdown',e=>e.stopPropagation());
+  bb.addEventListener('click',e=>{e.stopPropagation();sv.pb=pbOn()?0:1;salvar();bgAplica();altAnt=-9;mgBtnRot();});
+  mgBtnRot();
 })();
 // ---- Letras no lugar das estrelas: 餵! 哦! 哇! 帕拉! 完美! (borda preta + letra branca, e borda branca + letra preta, alternando) ----
 // (mesmo shader das partículas normais: nada novo para compilar)
@@ -937,9 +999,9 @@ const mgGl=[0,1].map(sc=>MGZ.map(t=>{
   const p=new BABYLON.ParticleSystem('mgz',10,scene);
   p.particleTexture=tx;p.emitter=new BABYLON.Vector3();p.emitRate=0;
   p.color1=new BABYLON.Color4(1,1,1,1);p.color2=new BABYLON.Color4(1,1,1,1);p.colorDead=new BABYLON.Color4(1,1,1,0);
-  p.minSize=.7;p.maxSize=.95;p.minLifeTime=.8;p.maxLifeTime=1.15;p.gravity=new BABYLON.Vector3(0,-2.5,0);
-  p.direction1=new BABYLON.Vector3(-1.4,3.4,-1.4);p.direction2=new BABYLON.Vector3(1.4,5.2,1.4);
-  p.minAngularSpeed=-.5;p.maxAngularSpeed=.5;p.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD;
+  p.minSize=.26;p.maxSize=.36;p.minLifeTime=.45;p.maxLifeTime=.6;p.gravity=new BABYLON.Vector3(0,-30,0); // pulinho rápido: sobe e desce em ~0,5 s
+  p.direction1=new BABYLON.Vector3(-.7,5.5,-.7);p.direction2=new BABYLON.Vector3(.7,7.5,.7);
+  p.minAngularSpeed=0;p.maxAngularSpeed=0;p.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD;
   p.start();return p;
 }));
 let mgBn=0;
@@ -950,6 +1012,7 @@ function mgGlyphs(x,y,z,w,d,n){ // sai do meio do bloco, longe das pontas
 function mgTick(){ // sequência de perfeitos: 5+ linhas fracas, 10+ mais fortes e barras finas, 15+ ainda mais
   const on=skinI===12&&mode==='play';
   if(!on)mgPrev=0;
+  const bv=on&&!paused?1:0;if(bv!==mgBtnV){mgBtnV=bv;if(mgBtn){mgBtn.classList.toggle('on',!!bv);if(bv)mgBtnRot();}}
   const s=on?(combo>=15?15:combo>=10?10:combo>=5?5:0):0;
   if(s!==mgSt){mgSt=s;$('mg').className='c'+s;}
 }
@@ -1014,7 +1077,8 @@ function mgCombo(n){ // texto no centro de cima a partir de 3 perfeitos; muda a 
   if(!FPS_ON)return;
   const st=document.createElement('style');
   st.textContent=`
-#fps{position:fixed;right:4vw;top:calc(env(safe-area-inset-top,0px) + 11.5vh);z-index:99999;pointer-events:none;display:flex;align-items:center;gap:6px;padding:4px 9px;background:#fffdf5;border:2px solid #1b1a3a;border-radius:12px;box-shadow:2px 2px 0 #1b1a3a;font-family:Bangers,Impact,sans-serif;color:#1b1a3a;line-height:1;opacity:.92}
+#fps{position:fixed;right:4vw;top:calc(env(safe-area-inset-top,0px) + .6vh);z-index:99999;pointer-events:none;display:flex;align-items:center;gap:6px;padding:4px 9px;background:#fffdf5;border:2px solid #1b1a3a;border-radius:12px;box-shadow:2px 2px 0 #1b1a3a;font-family:Bangers,Impact,sans-serif;color:#1b1a3a;line-height:1;opacity:.92}
+#bauTop:not(.hide)~#fps{right:calc(4vw + 33vmin + 8px)}
 #fps .fd{width:9px;height:9px;border-radius:50%;background:var(--fc,#5fd38d);border:2px solid #1b1a3a;flex:none}
 #fps .fn{font-size:19px;letter-spacing:.03em;min-width:2ch;text-align:right}
 #fps .fl{font-size:10px;letter-spacing:.14em;opacity:.7}
@@ -1398,7 +1462,7 @@ addEventListener('message',e=>{if(e.data&&e.data.ota)popText(e.data.ota,1,5,12);
 (()=>{const sn=$('snow');for(let i=0;i<30;i++){const e=document.createElement('i'),z=3+Math.random()*5;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(6+Math.random()*7)+'s;animation-delay:-'+Math.random()*12+'s';sn.appendChild(e);}})();
 (()=>{const f=$('fl');for(let i=0;i<16;i++){const e=document.createElement('i'),z=3+Math.random()*6;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(10+Math.random()*10)+'s;animation-delay:-'+Math.random()*16+'s';f.appendChild(e);}})();
 // Bônus diário com sequência de dias (até 7)
-const NOV='• Skin lendária refeita: Kensei Densetsu (mangá preto e branco com cortes de espada)\n• Sons e efeitos que evoluem até 20 perfeitos seguidos\n• Baú na loja de skins\n• Loja de skins: o bloco não fica mais escondido\n• Torre não balança mais';
+const NOV='• Skin Kensei Densetsu: olhos bravos, fundo preto e branco com botão para trocar\n• A lua muda com a skin: abóbora, gorro de Natal ou espada\n• A tela só começa a subir no 3º bloco\n• Mais fluidez nos encaixes perfeitos';
 setTimeout(pendenteBau,3500);
 setTimeout(()=>Rank.sync(),7000);
 setTimeout(()=>{if(sv.ver!==GAME_V&&(sv.ver||sv.st.jogos>0)){$('novT').textContent='✨ Versão '+GAME_V+'\n'+NOV;$('nov').classList.remove('hide');}sv.ver=GAME_V;salvar();},4500);
@@ -1447,7 +1511,7 @@ eng.runRenderLoop(()=>{
   const asp=eng.getRenderWidth()/eng.getRenderHeight(),hh0=Math.max(3.4,VIEW/asp)*zoom*(1+.5*skinK),ov=mode==='over'&&stack.length>=12;
   overK+=((ov?Math.max(1,(stack.length*H*.42+1.5)/hh0):1)-overK)*Math.min(dt*2.5,1);
   const hh=hh0*overK*(1-.035*Math.max(punch,0)),hw=hh*asp;
-  camY+=((ov?stack.length*H/2-.34*hh:stack.length*H)-camY)*Math.min(dt*5,1);
+  camY+=((ov?stack.length*H/2-.34*hh:(stack.length-camBase>=3?stack.length:camBase)*H)-camY)*Math.min(dt*5,1); // a tela só começa a subir no 3º bloco colocado
   cm.position.set(RIG.x,RIG.y+camY,RIG.z);
   const nf=ov||skinOn;toon.setFloat('fogA',nf?-1e4:camY-1.4);toon.setFloat('fogB',nf?-10001:camY-5);toon.setFloat('uH',eng.getRenderHeight());
   scenery(ov?stack.length:camY/H);
