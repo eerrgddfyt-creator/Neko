@@ -299,7 +299,8 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 })();
 </script>
 <script>
-const GAME_V=15; // aumente a cada versão nova
+var ad=false; // <<< ANÚNCIOS: false = desligado (nada de anúncio aparece) · true = ligado (reviver + skins)
+const GAME_V=17; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
 const H=.6,BASE=3,LIM=3.10,TOL=.12,MENU_SHIFT=.4,VIEW=2.2,VEL=3.45; // VEL = velocidade fixa dos blocos
 const INIT=8; // blocos já empilhados quando a partida começa (como no Stack)
@@ -624,7 +625,7 @@ let camBase=1,camY=H,shift=MENU_SHIFT,zoom=1,overK=1,panT0=0,overT=0,popM=null,p
 let paused=false,plAnt=false,modo='classico',tmpR=60,tmrAnt=false,tsAnt=-1,cullT=-1,skinK=0,skinOn=false;
 function reset(nIni=INIT){
   [...stack,...debris,mv].forEach(b=>b&&b.mesh&&b.mesh.dispose());
-  hue0=modo==='diario'?hashDia():Math.random()*360|0;tmpR=60;bgH=hue0;combo=0;score=0;debris=[];popM=null;mood=1;runPerf=0;runBonus=0;
+  hue0=modo==='diario'?hashDia():Math.random()*360|0;tmpR=60;bgH=hue0;if(window.Revive)Revive.used=false;combo=0;score=0;debris=[];popM=null;mood=1;runPerf=0;runBonus=0;
   $('score').textContent=0;camY=nIni*H;camBase=nIni;hud();recLine();
   stack=[];
   for(let k=0;k<nIni;k++){const b0={x:-BASE/2,z:-BASE/2,w:BASE,d:BASE,hue:(hue0+k*7)%360};b0.mesh=mk(b0.x,b0.z,BASE,BASE,k*H,b0.hue);b0.mesh.freezeWorldMatrix();stack.push(b0);}
@@ -657,7 +658,7 @@ function place(){
     if(combo===5)tip('t4','🔥 Frenesi! O bloco brilha. Não deixe o combo cair!');
   }else{
     combo=0;
-    if(Math.abs(d)>=m[sz]){m.mesh.dispose();fall(m.x,m.z,m.w,m.d,lvl,m.hue);if(skinI===12)mgCut(m.x,lvl+H/2,m.z+m.d,m.x+m.w,lvl+H/2,m.z);if(modo==='zen'||modo==='relogio'){combo=0;hud();mood=.75;vib(25);sfxCorte();if(modo==='relogio')tmpR=Math.max(0,tmpR-3);popText('Tente de novo!',2,7,8);spawn();return;}mv=null;return gameOver();}
+    if(Math.abs(d)>=m[sz]){m.mesh.dispose();fall(m.x,m.z,m.w,m.d,lvl,m.hue);if(skinI===12)mgCut(m.x,lvl+H/2,m.z+m.d,m.x+m.w,lvl+H/2,m.z);if(modo==='zen'||modo==='relogio'){combo=0;hud();mood=.75;vib(25);sfxCorte();if(modo==='relogio')tmpR=Math.max(0,tmpR-3);popText('Tente de novo!',2,7,8);spawn();return;}mv=null;return ReviveOffer();}
     const cut=Math.abs(d),f={x:m.x,z:m.z,w:m.w,d:m.d};
     nb[sz]=m[sz]-cut;
     if(d>0){f[a]=m[a]+nb[sz];f[sz]=cut;}else{nb[a]=top[a];f[sz]=cut;}
@@ -710,7 +711,7 @@ function toMenu(){
   $('menu').classList.remove('out');showGrp('main');modo='classico';reset();mode='menu';shift=MENU_SHIFT;zoom=1;
 }
 function tap(e){
-  if(paused||(e.target.closest&&e.target.closest('#menu,#home,#pz,#pauseBox,#nov,#bgBtn')))return;
+  if(paused||(e.target.closest&&e.target.closest('#menu,#home,#pz,#pauseBox,#nov,#bgBtn,#shareB,#shareV')))return;
   if(mode==='play')place();
   else if(mode==='over'&&performance.now()-overT>500){
     if(net.active){if(net.done)backToLobby();return;}
@@ -1344,6 +1345,7 @@ function renderSkn(){
   $('sknInfo').innerHTML='<div class="sn'+(s.nome.length>11?' lg':'')+'"><b>'+s.nome+'</b>'+(s.raro?'<span class="rar">★ '+s.raro+'</span>':'')+'<span>'+(prev+1)+'/'+SK.length+'</span></div><div class="sb">'+s.bonus+'</div><div class="sf">'+est+'<span class="sm">🪙 '+sv.moedas+'</span></div><div class="sd">'+SK.map((_,i)=>'<i class="'+(i===prev?'on ':'')+(sv.donos.includes(i)?'own':'')+'"></i>').join('')+'</div>';
   $('sknBuy').textContent=eq?'Equipada':dono?'Equipar':trava?'Bloqueada':'Comprar';
   $('bauTop').textContent=sv.bau===hojeKey()?'🎁 Baú':'🎁 Baú ●';
+  try{adSkinUpd();}catch(e){}
 }
 const AJUDA='COMO JOGAR\n👆 Toque pra soltar o bloco\n🎯 Alinhado = encaixe perfeito (combo)\n✂️ O que passa da torre é cortado\n🔥 5 combos seguidos = Frenesi\n\nMODOS\n🌿 Zen: sem game over\n⏱ Relógio: 60s, perfeito dá +2s\n📅 Diário: mesma torre pra todos\n\nEXTRAS\n🪙 Moedas compram skins com bônus\n🎁 Baú e missões novas todo dia';
 $('misBtn').onclick=()=>{showGrp('mis');renderMis();};
@@ -1464,7 +1466,7 @@ addEventListener('message',e=>{if(e.data&&e.data.ota)popText(e.data.ota,1,5,12);
 (()=>{const sn=$('snow');for(let i=0;i<30;i++){const e=document.createElement('i'),z=3+Math.random()*5;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(6+Math.random()*7)+'s;animation-delay:-'+Math.random()*12+'s';sn.appendChild(e);}})();
 (()=>{const f=$('fl');for(let i=0;i<16;i++){const e=document.createElement('i'),z=3+Math.random()*6;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(10+Math.random()*10)+'s;animation-delay:-'+Math.random()*16+'s';f.appendChild(e);}})();
 // Bônus diário com sequência de dias (até 7)
-const NOV='• Novo sistama de login implantado, faça seu login com email/senha para salvar sua conta e progresso na nuvem podendo conecta-la em qualquer outro dispositivo dispositivo.';
+const NOV=(ad?'• Novo: veja um anúncio para reviver quando errar.\n• Skins podem ser desbloqueadas assistindo anúncios (10 ou 20).\n':'')+'• Novo botão Compartilhar no fim da partida: manda a imagem da sua torre.';
 setTimeout(pendenteBau,3500);
 setTimeout(()=>Rank.sync(),7000);
 setTimeout(()=>{if(sv.ver!==GAME_V&&(sv.ver||sv.st.jogos>0)){$('novT').textContent='✨ Versão '+GAME_V+'\n'+NOV;$('nov').classList.remove('hide');}sv.ver=GAME_V;salvar();},4500);
@@ -1832,6 +1834,180 @@ window.NekoAuth={open,close,sync:()=>up(true),get logged(){return !!sv.acc&&!exp
      }
    }
    ------------------------------------------------------------ */
+
+</script>
+<script>
+/* ===== NEKO TOWER: anúncios com recompensa (reviver + skins) =====
+   CONFIGURE AQUI. Enquanto testMode=true, usa um anúncio de teste (5s) se não houver provedor real. */
+var ADS_CFG={
+  testMode:true,                                   // <<< troque para false ao publicar com anúncios reais
+  admobRewardedId:'ca-app-pub-3940256099942544/5224354917', // ID de TESTE oficial do Google; troque pelo seu ID de bloco "Premiado"
+  adsensePub:'',                                   // ex.: 'ca-pub-1234567890123456' (AdSense for Games, versão web)
+  maxPorDia:40,                                    // limite de anúncios por jogador por dia
+  reviverSeg:6,                                    // tempo da oferta de reviver
+  anunciosBarato:10,                               // skins até 250 moedas
+  anunciosCaro:20                                  // skins acima de 250 moedas
+};
+var Ads=(function(){
+  const C=ADS_CFG;let busy=false,adsInit=false;
+  const P=()=>{try{return window.parent&&window.parent!==window?window.parent:null;}catch(e){return null;}};
+  const bridge=()=>{try{return window.NekoAdsBridge||(P()&&P().NekoAdsBridge)||null;}catch(e){return null;}}; // app nativo pode expor showRewarded():Promise<boolean>
+  const admob=()=>{try{const c=window.Capacitor||(P()&&P().Capacitor);return c&&c.Plugins&&c.Plugins.AdMob||null;}catch(e){return null;}};
+  const hoje=()=>new Date().toISOString().slice(0,10);
+  const usados=()=>sv.adDia===hoje()?(sv.adN||0):0;
+  const sty=document.createElement('style');
+  sty.textContent=`#adT{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;background:rgba(27,26,58,.92);color:#fff;font:700 clamp(18px,5vmin,30px) 'Trebuchet MS',system-ui,sans-serif;text-align:center;padding:6vw}
+#adT b{font-family:Bangers,Impact,sans-serif;font-weight:400;font-size:clamp(40px,12vmin,80px);letter-spacing:.05em}
+#adT .box{flex:none;padding:1.2vh 7vw}
+#rev{position:fixed;z-index:6;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 8vh);transform:translateX(-50%) rotate(-1deg);width:min(86vw,420px);box-sizing:border-box;padding:2vh 5vw;display:flex;flex-direction:column;gap:1.2vh;text-align:center;animation:overIn .5s cubic-bezier(.2,1.6,.4,1) backwards}
+#rev .t{font-size:6.5vmin}#rev small{font-size:3.8vmin;line-height:1.3}
+#rev .btn{flex:none;width:100%;padding:1.1vh 0;font-size:5vmin}
+#rev .go{background:var(--sun)}
+#revBar{height:1.4vmin;background:#fff;border:.5vmin solid var(--ink);border-radius:2vmin;overflow:hidden}#revBar i{display:block;height:100%;width:100%;background:var(--pink);transform-origin:left}
+#sknAd{width:100%;flex:none;background:var(--sun)}#sknAd[disabled]{opacity:.6;pointer-events:none}`;
+  document.head.appendChild(sty);
+  function teste(){ // anúncio simulado para testar o fluxo
+    return new Promise(res=>{
+      const d=document.createElement('div');d.id='adT';let s=5;
+      d.innerHTML='<div>📺 Anúncio de teste</div><b id="adN">5</b><div>Aguarde para ganhar a recompensa</div><button class="box btn hide" id="adOk">Receber</button><button class="box btn" id="adX">Fechar</button>';
+      document.body.appendChild(d);
+      const tm=setInterval(()=>{s--;d.querySelector('#adN').textContent=s>0?s:'✔';if(s<=0){clearInterval(tm);d.querySelector('#adOk').classList.remove('hide');d.querySelector('#adX').classList.add('hide');}},1000);
+      d.querySelector('#adX').onclick=()=>{clearInterval(tm);d.remove();res(false);};
+      d.querySelector('#adOk').onclick=()=>{d.remove();res(true);};
+    });
+  }
+  async function viaAdmob(AM){
+    const id=C.admobRewardedId;
+    if(!adsInit){try{await AM.initialize({initializeForTesting:C.testMode});}catch(e){}adsInit=true;}
+    await AM.prepareRewardVideoAd({adId:id,isTesting:C.testMode});
+    let ok=false,h=null;
+    try{if(AM.addListener)h=await AM.addListener('onRewardedVideoAdReward',()=>{ok=true;});}catch(e){}
+    try{const r=await AM.showRewardVideoAd();if(r)ok=true;}finally{try{h&&h.remove&&h.remove();}catch(e){}}
+    return ok;
+  }
+  function viaAdsense(){
+    return new Promise(res=>{
+      if(!window.adBreak){const s=document.createElement('script');s.async=true;s.setAttribute('data-ad-client',C.adsensePub);s.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+encodeURIComponent(C.adsensePub);
+        window.adsbygoogle=window.adsbygoogle||[];window.adBreak=window.adConfig=function(o){window.adsbygoogle.push(o);};document.head.appendChild(s);window.adConfig({sound:'on',preloadAdBreaks:'on'});}
+      let ok=false,fim=false;const done=()=>{if(!fim){fim=true;res(ok);}};
+      setTimeout(done,60000);
+      window.adBreak({type:'reward',name:'recompensa',beforeReward:show=>show(),adViewed:()=>{ok=true;},adDismissed:()=>{},adBreakDone:done});
+    });
+  }
+  function disponivel(){return !!ad&&!!(bridge()||admob()||(C.adsensePub&&navigator.onLine!==false)||C.testMode);}
+  async function rewarded(){
+    if(!ad||busy)return false;
+    if(usados()>=C.maxPorDia){popText('Limite de anúncios de hoje atingido',2,6,8);return false;}
+    if(navigator.onLine===false&&!C.testMode){popText('Sem internet para o anúncio',2,6,8);return false;}
+    busy=true;const musOn=cfg.mus;try{Mus.stop();}catch(e){}
+    let ok=false;
+    try{
+      const b=bridge(),am=admob();
+      if(b&&b.showRewarded)ok=!!await b.showRewarded();
+      else if(am)ok=await viaAdmob(am);
+      else if(C.adsensePub)ok=await viaAdsense();
+      else if(C.testMode)ok=await teste();
+      else popText('Anúncio indisponível agora',2,6,8);
+    }catch(e){popText('Anúncio indisponível agora',2,6,8);ok=false;}
+    busy=false;try{if(musOn)Mus.start();}catch(e){}
+    if(ok){sv.adDia=hoje();sv.adN=usados()+1;salvar();}
+    return ok;
+  }
+  return {rewarded,disponivel,get busy(){return busy;},usados};
+})();
+
+// ---------- Reviver ----------
+var Revive={used:false,tm:0};
+function ReviveOffer(){ // chamado quando o jogador erra o bloco (no lugar de ir direto ao fim de jogo)
+  if(!ad||net.active||Revive.used||score<5||!Ads.disponivel()||(modo!=='classico'&&modo!=='diario'))return gameOver();
+  mode='revive';trail.emitRate=0;
+  const d=document.createElement('div');d.id='rev';d.className='box';
+  d.innerHTML='<div class="t">Quer continuar?</div><small>Veja um anúncio e volte a empilhar de onde parou.</small><button class="box btn go" id="revY">🎬 Reviver</button><button class="box btn" id="revN">Não, obrigado</button><div id="revBar"><i></i></div>';
+  document.body.appendChild(d);
+  const bar=d.querySelector('#revBar i'),t0=performance.now(),T=ADS_CFG.reviverSeg*1000;
+  const fecha=()=>{clearInterval(Revive.tm);d.remove();};
+  const nao=()=>{fecha();gameOver();};
+  Revive.tm=setInterval(()=>{const k=1-(performance.now()-t0)/T;bar.style.transform='scaleX('+Math.max(k,0)+')';if(k<=0)nao();},60);
+  d.querySelector('#revN').onclick=nao;
+  d.querySelector('#revY').onclick=async()=>{
+    clearInterval(Revive.tm);d.style.visibility='hidden';
+    const ok=await Ads.rewarded();
+    d.remove();
+    if(ok){Revive.used=true;combo=0;hud();mode='play';spawn();beep(660,.2);vib(25);popText('Continue! 💖',2,8,8);}
+    else{gameOver();}
+  };
+}
+
+// ---------- Skins por anúncios ----------
+function adsPara(s){return s.req||!s.preco?0:(s.preco<=250?ADS_CFG.anunciosBarato:ADS_CFG.anunciosCaro);}
+var skAdBtn=document.createElement('button');skAdBtn.id='sknAd';skAdBtn.className='box btn hide';
+if(ad)(function(){const b=document.getElementById('sknBack');if(b&&b.parentNode)b.parentNode.insertBefore(skAdBtn,b);})();
+function adSkinUpd(){
+  const s=SK[prev],dono=sv.donos.includes(prev),n=adsPara(s);
+  if(!ad||dono||!n||!Ads.disponivel()){skAdBtn.classList.add('hide');return;}
+  sv.adk=sv.adk||{};skAdBtn.classList.remove('hide');
+  skAdBtn.textContent='🎬 Ganhar com anúncios ('+(sv.adk[prev]||0)+'/'+n+')';
+}
+skAdBtn.onclick=async()=>{
+  const s=SK[prev],n=adsPara(s);if(!n||sv.donos.includes(prev)||Ads.busy)return;
+  skAdBtn.disabled=true;
+  const ok=await Ads.rewarded();skAdBtn.disabled=false;
+  if(ok){
+    sv.adk=sv.adk||{};sv.adk[prev]=(sv.adk[prev]||0)+1;
+    if(sv.adk[prev]>=n){sv.donos.push(prev);delete sv.adk[prev];beep(660,.2);vib(25);popText('🎉 '+s.nome+' desbloqueada!',2,8,8);ach();}
+    else popText('+1 anúncio! Faltam '+(n-sv.adk[prev]),2,7,8);
+    salvar();
+  }
+  renderSkn();
+};
+
+</script>
+<script>
+/* ===== NEKO TOWER: compartilhar torre ===== */
+var SHARE_CFG={url:'',titulo:'NEKO TOWER'}; // coloque o link do seu jogo/loja em url (ex.: 'https://seusite.com')
+(function(){
+  const st=document.createElement('style');
+  st.textContent=`#shareB{position:fixed;z-index:4;right:4vw;top:calc(env(safe-area-inset-top,0px) + 9.5vh);padding:1vh 4vw;font-size:5vmin;background:var(--sun);flex:none;transform:rotate(1.5deg)}
+#shareV{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.6vh;background:rgba(27,26,58,.92);padding:4vw;color:#fff;font:700 clamp(15px,4vmin,22px) system-ui,sans-serif;text-align:center}
+#shareV img{max-width:80vw;max-height:66vh;border:.8vmin solid #1b1a3a;border-radius:2vmin;-webkit-user-select:auto;user-select:auto;-webkit-touch-callout:default}
+#shareV .box{flex:none;padding:1vh 7vw}`;
+  document.head.appendChild(st);
+  const b=document.createElement('button');b.id='shareB';b.className='box btn hide';b.textContent='📤 Compartilhar';document.body.appendChild(b);
+  const cv=()=>document.getElementById('c');
+  function cartao(){
+    scene.render(); // renderiza e copia no mesmo instante (o canvas 3D não guarda a imagem depois)
+    const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+    const rs=getComputedStyle(document.documentElement),c1=rs.getPropertyValue('--c1').trim()||'#ffb3cf',c2=rs.getPropertyValue('--c2').trim()||'#ffd9c2',c3=rs.getPropertyValue('--c3').trim()||'#fff6d6';
+    const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,c1);g.addColorStop(.62,c2);g.addColorStop(1,c3);x.fillStyle=g;x.fillRect(0,0,W,H);
+    const s=cv(),top=300,bot=1180,ah=bot-top,k=Math.max(W/s.width,ah/s.height),dw=s.width*k,dh=s.height*k;
+    x.save();x.beginPath();x.rect(0,top,W,ah);x.clip();x.drawImage(s,(W-dw)/2,top+(ah-dh)/2,dw,dh);x.restore();
+    const F="Bangers,'Dela Gothic One',Impact,sans-serif";
+    x.textAlign='center';x.lineJoin='round';
+    x.font='110px '+F;x.lineWidth=18;x.strokeStyle='#1b1a3a';x.fillStyle='#fff';x.strokeText(SHARE_CFG.titulo,W/2,150);x.fillText(SHARE_CFG.titulo,W/2,150);
+    x.font='70px '+F;x.lineWidth=14;x.strokeText(score+' BLOCOS',W/2,250);x.fillStyle='#ffd23f';x.fillText(score+' BLOCOS',W/2,250);
+    x.fillStyle='#1b1a3a';x.font='700 44px system-ui,sans-serif';
+    x.fillText('Consegue me ganhar? 🐱',W/2,1245);
+    const u=SHARE_CFG.url.replace(/^https?:\/\//,'');if(u){x.font='700 38px system-ui,sans-serif';x.fillText(u,W/2,1305);}
+    return c;
+  }
+  function mostra(blob){
+    const v=document.createElement('div');v.id='shareV';const url=URL.createObjectURL(blob);
+    v.innerHTML='<div>Toque e segure na imagem para salvar</div><img src="'+url+'" alt="Minha torre"><a class="box btn" download="neko-tower.png" href="'+url+'" style="text-decoration:none;color:inherit">Baixar</a><button class="box btn" id="shX">Fechar</button>';
+    document.body.appendChild(v);v.querySelector('#shX').onclick=()=>{v.remove();URL.revokeObjectURL(url);};
+  }
+  b.onclick=async()=>{
+    if(mode!=='over')return;b.disabled=true;
+    try{
+      const c=cartao(),blob=await new Promise(r=>c.toBlob(r,'image/png'));
+      if(!blob)throw 0;
+      const file=new File([blob],'neko-tower.png',{type:'image/png'}),txt='Fiz '+score+' blocos no Neko Tower! 🐱 Consegue me ganhar?'+(SHARE_CFG.url?' '+SHARE_CFG.url:'');
+      if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],text:txt,title:SHARE_CFG.titulo});}catch(e){if(e&&e.name!=='AbortError')mostra(blob);}}
+      else mostra(blob);
+    }catch(e){popText('Não deu para gerar a imagem',2,6,8);}
+    b.disabled=false;
+  };
+  setInterval(()=>{const v=mode==='over'&&!net.active&&score>0&&!document.getElementById('shareV');b.classList.toggle('hide',!v);},300);
+})();
 
 </script>
 </body>
