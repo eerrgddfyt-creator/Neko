@@ -269,7 +269,7 @@ Load.ui();
   <div class="grp hide" id="modos"><div id="modoInfo" class="box">👆 Toque na tela pra soltar o bloco.\nQuanto mais alinhado, melhor o encaixe!</div><button id="mClas" class="box btn mod"><b>Clássico</b><small>Empilhe até errar. Vale pro ranking.</small></button><button id="mZen" class="box btn mod"><b>Zen 🌿</b><small>Sem game over e sem pressa.</small></button><button id="mRel" class="box btn mod"><b>Relógio ⏱</b><small>60s. Perfeito dá +2s, errar tira 3s.</small></button><button id="mDia" class="box btn mod"><b id="mDiaT">Desafio diário 📅</b><small>Mesma torre pra todos. 20 blocos = 60 🪙</small></button><button id="mBack" class="box btn">Voltar</button></div>
   <div class="grp hide" id="rnk"><div id="rankInfo" class="box"></div><div id="rkRow1"><input id="nickIn" class="box" maxlength="12" placeholder="seu apelido" autocomplete="off"><button id="nickB" class="box btn">Salvar</button></div><div id="rkRow2"><button id="amigB" class="box btn">👥 Amigos</button><button id="rankBack" class="box btn">Voltar</button></div></div>
   <div class="grp hide" id="ami">
-    <div id="amiTabs"><button id="amiT1" class="box btn on">Lista</button><button id="amiT2" class="box btn">Adicionar</button><button id="amiT3" class="box btn">Pedidos<span id="amiBdgT" class="bdg hide">0</span></button></div>
+    <div id="amiTabs"><button id="amiT1" class="box btn on">Lista<span id="amiBdgL" class="bdg hide">0</span></button><button id="amiT2" class="box btn">Adicionar</button><button id="amiT3" class="box btn">Pedidos<span id="amiBdgT" class="bdg hide">0</span></button></div>
     <div id="amiInfo" class="box"></div>
     <div id="amiSrch" class="hide"><input id="amiQ" class="box" maxlength="12" placeholder="apelido do jogador" autocomplete="off" autocapitalize="off" spellcheck="false"><button id="amiGo" class="box btn">Buscar</button></div>
     <button id="amiBack" class="box btn">Voltar</button>
@@ -306,7 +306,7 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 </script>
 <script>
 var ad=false; // <<< ANÚNCIOS: false = desligado (nada de anúncio aparece) · true = ligado (reviver + skins)
-const GAME_V=21; // aumente a cada versão nova
+const GAME_V=22; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
 const H=.6,BASE=3,LIM=3.10,TOL=.12,MENU_SHIFT=.4,VIEW=2.4,VEL=3.62; // VEL = velocidade fixa dos blocos
 const INIT=8; // blocos já empilhados quando a partida começa (como no Stack)
@@ -1444,7 +1444,7 @@ addEventListener('message',e=>{if(e.data&&e.data.ota)popText(e.data.ota,1,5,12);
 (()=>{const sn=$('snow');for(let i=0;i<30;i++){const e=document.createElement('i'),z=3+Math.random()*5;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(6+Math.random()*7)+'s;animation-delay:-'+Math.random()*12+'s';sn.appendChild(e);}})();
 (()=>{const f=$('fl');for(let i=0;i<16;i++){const e=document.createElement('i'),z=3+Math.random()*6;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(10+Math.random()*10)+'s;animation-delay:-'+Math.random()*16+'s';f.appendChild(e);}})();
 // Bônus diário com sequência de dias (até 7)
-const NOV='• Novo: Amigos! Crie uma conta com apelido único, procure jogadores pelo nome e veja quem está online.\n• Pedidos de amizade, lista de amigos e perfil de cada jogador (nível, medalha, recorde e mais).';
+const NOV='• Novo: Chat com amigos! Toque no 💬 da lista de amigos para conversar.\n• Compartilhe a foto da sua torre com um amigo no fim da partida.\n• Mensagens novas aparecem com um aviso vermelho.';
 setTimeout(pendenteBau,3500);
 setTimeout(()=>Rank.sync(),7000);
 setTimeout(()=>{if(sv.ver!==GAME_V&&(sv.ver||sv.st.jogos>0)){$('novT').textContent='✨ Versão '+GAME_V+'\n'+NOV;$('nov').classList.remove('hide');}sv.ver=GAME_V;salvar();},4500);
@@ -1965,7 +1965,7 @@ var SHARE_CFG={url:'',titulo:'NEKO TOWER'}; // coloque o link do seu jogo/loja e
 #shareV img{max-width:80vw;max-height:56vh;border:.8vmin solid #1b1a3a;border-radius:2vmin;-webkit-user-select:auto;user-select:auto;-webkit-touch-callout:default}
 #shareV .box{flex:none;padding:1vh 7vw;color:#1b1a3a;min-width:60vw}`;
   document.head.appendChild(st);
-  const b=document.createElement('button');b.id='shareB';b.className='box btn hide';b.textContent='📤 Compartilhar';document.body.appendChild(b);
+  const b=document.createElement('button');b.id='shareB';b.className='box btn hide';b.textContent='👥 Compartilhar';document.body.appendChild(b);
   const cv=()=>document.getElementById('c');
   function cartao(){
     scene.render(); // renderiza e copia no mesmo instante (o canvas 3D não guarda a imagem depois)
@@ -2031,14 +2031,27 @@ var SHARE_CFG={url:'',titulo:'NEKO TOWER'}; // coloque o link do seu jogo/loja e
     }
     return false;
   }
+  function mini(c){ // versão pequena da foto (JPEG ~40-60 KB) para ir pelo chat
+    for(const w of [540,440,360]){
+      const t=document.createElement('canvas');t.width=w;t.height=Math.round(c.height*w/c.width);t.getContext('2d').drawImage(c,0,0,t.width,t.height);
+      for(const q of [.62,.52,.44,.36]){const s=t.toDataURL('image/jpeg',q);if(s.length<=84000)return s;}
+    }
+    return null;
+  }
   b.onclick=async()=>{
     if(mode!=='over')return;b.disabled=true;
     try{
-      const c=cartao(),blob=await new Promise(r=>c.toBlob(r,'image/png'));
-      if(!blob)throw 0;
-      const txt='Fiz '+score+' blocos no Neko Tower! 🐱 Consegue me ganhar?'+(SHARE_CFG.url?' '+SHARE_CFG.url:'');
-      let ok=false;try{ok=await enviar(blob,txt);}catch(e){ok=false;}
-      if(!ok)mostra(blob,txt);
+      const c=cartao(),pts=score;
+      const txt='Fiz '+pts+' blocos no Neko Tower! 🐱 Consegue me ganhar?'+(SHARE_CFG.url?' '+SHARE_CFG.url:'');
+      const fora=async()=>{ // compartilhar fora do jogo (texto/link no app; no navegador, a imagem também)
+        try{
+          const blob=await new Promise(r=>c.toBlob(r,'image/png'));if(!blob)throw 0;
+          let ok=false;try{ok=await enviar(blob,txt);}catch(e){ok=false;}
+          if(!ok)mostra(blob,txt);
+        }catch(e){popText('Não deu para gerar a imagem',2,6,8);}
+      };
+      if(window.Amigos&&Amigos.compartilhar)Amigos.compartilhar({img:mini(c),score:pts,fora});
+      else await fora();
     }catch(e){popText('Não deu para gerar a imagem',2,6,8);}
     b.disabled=false;
   };
@@ -2047,7 +2060,7 @@ var SHARE_CFG={url:'',titulo:'NEKO TOWER'}; // coloque o link do seu jogo/loja e
 
 </script>
 <script>
-/* ===== NEKO TOWER: amigos (apelido único, pedidos, lista online/offline, perfil) ===== */
+/* ===== NEKO TOWER: amigos (apelido único, pedidos, lista online/offline, perfil, chat, compartilhar com amigos) ===== */
 var Amigos=(function(){
 'use strict';
 const g=id=>document.getElementById(id);
@@ -2107,7 +2120,7 @@ st.textContent=`
 #amiM .pf{margin:auto;width:min(90vw,440px);box-sizing:border-box;background:var(--paper);color:var(--ink);border:clamp(3px,.8vmin,6px) solid var(--ink);border-radius:255px 15px 225px 15px/15px 225px 15px 255px;box-shadow:clamp(4px,1.2vmin,9px) clamp(4px,1.2vmin,9px) 0 var(--ink);padding:2.4vh 5vw 2.4vh;display:flex;flex-direction:column;gap:1.3vh;font-family:'Trebuchet MS','Segoe UI',system-ui,sans-serif;font-weight:700;animation:accIn .4s cubic-bezier(.2,1.5,.4,1) backwards}
 @keyframes accIn{from{opacity:0;transform:translateY(8vh) rotate(-3deg) scale(.9)}}
 .pfTop{display:flex;flex-direction:column;align-items:center;gap:.5vh;text-align:center}
-.pfNm{font-family:Bangers,Impact,sans-serif;font-weight:400;font-size:clamp(32px,9vmin,52px);letter-spacing:.05em;line-height:1;margin-top:.8vh;word-break:break-all}
+.pfNm{font-family:Bangers,Impact,sans-serif;font-weight:400;font-size:clamp(32px,9vmin,52px);letter-spacing:.05em;line-height:1;margin-top:.8vh;overflow-wrap:anywhere}
 .pfS{font-size:clamp(12px,3.2vmin,17px);opacity:.75}.pfS.on{color:#1f8a4c;opacity:1}
 .pfMd{background:var(--sun);border:.5vmin solid var(--ink);border-radius:2.4vmin;padding:.3vh 4vw;font-size:clamp(15px,4vmin,22px)}
 .pfG{display:grid;grid-template-columns:1fr 1fr;gap:1.2vw}
@@ -2121,6 +2134,41 @@ st.textContent=`
 .pfIn{width:100%;box-sizing:border-box;min-height:48px;font:700 clamp(16px,4.4vmin,24px) 'Trebuchet MS',system-ui,sans-serif;padding:1.2vh 4vw;background:#fff;color:var(--ink);border:.5vmin solid var(--ink);border-radius:2.4vmin;outline:none;-webkit-user-select:text;user-select:text}
 .pfM{font-size:clamp(12px,3.4vmin,18px);text-align:center;line-height:1.3;min-height:1.2em}.pfM.err{color:#c4223e}.pfM.ok{color:#1f8a4c}
 .pfH{text-align:center;font-size:clamp(14px,3.8vmin,21px);line-height:1.3}
+
+#amiM{z-index:50}
+.mb.chat{position:relative;background:#fff}
+.ud{position:absolute;top:-.8vmin;right:-.8vmin;width:3.6vmin;height:3.6vmin;max-width:20px;max-height:20px;border-radius:50%;background:#ff3b5c;border:.45vmin solid var(--ink);box-sizing:border-box}
+.nv{color:#c4223e}
+#chatV{position:fixed;left:0;right:0;top:0;bottom:0;z-index:45;display:flex;flex-direction:column;background:linear-gradient(var(--c1,#ffb3cf),var(--c2,#ffd9c2) 62%,var(--c3,#fff6d6));color:var(--ink);font-family:'Trebuchet MS','Segoe UI',system-ui,sans-serif;font-weight:700;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);overflow:hidden}
+.chH{flex:none;display:flex;align-items:center;gap:2.6vw;padding:1.1vh 3vw;padding-right:22vw;background:var(--paper);border-bottom:.6vmin solid var(--ink)}
+.chWho{display:flex;align-items:center;gap:2.6vw;flex:1;min-width:0;cursor:pointer}
+.chWho .tx{flex:1;min-width:0}
+.chWho .nm{font-size:clamp(16px,4.4vmin,26px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chWho .sb2{font-size:clamp(11px,3vmin,16px);opacity:.75}.chWho .sb2.on{color:#1f8a4c;opacity:1}
+.chL{flex:1 1 0;min-height:0;overflow-y:auto;padding:1.2vh 3vw;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y}
+#chI{display:flex;flex-direction:column;gap:1vh}
+.chAv{font-size:clamp(14px,3.6vmin,20px);text-align:center;padding:.8vh 0}
+.chBtn{align-self:center;background:#fff;color:var(--ink);border:.45vmin solid var(--ink);border-radius:2.4vmin;font:700 clamp(12px,3.2vmin,17px) 'Trebuchet MS',system-ui,sans-serif;padding:.7vh 4vw;margin:.6vh auto;display:block;cursor:pointer}
+.chD{align-self:center;font-size:clamp(11px,2.8vmin,15px);background:rgba(255,255,255,.75);border-radius:2vmin;padding:.2vh 3vw}
+.msg{max-width:80%;display:flex;flex-direction:column;gap:.3vh}
+.msg.me{align-self:flex-end;align-items:flex-end}.msg.el{align-self:flex-start;align-items:flex-start}
+.bl{border:.45vmin solid var(--ink);border-radius:2.6vmin;padding:.8vh 3vw;background:#fff;font-size:clamp(14px,3.9vmin,22px);line-height:1.3;word-break:break-word;white-space:pre-wrap;box-shadow:.4vmin .4vmin 0 var(--ink)}
+.msg.me .bl{background:var(--sun)}
+.bl.img{padding:.7vmin;width:min(56vw,280px);box-sizing:border-box}
+.bl.img img{display:block;width:100%;height:auto;border-radius:2vmin;cursor:pointer}
+.bl .cap{padding:.5vh 1.6vw .2vh;font-size:clamp(12px,3.2vmin,17px)}
+.tm{font-size:clamp(10px,2.6vmin,14px);opacity:.65;padding:0 1vw}
+.chF{flex:none;display:flex;gap:2vw;align-items:center;padding:1.1vh 3vw calc(env(safe-area-inset-bottom,0px) + 1.1vh);background:var(--paper);border-top:.6vmin solid var(--ink)}
+.chF input{flex:1;min-width:0;box-sizing:border-box;min-height:48px;font:700 clamp(16px,4.2vmin,22px) 'Trebuchet MS',system-ui,sans-serif;padding:1vh 3.4vw;background:#fff;color:var(--ink);border:.5vmin solid var(--ink);border-radius:2.4vmin;outline:none;-webkit-user-select:text;user-select:text}
+.chF .pfB{flex:none;width:auto;padding:1vh 5vw}
+#chImg{position:fixed;inset:0;z-index:60;background:rgba(27,26,58,.94);display:flex;align-items:center;justify-content:center;padding:4vw;box-sizing:border-box}
+#chImg img{max-width:100%;max-height:100%;border:.8vmin solid #fff;border-radius:2vmin}
+.shPrev{align-self:center;max-width:46%;max-height:24vh;border:.6vmin solid var(--ink);border-radius:2vmin;box-shadow:.6vmin .6vmin 0 var(--ink)}
+.shL{max-height:30vh;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:0 .6vw}
+.fr.pk .ck{font-size:clamp(22px,6.4vmin,34px);line-height:1}
+.fr.pk.sel{background:#d9f6e1;border-width:.6vmin}
+.pfNm.t2{font-size:clamp(24px,6.6vmin,36px);text-align:center}
+.pfB.sm{font-size:clamp(14px,3.8vmin,20px);min-height:40px}
 `;
 document.head.appendChild(st);
 
@@ -2221,12 +2269,26 @@ function inicia(){
     const nv=s.val()||{};
     if(!primA)Object.keys(nv).forEach(u=>{if(!amigos[u]&&!meus[u]&&typeof mode!=='undefined'&&mode==='menu')perfil(u).then(p=>{if(p&&p.n)bom('🎉 '+p.n+' agora é seu amigo!');});});
     Object.keys(meus).forEach(u=>{if(nv[u])delete meus[u];});
-    primA=false;amigos=nv;ligaPresenca();pedirRender();
+    const ant=amigos;primA=false;amigos=nv;
+    if(estado==='ok')Object.keys(ant).forEach(u=>{if(!nv[u])limpaAmigo(u);}); // alguém saiu da lista: limpa a conversa
+    ligaPresenca();atualizaBadge();pedirRender();
   },noop);
   d.ref('pedidos/'+id).on('value',s=>{
     const nv=s.val()||{};
     if(!primP)Object.keys(nv).forEach(u=>{if(!pedIn[u]&&typeof mode!=='undefined'&&mode==='menu')perfil(u).then(p=>{if(p&&p.n)bom('📨 '+p.n+' quer ser seu amigo!');});});
     primP=false;pedIn=nv;atualizaBadge();pedirRender();
+  },noop);
+  d.ref('inbox/'+id).on('value',s=>{ // avisos leves de mensagem nova (sem baixar as fotos)
+    const nv=s.val()||{};
+    if(!primI)Object.keys(nv).forEach(u=>{
+      const o=inb[u],n=nv[u]||{};
+      if(o&&(+o.t||0)>=(+n.t||0))return;
+      if(!amigos[u]||(CH&&CH.u===u))return;
+      if(typeof mode!=='undefined'&&(mode==='menu'||mode==='over'))perfil(u).then(p=>{if(p&&p.n&&naoLida(u)){beep(880,.08);popText(n.k==='i'?'📸 '+p.n+' mandou uma torre!':'💬 '+p.n+': '+limpo(n.x),2,4.4,8);}});
+    });
+    primI=false;inb=nv;
+    if(CH)marcaLida(CH.u);
+    atualizaBadge();pedirRender();
   },noop);
 }
 function ligaPresenca(){
@@ -2239,7 +2301,7 @@ function ligaPresenca(){
   Object.keys(subs).forEach(u=>{if(!amigos[u]){subs[u]();delete subs[u];}});
 }
 function desligaPresenca(){Object.keys(subs).forEach(u=>{subs[u]();delete subs[u];});}
-async function offline(){try{if(estado==='ok'&&Rank.db)await Rank.db.ref('presenca/'+meId()).set({o:false,t:TS()});}catch(e){}}
+async function offline(){try{fechaChat();}catch(e){}try{if(estado==='ok'&&Rank.db)await Rank.db.ref('presenca/'+meId()).set({o:false,t:TS()});}catch(e){}}
 
 // ---------------- perfis ----------------
 const emVoo={};
@@ -2322,9 +2384,10 @@ async function buscar(){
 
 // ---------------- tela ----------------
 function atualizaBadge(){
-  const n=Object.keys(pedIn).length,pend=!!sv.nickPend;
-  const b=g('amiBdg');if(b){b.textContent=pend?'!':n;b.classList.toggle('hide',!(n||pend));}
+  const n=Object.keys(pedIn).length,m=nNaoLidas(),pend=!!sv.nickPend;
+  const b=g('amiBdg');if(b){b.textContent=pend?'!':(n+m);b.classList.toggle('hide',!(n||m||pend));}
   const t=g('amiBdgT');if(t){t.textContent=n;t.classList.toggle('hide',!n);}
+  const l=g('amiBdgL');if(l){l.textContent=m;l.classList.toggle('hide',!m);}
 }
 function pedirRender(){if(!tela)return;clearTimeout(renderT);renderT=setTimeout(render,60);}
 const sec2=t=>'<div class="sec">'+t+'</div>';
@@ -2333,7 +2396,11 @@ function linha(u,tipo){
   if(!p)return '<div class="fr"><span class="av"></span><div class="tx"><div class="nm">Carregando...</div></div></div>';
   const on=!!(PR[u]&&PR[u].o),r=rel(u);
   let sub='Nv '+(p.l||1)+' · '+titulo(p.l),dir='';
-  if(tipo==='amigo'){dir='<div class="stt"><span class="dot'+(on?' on':'')+'"></span>'+(on?'Online':(PR[u]&&PR[u].t?'Visto<br>'+ha(PR[u].t):'Offline'))+'</div>';}
+  if(tipo==='amigo'){
+    const un=naoLida(u);
+    if(un)sub='<span class="nv">'+(inb[u].k==='i'?'📸 Nova foto da torre':'● Nova mensagem')+'</span>';
+    dir='<div class="stt"><span class="dot'+(on?' on':'')+'"></span>'+(on?'Online':(PR[u]&&PR[u].t?'Visto<br>'+ha(PR[u].t):'Offline'))+'</div><button class="mb chat" data-a="chat" data-u="'+u+'" aria-label="Conversar">💬'+(un?'<i class="ud"></i>':'')+'</button>';
+  }
   else if(tipo==='pedido'){dir='<div class="acs"><button class="mb ok" data-a="aceitar" data-u="'+u+'" aria-label="Aceitar">✔</button><button class="mb no" data-a="recusar" data-u="'+u+'" aria-label="Recusar">✖</button></div>';}
   else if(tipo==='busca'){
     dir=r==='amigo'?'<span class="tag">✔ Amigo</span>':r==='enviado'?'<span class="tag">⏳ Enviado</span>':r==='recebido'?'<button class="mb ok" data-a="aceitar" data-u="'+u+'" aria-label="Aceitar">✔</button>':'<button class="mb add" data-a="pedir" data-u="'+u+'" aria-label="Enviar pedido">+</button>';
@@ -2347,7 +2414,7 @@ function htmlLista(){
   if(!ids.length)h+='<div class="aviso">Você ainda não tem amigos.<br>Toque em <b>Adicionar</b> e procure pelo apelido.</div>';
   else{
     garantePerfis(ids);
-    ids.sort((a,b)=>((PR[b]&&PR[b].o)?1:0)-((PR[a]&&PR[a].o)?1:0)||String((PC[a]||{}).n||'').toLowerCase().localeCompare(String((PC[b]||{}).n||'').toLowerCase()));
+    ids.sort((a,b)=>(naoLida(b)?1:0)-(naoLida(a)?1:0)||((PR[b]&&PR[b].o)?1:0)-((PR[a]&&PR[a].o)?1:0)||String((PC[a]||{}).n||'').toLowerCase().localeCompare(String((PC[b]||{}).n||'').toLowerCase()));
     h+=ids.map(u=>linha(u,'amigo')).join('');
   }
   return h;
@@ -2412,7 +2479,7 @@ function htmlPerfil(u,p){
   const stt=eu?'<span class="pfS on">● Online</span>':r==='amigo'?(on?'<span class="pfS on">● Online</span>':'<span class="pfS">○ '+(PR[u]&&PR[u].t?'Visto '+ha(PR[u].t):'Offline')+'</span>'):'';
   let ac='';
   if(eu)ac='<button class="pfB go" data-a="nick">✏ Mudar apelido</button>';
-  else if(r==='amigo')ac='<button class="pfB no" data-a="remover" data-u="'+u+'">Remover amigo</button>';
+  else if(r==='amigo')ac='<button class="pfB go" data-a="chat" data-u="'+u+'">💬 Conversar</button><button class="pfB no" data-a="remover" data-u="'+u+'">Remover amigo</button>';
   else if(r==='recebido')ac='<button class="pfB go" data-a="aceitar" data-u="'+u+'">✔ Aceitar pedido</button><button class="pfB no" data-a="recusar" data-u="'+u+'">✖ Recusar</button>';
   else if(r==='enviado')ac='<button class="pfB" data-a="cancelar" data-u="'+u+'">⏳ Pedido enviado · Cancelar</button>';
   else ac='<button class="pfB go" data-a="pedir" data-u="'+u+'">➕ Adicionar amigo</button>';
@@ -2452,10 +2519,261 @@ function acaoModal(b){
   if(a==='cancelar')return cancelar(u);
   if(a==='nick')return pedeNick(false);
   if(a==='salvaNick')return salvaNick(b);
+  if(a==='chat'){fechaModal();return abreChat(u);}
+  if(a==='pick')return pickUm(u);
+  if(a==='mandar')return mandarFotos(b);
+  if(a==='fora'){const f=modal&&modal.sh&&modal.sh.fora;fechaModal();if(f)f();return;}
+  if(a==='criarConta'){fechaModal();if(window.NekoAuth)NekoAuth.open('new');return;}
+  if(a==='entrarConta'){fechaModal();if(window.NekoAuth)NekoAuth.open('in');return;}
   if(a==='remover'){ // confirma com um segundo toque
     if(b.dataset.c){clearTimeout(tmConf);return remover(u);}
     b.dataset.c='1';b.textContent='Toque de novo para remover';tmConf=setTimeout(()=>{b.dataset.c='';b.textContent='Remover amigo';},3000);
   }
+}
+
+// ---------------- chat 1 a 1 ----------------
+// Cada um escreve só no próprio caminho: chats/<remetente>/<destinatário>/m/<id>. Quem recebe lê os dois lados e junta pela hora.
+// inbox/<destinatário>/<remetente> é um aviso leve (hora + tipo + prévia) para o selo de "nova mensagem" sem baixar fotos.
+const MSG_MAX=200,JANELA=40,FOTO_MAX=100000;
+let inb={},primI=true,CH=null,lastSend=0,podado={};
+const CL=()=>(sv.cl&&typeof sv.cl==='object')?sv.cl:(sv.cl={});
+const naoLida=u=>!!(amigos[u]&&inb[u]&&(+inb[u].t||0)>(+CL()[u]||0));
+const nNaoLidas=()=>Object.keys(amigos).filter(naoLida).length;
+const limpo=t=>String(t==null?'':t).replace(/[<>&"'`]/g,'').slice(0,60);
+const okImg=x=>typeof x==='string'&&x.length<FOTO_MAX+40&&/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(x);
+const hora=t=>{const d=new Date(+t||Date.now());return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};
+const diaK=t=>{const d=new Date(+t||Date.now());return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();};
+const diaTxt=t=>{const k=diaK(t);if(k===diaK(Date.now()))return 'Hoje';if(k===diaK(Date.now()-864e5))return 'Ontem';const d=new Date(+t||Date.now());return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');};
+
+function marcaLida(u,t){
+  const novo=Math.max(+t||0,(inb[u]&&+inb[u].t)||0),c=CL();
+  if(novo>(+c[u]||0)){c[u]=novo;salvar();atualizaBadge();pedirRender();}
+}
+function limpaAmigo(u){ // amizade desfeita (por mim ou por ele): apaga a minha parte da conversa e os avisos
+  const id=meId(),up={};
+  up['chats/'+id+'/'+u]=null;up['inbox/'+id+'/'+u]=null;up['inbox/'+u+'/'+id]=null;
+  db().ref().update(up).catch(()=>{});
+  delete inb[u];if(sv.cl)delete sv.cl[u];
+  if(CH&&CH.u===u){fechaChat();toast('Vocês não são mais amigos');}
+}
+
+async function manda(u,msg){ // grava a mensagem e o aviso na mesma gravação (ou vai tudo, ou nada)
+  const id=meId(),d=db(),key=d.ref('chats/'+id+'/'+u+'/m').push().key,up={};
+  up['chats/'+id+'/'+u+'/m/'+key]=Object.assign({t:TS()},msg);
+  const av2={t:TS(),k:msg.k};if(msg.k==='t')av2.x=limpo(msg.x).slice(0,40);
+  up['inbox/'+u+'/'+id]=av2;
+  if(CH&&CH.u===u)CH.pend[key]=1;
+  try{await d.ref().update(up);}
+  catch(e){if(CH)delete CH.M['m'+key];throw e;}
+  finally{if(CH){delete CH.pend[key];rendChat();}}
+  return key;
+}
+
+function abreChat(u){
+  if(estado!=='ok'||!u)return;
+  if(!amigos[u]){toast('Só dá para conversar com amigos');return;}
+  if(CH&&CH.u===u){fechaModal();return;}
+  fechaChat();fechaModal();
+  const el=document.createElement('div');el.id='chatV';
+  el.innerHTML='<div class="chH"><button class="mb" data-c="voltar" aria-label="Voltar">◀</button><div class="chWho" data-c="perfil"><span id="chAv"></span><div class="tx"><div class="nm" id="chNm"></div><div class="sb2" id="chSt"></div></div></div></div>'
+    +'<div class="chL" id="chL"><button class="chBtn hide" id="chMore" data-c="mais">⬆ Mensagens anteriores</button><div id="chI"></div></div>'
+    +'<div class="chF"><input id="chIn" maxlength="'+MSG_MAX+'" autocomplete="off" autocapitalize="sentences" enterkeyhint="send" placeholder="Escreva uma mensagem"><button class="pfB go" data-c="enviar">Enviar</button></div>';
+  document.body.appendChild(el);
+  CH={u,el,M:{},nodes:{},pend:{},offs:[],stick:true,n:{},ok:{},more:{},tm:0,erro:0};
+  const L=el.querySelector('#chL'),inp=el.querySelector('#chIn'),para=e=>e.stopPropagation();
+  ['pointerdown','keydown','keyup','keypress'].forEach(t=>el.addEventListener(t,para)); // nada do chat chega no jogo (ex.: espaço)
+  L.addEventListener('scroll',()=>{if(CH)CH.stick=L.scrollHeight-L.scrollTop-L.clientHeight<60;});
+  el.addEventListener('click',e=>{
+    const b=e.target.closest('[data-c]');if(!b||!CH)return;
+    const c=b.dataset.c;
+    if(c==='voltar')return fechaChat();
+    if(c==='perfil')return abrePerfil(CH.u);
+    if(c==='enviar')return enviaChat();
+    if(c==='mais')return maisMsgs();
+    if(c==='foto')return verFoto(b.src);
+  });
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();enviaChat();}});
+  const vv=window.visualViewport; // teclado aberto: a conversa acompanha a área visível
+  if(vv){
+    const ajusta=()=>{if(!CH||!(vv.height>120))return;el.style.top=vv.offsetTop+'px';el.style.height=vv.height+'px';el.style.bottom='auto';if(CH.stick)L.scrollTop=L.scrollHeight;};
+    vv.addEventListener('resize',ajusta);vv.addEventListener('scroll',ajusta);
+    CH.offs.push(()=>{vv.removeEventListener('resize',ajusta);vv.removeEventListener('scroll',ajusta);});
+  }
+  cabeca(PC[u]);perfil(u).then(p=>{if(CH&&CH.u===u)cabeca(p);});
+  const me=meId(),pr=db().ref('presenca/'+u),pcb=s=>{PR[u]=s.val()||null;statusChat();};
+  pr.on('value',pcb,()=>{});CH.offs.push(()=>pr.off('value',pcb));
+  ouvir('m','chats/'+me+'/'+u+'/m');ouvir('t','chats/'+u+'/'+me+'/m');
+  marcaLida(u);
+  if(!podado[u]){podado[u]=1;setTimeout(()=>podaMinhas(u),4000);}
+}
+function fechaChat(){
+  if(!CH)return;const c=CH;CH=null;
+  clearTimeout(c.tm);c.offs.forEach(f=>{try{f();}catch(e){}});
+  c.el.remove();const v=g('chImg');if(v)v.remove();
+  atualizaBadge();pedirRender();
+}
+function cabeca(p){
+  if(!CH)return;p=p||{};
+  CH.el.querySelector('#chAv').innerHTML=av(p.s);CH.el.querySelector('#chNm').textContent=p.n||'...';statusChat();
+}
+function statusChat(){
+  if(!CH)return;const x=PR[CH.u],on=!!(x&&x.o),s=CH.el.querySelector('#chSt');
+  s.textContent=on?'● Online':(x&&x.t?'Visto '+ha(x.t):'Offline');s.classList.toggle('on',on);
+}
+function ouvir(lado,path){
+  const ref=db().ref(path).orderByKey().limitToLast(JANELA);
+  const cb=s=>{
+    if(!CH)return;let n=0,mx=0;
+    s.forEach(c=>{const v=c.val();if(v){CH.M[lado+c.key]=Object.assign({id:c.key,l:lado},v);n++;if(+v.t>mx)mx=+v.t;}});
+    CH.n[lado]=Math.max(CH.n[lado]||0,n);CH.ok[lado]=1;
+    if(lado==='t'&&mx)marcaLida(CH.u,mx);
+    rendChat();
+  };
+  const err=e=>{if(CH&&!CH.erro){CH.erro=1;toast(msgErro(e));}};
+  ref.on('value',cb,err);CH.offs.push(()=>ref.off('value',cb));
+}
+async function maisMsgs(){
+  if(!CH)return;const c=CH,u=c.u,me=meId(),btn=c.el.querySelector('#chMore');btn.disabled=true;
+  try{
+    for(const [lado,path] of [['m','chats/'+me+'/'+u+'/m'],['t','chats/'+u+'/'+me+'/m']]){
+      if(c.more[lado]===false||(c.n[lado]||0)<JANELA&&c.more[lado]===undefined)continue;
+      const ids=Object.keys(c.M).filter(k=>k[0]===lado).map(k=>c.M[k].id).sort(),first=ids[0];
+      if(!first){c.more[lado]=false;continue;}
+      const sn=await db().ref(path).orderByKey().endAt(first).limitToLast(31).once('value');let n=0;
+      sn.forEach(x=>{if(x.key!==first&&x.val()){c.M[lado+x.key]=Object.assign({id:x.key,l:lado},x.val());n++;}});
+      if(n<30)c.more[lado]=false;
+    }
+  }catch(e){toast(msgErro(e));}
+  btn.disabled=false;if(CH===c){c.stick=false;rendChat();}
+}
+function rendChat(){
+  if(!CH||CH.tm)return;
+  CH.tm=setTimeout(()=>{if(!CH)return;CH.tm=0;desenha();},30);
+}
+function nodeMsg(m){
+  const mine=m.l==='m',d=document.createElement('div');d.className='msg '+(mine?'me':'el');
+  const b=document.createElement('div');b.className='bl';
+  if(m.k==='i'){
+    if(okImg(m.i)){
+      b.classList.add('img');
+      const im=document.createElement('img');im.alt='Torre';im.dataset.c='foto';im.src=m.i;
+      im.onload=()=>{if(CH&&CH.stick){const L=g('chL');if(L)L.scrollTop=L.scrollHeight;}};
+      b.appendChild(im);
+      if(m.x){const c=document.createElement('div');c.className='cap';c.textContent=String(m.x);b.appendChild(c);}
+    }else b.textContent='📷 (foto indisponível)';
+  }else b.textContent=String(m.x==null?'':m.x);
+  const t=document.createElement('div');t.className='tm';
+  d.appendChild(b);d.appendChild(t);atualizaMsg(d,m);return d;
+}
+function atualizaMsg(d,m){
+  const t=d.querySelector('.tm'),x=hora(m.t)+(m.l==='m'?(CH&&CH.pend[m.id]?' ⏳':' ✓'):'');
+  if(t.textContent!==x)t.textContent=x;
+}
+function desenha(){
+  if(!CH)return;
+  const L=CH.el.querySelector('#chL'),I=CH.el.querySelector('#chI');
+  const arr=Object.values(CH.M).sort((a,b)=>(+a.t||0)-(+b.t||0)||(a.id<b.id?-1:a.id>b.id?1:0));
+  const want=[];let dia='';
+  arr.forEach(m=>{const dk=diaK(m.t);if(dk!==dia){dia=dk;want.push({k:'d'+dk,txt:diaTxt(m.t)});}want.push({k:m.l+m.id,m});});
+  if(!arr.length&&CH.ok.m&&CH.ok.t)want.push({k:'vazio',txt:'Diga oi! 👋\nMande uma mensagem ou, depois de uma partida, a foto da sua torre.',vazio:1});
+  let i=0;
+  want.forEach(o=>{
+    let e=CH.nodes[o.k];
+    if(!e){
+      if(o.m)e=nodeMsg(o.m);
+      else{e=document.createElement('div');e.className=o.vazio?'chAv':'chD';e.textContent=o.txt;if(o.vazio)e.style.whiteSpace='pre-line';}
+      e.dataset.k=o.k;CH.nodes[o.k]=e;
+    }else if(o.m)atualizaMsg(e,o.m);
+    const cur=I.children[i];if(cur!==e)I.insertBefore(e,cur||null);i++;
+  });
+  while(I.children.length>i){const x=I.lastChild;delete CH.nodes[x.dataset.k];x.remove();}
+  const mais=['m','t'].some(l=>CH.more[l]===undefined?(CH.n[l]||0)>=JANELA:CH.more[l]);
+  CH.el.querySelector('#chMore').classList.toggle('hide',!mais);
+  if(CH.stick)L.scrollTop=L.scrollHeight;
+}
+async function enviaChat(){
+  if(!CH)return;const c=CH,inp=c.el.querySelector('#chIn'),x=inp.value.replace(/\s+/g,' ').trim();
+  if(!x)return;
+  if(navigator.onLine===false)return toast('Sem conexão com a internet');
+  if(Date.now()-lastSend<1100)return toast('Calma! Um instante...');
+  lastSend=Date.now();inp.value='';c.stick=true;
+  try{await manda(c.u,{k:'t',x:x.slice(0,MSG_MAX)});}
+  catch(e){toast(msgErro(e));if(CH===c&&!inp.value)inp.value=x;}
+  if(CH===c){try{inp.focus({preventScroll:true});}catch(e){}}
+}
+function verFoto(src){
+  if(!okImg(src))return;
+  const v=document.createElement('div');v.id='chImg';const im=document.createElement('img');im.alt='Torre';im.src=src;v.appendChild(im);
+  v.addEventListener('pointerdown',e=>e.stopPropagation());v.addEventListener('click',()=>v.remove());
+  document.body.appendChild(v);
+}
+async function podaMinhas(u){ // cada um apaga as próprias mensagens antigas: fotos com +7 dias, textos com +30 dias
+  try{
+    const id=meId(),agoraMs=Date.now(),ref=db().ref('chats/'+id+'/'+u+'/m');
+    const sn=await ref.orderByChild('t').endAt(agoraMs-7*864e5).limitToFirst(40).once('value'),up={};let n=0;
+    sn.forEach(c=>{const v=c.val();if(v&&(v.k==='i'||+v.t<agoraMs-30*864e5)){up['chats/'+id+'/'+u+'/m/'+c.key]=null;n++;}});
+    if(n)await db().ref().update(up);
+  }catch(e){}
+}
+
+// ---------------- compartilhar a torre com amigos ----------------
+const esperaAmigos=()=>new Promise(ok=>{const t0=Date.now();(function w(){if(!primA||Date.now()-t0>5000)ok();else setTimeout(w,100);})();});
+const presUma=u=>PR[u]?Promise.resolve():db().ref('presenca/'+u).once('value').then(s=>{PR[u]=s.val()||null;}).catch(()=>{});
+async function compartilhar(o){
+  o=o||{};
+  if(typeof mode!=='undefined'&&mode==='play')return;
+  const m=abreModal('<div class="pfH">Carregando...</div>'),box=()=>m.querySelector('.pf'),vivo=()=>modal&&modal.el===m;
+  modal.sh={img:o.img,score:o.score|0,fora:o.fora,sel:{}};
+  const fora=o.fora?'<button class="pfB sm" data-a="fora">📤 Compartilhar fora do jogo</button>':'',fim='<button class="pfB" data-a="fechar">Fechar</button>';
+  if(!o.img||!okImg(o.img)){box().innerHTML='<div class="pfH">Não deu para gerar a imagem da torre.</div><div class="pfAc">'+fim+'</div>';return;}
+  if(!logadoSv()){box().innerHTML='<div class="pfNm t2">Compartilhar</div><div class="pfH">Crie uma conta para mandar a foto da sua torre para os seus amigos.</div><div class="pfAc"><button class="pfB go" data-a="criarConta">Criar conta</button><button class="pfB" data-a="entrarConta">Já tenho conta</button>'+fora+fim+'</div>';return;}
+  const r=await init();if(!vivo())return;
+  if(r==='nick'){fechaModal();pedeNick(true);return;}
+  if(r!=='ok'){box().innerHTML='<div class="pfNm t2">Sem conexão</div><div class="pfH">Não consegui falar com o servidor. Conecte-se à internet e tente de novo.</div><div class="pfAc">'+fora+fim+'</div>';return;}
+  await esperaAmigos();if(!vivo())return;
+  const ids=Object.keys(amigos);
+  if(!ids.length){box().innerHTML='<div class="pfNm t2">Sem amigos ainda</div><div class="pfH">Adicione amigos pelo apelido em <b>Menu → Amigos → Adicionar</b> e depois mande sua torre para eles.</div><div class="pfAc">'+fora+fim+'</div>';return;}
+  await Promise.all(ids.map(u=>perfil(u)).concat(ids.map(presUma)));
+  if(!vivo())return;
+  desenhaPick();
+}
+function desenhaPick(){
+  const sh=modal.sh,ids=Object.keys(amigos).sort((a,b)=>((PR[b]&&PR[b].o)?1:0)-((PR[a]&&PR[a].o)?1:0)||String((PC[a]||{}).n||'').toLowerCase().localeCompare(String((PC[b]||{}).n||'').toLowerCase()));
+  const rows=ids.map(u=>{const p=PC[u]||{n:'?',s:0},on=!!(PR[u]&&PR[u].o);
+    return '<div class="fr pk" data-a="pick" data-u="'+u+'">'+av(p.s)+'<div class="tx"><div class="nm">'+esc(p.n)+'</div><div class="sb2"><span class="dot'+(on?' on':'')+'"></span> '+(on?'Online':'Offline')+'</div></div><span class="ck">☐</span></div>';}).join('');
+  const fora=sh.fora?'<button class="pfB sm" data-a="fora">📤 Compartilhar fora do jogo</button>':'';
+  modal.el.querySelector('.pf').innerHTML='<div class="pfNm t2">Mandar para quem?</div><img class="shPrev" id="shPrev" alt="Sua torre"><div class="shL">'+rows+'</div><div class="pfM" id="shM"></div><div class="pfAc"><button class="pfB go" data-a="mandar" id="shGo" disabled>Escolha um amigo</button>'+fora+'<button class="pfB" data-a="fechar">Cancelar</button></div>';
+  modal.el.querySelector('#shPrev').src=sh.img;
+  atualizaPick();
+}
+function atualizaPick(){
+  const sh=modal&&modal.sh;if(!sh)return;
+  const ids=Object.keys(sh.sel).filter(u=>sh.sel[u]);
+  modal.el.querySelectorAll('.fr.pk').forEach(r=>{const on=!!sh.sel[r.dataset.u];r.classList.toggle('sel',on);r.querySelector('.ck').textContent=on?'☑':'☐';});
+  const b=modal.el.querySelector('#shGo');if(!b)return;
+  b.disabled=!ids.length;b.textContent=!ids.length?'Escolha um amigo':ids.length===1?'📨 Mandar para '+nomeDe(ids[0]):'📨 Mandar para '+ids.length+' amigos';
+}
+function pickUm(u){
+  const sh=modal&&modal.sh;if(!sh||!amigos[u])return;
+  if(!sh.sel[u]&&Object.keys(sh.sel).filter(k=>sh.sel[k]).length>=5)return toast('No máximo 5 amigos de uma vez');
+  sh.sel[u]=!sh.sel[u];atualizaPick();
+}
+async function mandarFotos(btn){
+  const sh=modal&&modal.sh,el=modal&&modal.el;if(!sh||sh.indo)return;
+  const ids=Object.keys(sh.sel).filter(u=>sh.sel[u]);if(!ids.length)return;
+  sh.indo=true;btn.disabled=true;const msg=el.querySelector('#shM');msg.className='pfM';msg.textContent='Enviando...';
+  const ok=[];let errC=null;
+  for(const u of ids){
+    try{await manda(u,{k:'i',i:sh.img,s:Math.min(1000,sh.score|0),x:'Fiz '+(sh.score|0)+' blocos! Consegue me ganhar? 🐱'});ok.push(u);}
+    catch(e){errC=e;}
+  }
+  if(!modal||modal.el!==el)return;
+  const box=el.querySelector('.pf'),fim='<button class="pfB" data-a="fechar">Fechar</button>';
+  if(ok.length){
+    beep(784,.2);vib([15,30,15]);
+    const quem=ok.length===1?esc(nomeDe(ok[0])):ok.length+' amigos';
+    box.innerHTML='<div class="pfNm t2">Enviado! ✔</div><div class="pfH">Sua torre foi para '+quem+'.'+(ids.length>ok.length?'<br>Mas '+(ids.length-ok.length)+' não deu certo: '+esc(msgErro(errC)):'')+'</div><div class="pfAc">'+(ok.length===1?'<button class="pfB go" data-a="chat" data-u="'+ok[0]+'">💬 Abrir conversa</button>':'')+fim+'</div>';
+  }else{sh.indo=false;btn.disabled=false;msg.className='pfM err';msg.textContent=msgErro(errC);}
 }
 
 // ---------------- ligações com a tela ----------------
@@ -2471,6 +2789,7 @@ g('amiInfo').addEventListener('click',e=>{
   if(a==='pedir')return pedir(u);
   if(a==='aceitar')return aceitar(u);
   if(a==='recusar')return recusar(u);
+  if(a==='chat')return abreChat(u);
   if(a==='criarConta'){if(window.NekoAuth)NekoAuth.open('new');return;}
   if(a==='entrarConta'){if(window.NekoAuth)NekoAuth.open('in');return;}
   if(a==='nick')return pedeNick(true);
@@ -2483,7 +2802,7 @@ setInterval(()=>{if(estado==='ok'&&navigator.onLine!==false)syncPerfil().catch((
 addEventListener('pagehide',()=>{if(estado==='ok')syncPerfil().catch(()=>{});});
 atualizaBadge();
 
-return {abre,fecha,init,offline,registra,trocaNick,abrePerfil,sync:()=>syncPerfil(),
+return {abre,fecha,init,offline,registra,trocaNick,abrePerfil,sync:()=>syncPerfil(),abreChat,compartilhar,naoLidas:nNaoLidas,
   ativo:()=>logadoSv(),
   get pronto(){return estado==='ok';},
   get amigos(){return amigos;},
