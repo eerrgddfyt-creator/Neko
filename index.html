@@ -269,7 +269,7 @@ Load.ui();
   <div class="grp hide" id="modos"><div id="modoInfo" class="box">👆 Toque na tela pra soltar o bloco.\nQuanto mais alinhado, melhor o encaixe!</div><button id="mClas" class="box btn mod"><b>Clássico</b><small>Empilhe até errar. Vale pro ranking.</small></button><button id="mZen" class="box btn mod"><b>Zen 🌿</b><small>Sem game over e sem pressa.</small></button><button id="mRel" class="box btn mod"><b>Relógio ⏱</b><small>60s. Perfeito dá +2s, errar tira 3s.</small></button><button id="mDia" class="box btn mod"><b id="mDiaT">Desafio diário 📅</b><small>Mesma torre pra todos. 20 blocos = 60 🪙</small></button><button id="mBack" class="box btn">Voltar</button></div>
   <div class="grp hide" id="rnk"><div id="rankInfo" class="box"></div><div id="rkRow1"><input id="nickIn" class="box" maxlength="12" placeholder="seu apelido" autocomplete="off"><button id="nickB" class="box btn">Salvar</button></div><div id="rkRow2"><button id="amigB" class="box btn">👥 Amigos</button><button id="rankBack" class="box btn">Voltar</button></div></div>
   <div class="grp hide" id="ami">
-    <div id="amiTabs"><button id="amiT1" class="box btn on">Lista<span id="amiBdgL" class="bdg hide">0</span></button><button id="amiT2" class="box btn">Adicionar</button><button id="amiT3" class="box btn">Pedidos<span id="amiBdgT" class="bdg hide">0</span></button></div>
+    <div id="amiTabs"><button id="amiT1" class="box btn on">Lista<span id="amiBdgL" class="bdg hide">0</span></button><button id="amiT2" class="box btn">Adicionar</button><button id="amiT3" class="box btn">Pedidos<span id="amiBdgT" class="bdg hide">0</span></button><button id="amiT4" class="box btn">Ranking</button></div>
     <div id="amiInfo" class="box"></div>
     <div id="amiSrch" class="hide"><input id="amiQ" class="box" maxlength="12" placeholder="apelido do jogador" autocomplete="off" autocapitalize="off" spellcheck="false"><button id="amiGo" class="box btn">Buscar</button></div>
     <button id="amiBack" class="box btn">Voltar</button>
@@ -306,7 +306,7 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 </script>
 <script>
 var ad=false; // <<< ANÚNCIOS: false = desligado (nada de anúncio aparece) · true = ligado (reviver + skins)
-const GAME_V=23; // aumente a cada versão nova
+const GAME_V=24; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
 const H=.6,BASE=3,LIM=3.10,TOL=.12,MENU_SHIFT=.4,VIEW=2.4,VEL=3.62; // VEL = velocidade fixa dos blocos
 const INIT=8; // blocos já empilhados quando a partida começa (como no Stack)
@@ -1433,7 +1433,7 @@ addEventListener('message',e=>{if(e.data&&e.data.ota)popText(e.data.ota,1,5,12);
 (()=>{const sn=$('snow');for(let i=0;i<30;i++){const e=document.createElement('i'),z=3+Math.random()*5;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(6+Math.random()*7)+'s;animation-delay:-'+Math.random()*12+'s';sn.appendChild(e);}})();
 (()=>{const f=$('fl');for(let i=0;i<16;i++){const e=document.createElement('i'),z=3+Math.random()*6;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(10+Math.random()*10)+'s;animation-delay:-'+Math.random()*16+'s';f.appendChild(e);}})();
 // Bônus diário com sequência de dias (até 7)
-const NOV='• Novo: Chat com amigos! Toque no 💬 da lista de amigos para conversar.\n• Compartilhe a foto da sua torre com um amigo no fim da partida.\n• Mensagens novas aparecem com um aviso vermelho.\n• Skin Kensei Densetsu: os olhos bravos agora aparecem e piscam a cada 5 segundos.\n• As skins Doces, Sushi, Pixel, Galáxia, Ouro, Gelo e Arco-íris saíram do jogo. Quem usava uma delas volta pro Gatinho.';
+const NOV='• Ranking só de amigos na tela de Amigos.\n• Desafie um amigo (⚔️ no chat): ele aceita e joga para te superar.\n• Reaja às mensagens tocando nelas.\n• Bloquear e denunciar jogadores pelo perfil.\n• Novo: Chat com amigos! Toque no 💬 da lista de amigos para conversar.\n• Compartilhe a foto da sua torre com um amigo no fim da partida.\n• Mensagens novas aparecem com um aviso vermelho.\n• Skin Kensei Densetsu: os olhos bravos agora aparecem e piscam a cada 5 segundos.\n• As skins Doces, Sushi, Pixel, Galáxia, Ouro, Gelo e Arco-íris saíram do jogo. Quem usava uma delas volta pro Gatinho.';
 setTimeout(pendenteBau,3500);
 setTimeout(()=>Rank.sync(),7000);
 setTimeout(()=>{if(sv.ver!==GAME_V&&(sv.ver||sv.st.jogos>0)){$('novT').textContent='✨ Versão '+GAME_V+'\n'+NOV;$('nov').classList.remove('hide');}sv.ver=GAME_V;salvar();},4500);
@@ -2125,6 +2125,17 @@ st.textContent=`
 .pfH{text-align:center;font-size:clamp(14px,3.8vmin,21px);line-height:1.3}
 
 #amiM{z-index:50}
+#menu.wide #amiTabs .btn{font-size:min(4vmin,23px)}
+#amiTabs{gap:1.4vw}
+.pos{flex:none;width:9vmin;text-align:center;font-size:clamp(18px,5vmin,28px)}
+.fr .stt b{font-size:clamp(16px,4.4vmin,24px)}
+.pfRow{display:flex;gap:2vw}.pfRow .pfB{font-size:clamp(14px,3.8vmin,20px);min-height:40px}
+.rx{align-self:flex-start;margin-top:-1.1vmin;margin-left:2vw;font-size:clamp(14px,3.8vmin,22px);background:#fff;border:.35vmin solid var(--ink);border-radius:3vmin;padding:0 1.4vw;line-height:1.4}.rx:empty{display:none}
+.msg.me .rx{align-self:flex-end;margin-right:2vw}
+.rxp{display:flex;gap:1vw;background:#fff;border:.45vmin solid var(--ink);border-radius:3vmin;padding:.3vh 2vw;box-shadow:.4vmin .4vmin 0 var(--ink)}
+.rxp button{font-size:clamp(20px,6vmin,30px);background:none;border:0;padding:0 .8vw;cursor:pointer}
+.bl.dsf{background:#ffe3a3;text-align:center;display:flex;flex-direction:column;gap:.8vh}
+.chF .mb{flex:none}
 .mb.chat{position:relative;background:#fff}
 .ud{position:absolute;top:-.8vmin;right:-.8vmin;width:3.6vmin;height:3.6vmin;max-width:20px;max-height:20px;border-radius:50%;background:#ff3b5c;border:.45vmin solid var(--ink);box-sizing:border-box}
 .nv{color:#c4223e}
@@ -2164,7 +2175,7 @@ document.head.appendChild(st);
 // ---------------- avatar / medalha ----------------
 const ACE={festa:'🎉',chef:'🍳',presente:'🎁',coroa:'👑',antena:'📡',halo:'✨',rei:'👑',bruxa:'🧙',gorro:'🎅',manga:'⚔️'};
 function corSkin(s){try{const c=SK[s].cor(0,330),f=v=>Math.round(Math.max(0,Math.min(1,v))*255);return 'rgb('+f(c.r)+','+f(c.g)+','+f(c.b)+')';}catch(e){return '#ffb3cf';}}
-function av(s,big){s=SK[s]&&!SK[s].oculta?s:0;const k=SK[s];return '<span class="av'+(big?' big':'')+'" style="background:'+corSkin(s)+'"><i>🐱</i>'+(ACE[k.acess]?'<b>'+ACE[k.acess]+'</b>':'')+'</span>';}
+function av(s,big){s=SK[s]?s:0;const k=SK[s];return '<span class="av'+(big?' big':'')+'" style="background:'+corSkin(s)+'"><i>🐱</i>'+(ACE[k.acess]?'<b>'+ACE[k.acess]+'</b>':'')+'</span>';}
 function med(b){b=+b||0;return b>=200?['💎','Diamante']:b>=100?['🥇','Ouro']:b>=50?['🥈','Prata']:b>=25?['🥉','Bronze']:['🐾','Novato'];}
 
 // ---------------- dados do meu perfil ----------------
@@ -2267,13 +2278,14 @@ function inicia(){
     if(!primP)Object.keys(nv).forEach(u=>{if(!pedIn[u]&&typeof mode!=='undefined'&&mode==='menu')perfil(u).then(p=>{if(p&&p.n)bom('📨 '+p.n+' quer ser seu amigo!');});});
     primP=false;pedIn=nv;atualizaBadge();pedirRender();
   },noop);
+  d.ref('bloqueios/'+id).on('value',s=>{blq=s.val()||{};pedirRender();},noop);
   d.ref('inbox/'+id).on('value',s=>{ // avisos leves de mensagem nova (sem baixar as fotos)
     const nv=s.val()||{};
     if(!primI)Object.keys(nv).forEach(u=>{
       const o=inb[u],n=nv[u]||{};
       if(o&&(+o.t||0)>=(+n.t||0))return;
       if(!amigos[u]||(CH&&CH.u===u))return;
-      if(typeof mode!=='undefined'&&(mode==='menu'||mode==='over'))perfil(u).then(p=>{if(p&&p.n&&naoLida(u)){beep(880,.08);popText(n.k==='i'?'📸 '+p.n+' mandou uma torre!':'💬 '+p.n+': '+limpo(n.x),2,4.4,8);}});
+      if(typeof mode!=='undefined'&&(mode==='menu'||mode==='over'))perfil(u).then(p=>{if(p&&p.n&&naoLida(u)){beep(880,.08);popText(n.k==='d'?'⚔️ '+p.n+' te desafiou!':n.k==='i'?'📸 '+p.n+' mandou uma torre!':'💬 '+p.n+': '+limpo(n.x),2,4.4,8);}});
     });
     primI=false;inb=nv;
     if(CH)marcaLida(CH.u);
@@ -2314,7 +2326,7 @@ async function checaEnviado(u){
 // ---------------- ações ----------------
 function msgErro(e){
   const c=(e&&e.code)||'';
-  if(c==='PERMISSION_DENIED')return 'Sem permissão. Confira as regras do Firebase.';
+  if(c==='PERMISSION_DENIED')return 'Não foi possível (sem permissão). Se persistir, atualize as regras do Firebase.';
   if(c==='nick-em-uso')return 'Esse apelido já está em uso. Escolha outro';
   if(c==='nick-invalido')return 'Apelido: 3 a 12 caracteres, só letras sem acento, números, _ ou -';
   if(c==='rede'||navigator.onLine===false)return 'Sem conexão com a internet';
@@ -2323,6 +2335,7 @@ function msgErro(e){
 const nomeDe=u=>(PC[u]&&PC[u].n)||'jogador';
 async function pedir(u){
   if(Object.keys(amigos).length>=MAX)return toast('Limite de '+MAX+' amigos');
+  if(blq[u])return toast('Desbloqueie este jogador primeiro');
   if(pedIn[u])return aceitar(u);
   try{await db().ref('pedidos/'+u+'/'+meId()).set({t:TS()});outSet[u]=1;beep(660,.15);bom('Pedido enviado para '+nomeDe(u));}
   catch(e){toast(msgErro(e));}
@@ -2354,6 +2367,20 @@ async function remover(u){
   const id=meId(),up={};up['amigos/'+id+'/'+u]=null;up['amigos/'+u+'/'+id]=null;
   try{await db().ref().update(up);bom('Amigo removido');}catch(e){toast(msgErro(e));}
   pedirRender();fechaModal();
+}
+async function bloquear(u){
+  const id=meId(),up={};up['bloqueios/'+id+'/'+u]={t:TS()};up['amigos/'+id+'/'+u]=null;up['amigos/'+u+'/'+id]=null;up['pedidos/'+id+'/'+u]=null;up['pedidos/'+u+'/'+id]=null;
+  try{await db().ref().update(up);blq[u]=1;delete outSet[u];bom('Jogador bloqueado');}catch(e){toast(msgErro(e));}
+  pedirRender();fechaModal();
+}
+async function desbloquear(u){
+  try{await db().ref('bloqueios/'+meId()+'/'+u).remove();delete blq[u];bom('Desbloqueado');}catch(e){toast(msgErro(e));}
+  pedirRender();reabre();
+}
+async function denuncia(u,m){
+  try{await db().ref('denuncias/'+u+'/'+meId()).set({m,t:TS()});bom('Denúncia enviada');toast('Você também pode bloquear este jogador');}
+  catch(e){toast(e&&e.code==='PERMISSION_DENIED'?'Você já denunciou este jogador':msgErro(e));}
+  fechaModal();
 }
 async function buscar(){
   const q=g('amiQ').value.trim().toLowerCase();
@@ -2387,7 +2414,7 @@ function linha(u,tipo){
   let sub='Nv '+(p.l||1)+' · '+titulo(p.l),dir='';
   if(tipo==='amigo'){
     const un=naoLida(u);
-    if(un)sub='<span class="nv">'+(inb[u].k==='i'?'📸 Nova foto da torre':'● Nova mensagem')+'</span>';
+    if(un)sub='<span class="nv">'+(inb[u].k==='d'?'⚔️ Novo desafio':inb[u].k==='i'?'📸 Nova foto da torre':'● Nova mensagem')+'</span>';
     dir='<div class="stt"><span class="dot'+(on?' on':'')+'"></span>'+(on?'Online':(PR[u]&&PR[u].t?'Visto<br>'+ha(PR[u].t):'Offline'))+'</div><button class="mb chat" data-a="chat" data-u="'+u+'" aria-label="Conversar">💬'+(un?'<i class="ud"></i>':'')+'</button>';
   }
   else if(tipo==='pedido'){dir='<div class="acs"><button class="mb ok" data-a="aceitar" data-u="'+u+'" aria-label="Aceitar">✔</button><button class="mb no" data-a="recusar" data-u="'+u+'" aria-label="Recusar">✖</button></div>';}
@@ -2421,6 +2448,12 @@ function htmlPed(){
   garantePerfis(ids);
   return sec2('📨 Pedidos recebidos')+ids.map(u=>linha(u,'pedido')).join('');
 }
+function htmlRank(){
+  const me=meId(),ids=Object.keys(amigos).concat(me);garantePerfis(ids);
+  const L=ids.map(u=>({u,p:u===me?euPerfil():PC[u]})).filter(x=>x.p&&!x.p._x).sort((a,b)=>(+b.p.b||0)-(+a.p.b||0));
+  if(L.length<2)return '<div class="aviso">Adicione amigos para comparar recordes.</div>';
+  return sec2('🏆 Recordes entre amigos')+L.map((x,i)=>'<div class="fr'+(x.u===me?' eu':'')+'" data-a="perfil" data-u="'+x.u+'"><span class="pos">'+(['🥇','🥈','🥉'][i]||(i+1)+'º')+'</span>'+av(x.p.s)+'<div class="tx"><div class="nm">'+esc(x.p.n)+(x.u===me?' <small>(você)</small>':'')+'</div><div class="sb2">Nv '+(x.p.l||1)+' · '+titulo(x.p.l)+'</div></div><div class="stt"><b>'+fmt(x.p.b)+'</b>blocos</div></div>').join('');
+}
 function htmlConvidado(){
   return '<div class="gst"><div class="aviso">🐱 Crie uma conta para jogar com amigos.<br>Você escolhe um apelido único e seu progresso fica salvo na nuvem.</div><button class="box btn" data-a="criarConta">Criar conta</button><button class="box btn" data-a="entrarConta">Já tenho conta</button></div>';
 }
@@ -2428,13 +2461,13 @@ function render(){
   if(!tela)return;
   const box=g('amiInfo'),ok=estado==='ok',sc=box.scrollTop;
   g('amiTabs').classList.toggle('hide',!ok);g('amiSrch').classList.toggle('hide',!ok||aba!=='add');
-  ['lista','add','ped'].forEach((k,i)=>g('amiT'+(i+1)).classList.toggle('on',aba===k));
+  ['lista','add','ped','rank'].forEach((k,i)=>g('amiT'+(i+1)).classList.toggle('on',aba===k));
   atualizaBadge();
   if(!logadoSv()){box.innerHTML=htmlConvidado();return;}
   if(estado==='off'){box.innerHTML='<div class="aviso">Sem conexão com o servidor.<br>Conecte-se à internet e tente de novo.</div><div class="gst"><button class="box btn" data-a="tenta">Tentar de novo</button></div>';return;}
   if(estado==='carregando'){box.innerHTML='<div class="aviso">Carregando...</div>';return;}
   if(!ok){box.innerHTML='<div class="aviso">Escolha seu apelido para usar os amigos.</div><div class="gst"><button class="box btn" data-a="nick">Escolher apelido</button></div>';return;}
-  box.innerHTML=aba==='lista'?htmlLista():aba==='add'?htmlAdd():htmlPed();
+  box.innerHTML=aba==='lista'?htmlLista():aba==='add'?htmlAdd():aba==='rank'?htmlRank():htmlPed();
   box.scrollTop=sc;
 }
 async function abre(){
@@ -2449,7 +2482,7 @@ async function abre(){
   else if(r==='nick')pedeNick(true);
 }
 function fecha(){tela=false;desligaPresenca();fechaModal();showGrp('main');}
-function mudaAba(k){aba=k;if(k==='ped')garantePerfis(Object.keys(pedIn));render();if(k==='add')setTimeout(()=>{try{g('amiQ').focus({preventScroll:true});}catch(e){}},50);}
+function mudaAba(k){aba=k;if(k==='ped')garantePerfis(Object.keys(pedIn));if(k==='rank')Object.keys(amigos).forEach(u=>perfil(u,true).then(pedirRender));render();if(k==='add')setTimeout(()=>{try{g('amiQ').focus({preventScroll:true});}catch(e){}},50);}
 
 // ---------------- janelas ----------------
 function abreModal(html){
@@ -2471,7 +2504,9 @@ function htmlPerfil(u,p){
   else if(r==='amigo')ac='<button class="pfB go" data-a="chat" data-u="'+u+'">💬 Conversar</button><button class="pfB no" data-a="remover" data-u="'+u+'">Remover amigo</button>';
   else if(r==='recebido')ac='<button class="pfB go" data-a="aceitar" data-u="'+u+'">✔ Aceitar pedido</button><button class="pfB no" data-a="recusar" data-u="'+u+'">✖ Recusar</button>';
   else if(r==='enviado')ac='<button class="pfB" data-a="cancelar" data-u="'+u+'">⏳ Pedido enviado · Cancelar</button>';
+  else if(blq[u])ac='<button class="pfB go" data-a="desbloq" data-u="'+u+'">✅ Desbloquear</button>';
   else ac='<button class="pfB go" data-a="pedir" data-u="'+u+'">➕ Adicionar amigo</button>';
+  if(!eu&&!blq[u])ac+='<div class="pfRow"><button class="pfB" data-a="denunciar" data-u="'+u+'">⚠️ Denunciar</button><button class="pfB no" data-a="bloq" data-u="'+u+'">🚫 Bloquear</button></div>';
   return '<div class="pfTop">'+av(p.s,1)+'<div class="pfNm">'+esc(p.n)+'</div>'+stt+'<div class="pfMd">'+md[0]+' '+md[1]+'</div></div>'
     +'<div class="pfG">'+tile('Nível','Nv '+n)+tile('Título',esc(titulo(n)))+tile('Recorde',fmt(p.b))+tile('Maior combo',fmt(p.c))+tile('Perfeitos',fmt(p.p))+tile('Partidas',fmt(p.j))+tile('Conquistas',fmt(p.a)+'/'+ACH.length)+tile('Skin',esc((SK[p.s]||SK[0]).nome))+'</div>'
     +'<div class="pfAc">'+ac+'<button class="pfB" data-a="fechar">Fechar</button></div>';
@@ -2514,6 +2549,13 @@ function acaoModal(b){
   if(a==='fora'){const f=modal&&modal.sh&&modal.sh.fora;fechaModal();if(f)f();return;}
   if(a==='criarConta'){fechaModal();if(window.NekoAuth)NekoAuth.open('new');return;}
   if(a==='entrarConta'){fechaModal();if(window.NekoAuth)NekoAuth.open('in');return;}
+  if(a==='denunciar'){modal.el.querySelector('.pf').innerHTML='<div class="pfNm t2">Denunciar</div><div class="pfH">Qual o motivo?</div><div class="pfAc"><button class="pfB" data-a="rep" data-m="spam" data-u="'+u+'">Spam</button><button class="pfB" data-a="rep" data-m="ofensivo" data-u="'+u+'">Ofensivo</button><button class="pfB" data-a="rep" data-m="outro" data-u="'+u+'">Outro</button><button class="pfB" data-a="fechar">Cancelar</button></div>';return;}
+  if(a==='rep')return denuncia(u,b.dataset.m);
+  if(a==='desbloq')return desbloquear(u);
+  if(a==='bloq'){
+    if(b.dataset.c){clearTimeout(tmConf);return bloquear(u);}
+    b.dataset.c='1';b.textContent='Toque de novo para bloquear';tmConf=setTimeout(()=>{b.dataset.c='';b.textContent='🚫 Bloquear';},3000);return;
+  }
   if(a==='remover'){ // confirma com um segundo toque
     if(b.dataset.c){clearTimeout(tmConf);return remover(u);}
     b.dataset.c='1';b.textContent='Toque de novo para remover';tmConf=setTimeout(()=>{b.dataset.c='';b.textContent='Remover amigo';},3000);
@@ -2524,7 +2566,8 @@ function acaoModal(b){
 // Cada um escreve só no próprio caminho: chats/<remetente>/<destinatário>/m/<id>. Quem recebe lê os dois lados e junta pela hora.
 // inbox/<destinatário>/<remetente> é um aviso leve (hora + tipo + prévia) para o selo de "nova mensagem" sem baixar fotos.
 const MSG_MAX=200,JANELA=40,FOTO_MAX=100000;
-let inb={},primI=true,CH=null,lastSend=0,podado={};
+let inb={},primI=true,CH=null,lastSend=0,podado={},blq={},desafio=null;
+const EMO=['❤️','😂','😮','👏','🔥','😢'];
 const CL=()=>(sv.cl&&typeof sv.cl==='object')?sv.cl:(sv.cl={});
 const naoLida=u=>!!(amigos[u]&&inb[u]&&(+inb[u].t||0)>(+CL()[u]||0));
 const nNaoLidas=()=>Object.keys(amigos).filter(naoLida).length;
@@ -2540,7 +2583,7 @@ function marcaLida(u,t){
 }
 function limpaAmigo(u){ // amizade desfeita (por mim ou por ele): apaga a minha parte da conversa e os avisos
   const id=meId(),up={};
-  up['chats/'+id+'/'+u]=null;up['inbox/'+id+'/'+u]=null;up['inbox/'+u+'/'+id]=null;
+  up['chats/'+id+'/'+u]=null;up['inbox/'+id+'/'+u]=null;up['inbox/'+u+'/'+id]=null;up['reacoes/'+id+'/'+u]=null;up['reacoes/'+u+'/'+id]=null;
   db().ref().update(up).catch(()=>{});
   delete inb[u];if(sv.cl)delete sv.cl[u];
   if(CH&&CH.u===u){fechaChat();toast('Vocês não são mais amigos');}
@@ -2549,7 +2592,7 @@ function limpaAmigo(u){ // amizade desfeita (por mim ou por ele): apaga a minha 
 async function manda(u,msg){ // grava a mensagem e o aviso na mesma gravação (ou vai tudo, ou nada)
   const id=meId(),d=db(),key=d.ref('chats/'+id+'/'+u+'/m').push().key,up={};
   up['chats/'+id+'/'+u+'/m/'+key]=Object.assign({t:TS()},msg);
-  const av2={t:TS(),k:msg.k};if(msg.k==='t')av2.x=limpo(msg.x).slice(0,40);
+  const av2={t:TS(),k:msg.k};if(msg.k!=='i')av2.x=limpo(msg.x).slice(0,40);
   up['inbox/'+u+'/'+id]=av2;
   if(CH&&CH.u===u)CH.pend[key]=1;
   try{await d.ref().update(up);}
@@ -2566,15 +2609,19 @@ function abreChat(u){
   const el=document.createElement('div');el.id='chatV';
   el.innerHTML='<div class="chH"><button class="mb" data-c="voltar" aria-label="Voltar">◀</button><div class="chWho" data-c="perfil"><span id="chAv"></span><div class="tx"><div class="nm" id="chNm"></div><div class="sb2" id="chSt"></div></div></div></div>'
     +'<div class="chL" id="chL"><button class="chBtn hide" id="chMore" data-c="mais">⬆ Mensagens anteriores</button><div id="chI"></div></div>'
-    +'<div class="chF"><input id="chIn" maxlength="'+MSG_MAX+'" autocomplete="off" autocapitalize="sentences" enterkeyhint="send" placeholder="Escreva uma mensagem"><button class="pfB go" data-c="enviar">Enviar</button></div>';
+    +'<div class="chF"><button class="mb" data-c="desafiar" aria-label="Desafiar">⚔️</button><input id="chIn" maxlength="'+MSG_MAX+'" autocomplete="off" autocapitalize="sentences" enterkeyhint="send" placeholder="Escreva uma mensagem"><button class="pfB go" data-c="enviar">Enviar</button></div>';
   document.body.appendChild(el);
-  CH={u,el,M:{},nodes:{},pend:{},offs:[],stick:true,n:{},ok:{},more:{},tm:0,erro:0};
+  CH={u,el,M:{},nodes:{},pend:{},offs:[],stick:true,n:{},ok:{},more:{},tm:0,erro:0,RX:{m:{},t:{}}};
   const L=el.querySelector('#chL'),inp=el.querySelector('#chIn'),para=e=>e.stopPropagation();
   ['pointerdown','keydown','keyup','keypress'].forEach(t=>el.addEventListener(t,para)); // nada do chat chega no jogo (ex.: espaço)
   L.addEventListener('scroll',()=>{if(CH)CH.stick=L.scrollHeight-L.scrollTop-L.clientHeight<60;});
   el.addEventListener('click',e=>{
-    const b=e.target.closest('[data-c]');if(!b||!CH)return;
+    const b=e.target.closest('[data-c]');if(!CH)return;
+    if(!b){const mm=e.target.closest('.msg.el');if(mm&&mm.dataset.mid)pickRx(mm);return;}
     const c=b.dataset.c;
+    if(c==='desafiar')return desafiar();
+    if(c==='jogar')return jogaDesafio(+b.dataset.s||0);
+    if(c==='rx'){const mm=b.closest('.msg');return setRx(mm.dataset.mid,+b.dataset.n);}
     if(c==='voltar')return fechaChat();
     if(c==='perfil')return abrePerfil(CH.u);
     if(c==='enviar')return enviaChat();
@@ -2592,6 +2639,7 @@ function abreChat(u){
   const me=meId(),pr=db().ref('presenca/'+u),pcb=s=>{PR[u]=s.val()||null;statusChat();};
   pr.on('value',pcb,()=>{});CH.offs.push(()=>pr.off('value',pcb));
   ouvir('m','chats/'+me+'/'+u+'/m');ouvir('t','chats/'+u+'/'+me+'/m');
+  [['m','reacoes/'+me+'/'+u],['t','reacoes/'+u+'/'+me]].forEach(([k,path])=>{const r=db().ref(path),cb=sn=>{if(CH){CH.RX[k]=sn.val()||{};rendChat();}};r.on('value',cb,()=>{});CH.offs.push(()=>r.off('value',cb));});
   marcaLida(u);
   if(!podado[u]){podado[u]=1;setTimeout(()=>podaMinhas(u),4000);}
 }
@@ -2650,13 +2698,18 @@ function nodeMsg(m){
       b.appendChild(im);
       if(m.x){const c=document.createElement('div');c.className='cap';c.textContent=String(m.x);b.appendChild(c);}
     }else b.textContent='📷 (foto indisponível)';
+  }else if(m.k==='d'){
+    b.classList.add('dsf');const tt=document.createElement('div');tt.textContent='⚔️ Desafio!\nSupere '+(+m.s||0)+' blocos';b.appendChild(tt);
+    if(!mine){const bt=document.createElement('button');bt.className='pfB go sm';bt.dataset.c='jogar';bt.dataset.s=+m.s||0;bt.textContent='Aceitar e jogar';b.appendChild(bt);}
   }else b.textContent=String(m.x==null?'':m.x);
-  const t=document.createElement('div');t.className='tm';
-  d.appendChild(b);d.appendChild(t);atualizaMsg(d,m);return d;
+  const t=document.createElement('div'),rx=document.createElement('div');t.className='tm';rx.className='rx';
+  d.dataset.mid=m.id;d.appendChild(b);d.appendChild(rx);d.appendChild(t);atualizaMsg(d,m);return d;
 }
 function atualizaMsg(d,m){
   const t=d.querySelector('.tm'),x=hora(m.t)+(m.l==='m'?(CH&&CH.pend[m.id]?' ⏳':' ✓'):'');
   if(t.textContent!==x)t.textContent=x;
+  const r=d.querySelector('.rx'),n=CH&&CH.RX[m.l==='m'?'m':'t'][m.id],e=n!=null&&EMO[n]?EMO[n]:'';
+  if(r.textContent!==e)r.textContent=e;
 }
 function desenha(){
   if(!CH)return;
@@ -2680,6 +2733,44 @@ function desenha(){
   CH.el.querySelector('#chMore').classList.toggle('hide',!mais);
   if(CH.stick)L.scrollTop=L.scrollHeight;
 }
+function pickRx(mm){
+  const o=mm.querySelector('.rxp');document.querySelectorAll('#chatV .rxp').forEach(x=>x.remove());if(o)return;
+  const bar=document.createElement('div');bar.className='rxp';
+  EMO.forEach((e,i)=>{const b=document.createElement('button');b.dataset.c='rx';b.dataset.n=i;b.textContent=e;bar.appendChild(b);});
+  mm.insertBefore(bar,mm.querySelector('.rx'));
+}
+async function setRx(id,n){
+  if(!CH||!id)return;const c=CH,u=c.u,cur=c.RX.t[id],ref=db().ref('reacoes/'+u+'/'+meId()+'/'+id);
+  c.el.querySelectorAll('.rxp').forEach(x=>x.remove());
+  try{if(cur===n){delete c.RX.t[id];rendChat();await ref.remove();}else{c.RX.t[id]=n;rendChat();await ref.set(n);}}
+  catch(e){toast(msgErro(e));if(cur===undefined)delete c.RX.t[id];else c.RX.t[id]=cur;rendChat();}
+}
+async function desafiar(){
+  if(!CH)return;const c=CH,b=Math.min(1000,(+best||0)|0);
+  if(b<1)return toast('Jogue uma partida antes de desafiar');
+  if(Date.now()-lastSend<1100)return toast('Calma! Um instante...');
+  lastSend=Date.now();c.stick=true;
+  try{await manda(c.u,{k:'d',s:b,x:'⚔️ Desafio: supere '+b+' blocos'});bom('⚔️ Desafio enviado!');}catch(e){toast(msgErro(e));}
+}
+function jogaDesafio(sc){
+  if(!CH||!sc)return;
+  desafio={u:CH.u,s:sc,t:Date.now(),nome:nomeDe(CH.u)};
+  fechaChat();tela=false;desligaPresenca();
+  try{if(mode==='over')document.getElementById('home').click();}catch(e){}
+  setTimeout(()=>{try{if(mode==='menu'){showGrp('modos');document.getElementById('mClas').click();popText('⚔️ Supere '+sc+' blocos!',1,6,8);}}catch(e){}},200);
+}
+let modoAnt='';
+setInterval(()=>{ // fim da partida de um desafio: avisa o amigo do resultado
+  const m=typeof mode!=='undefined'?mode:'';
+  if(m==='over'&&modoAnt!=='over'&&desafio){
+    const d=desafio;desafio=null;
+    if(Date.now()-d.t<36e5&&typeof modo!=='undefined'&&modo==='classico'&&amigos[d.u]&&estado==='ok'){
+      const sc=score|0,ganhou=sc>d.s;
+      manda(d.u,{k:'t',x:ganhou?'🏆 Superei seu desafio! Fiz '+sc+' blocos (o seu: '+d.s+')':'Fiz '+sc+' blocos no seu desafio ('+d.s+'). Quase!'}).then(()=>popText(ganhou?'🏆 Desafio vencido! Resultado enviado':'Resultado enviado a '+d.nome,ganhou?1:2,5,10)).catch(()=>{});
+    }
+  }
+  modoAnt=m;
+},500);
 async function enviaChat(){
   if(!CH)return;const c=CH,inp=c.el.querySelector('#chIn'),x=inp.value.replace(/\s+/g,' ').trim();
   if(!x)return;
@@ -2768,7 +2859,7 @@ async function mandarFotos(btn){
 // ---------------- ligações com a tela ----------------
 g('amiBtn').onclick=abre;
 g('amiBack').onclick=fecha;
-g('amiT1').onclick=()=>mudaAba('lista');g('amiT2').onclick=()=>mudaAba('add');g('amiT3').onclick=()=>mudaAba('ped');
+g('amiT1').onclick=()=>mudaAba('lista');g('amiT2').onclick=()=>mudaAba('add');g('amiT3').onclick=()=>mudaAba('ped');g('amiT4').onclick=()=>mudaAba('rank');
 g('amiGo').onclick=buscar;
 g('amiQ').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();buscar();}});
 g('amiInfo').addEventListener('click',e=>{
