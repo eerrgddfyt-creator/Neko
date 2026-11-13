@@ -238,6 +238,7 @@ Load.ui();
   <div class="grp" id="main">
     <button id="play" class="box btn">Jogar</button>
     <button id="onlBtn" class="box btn">Online</button>
+    <button id="amiBtn" class="box btn">Amigos<span id="amiBdg" class="bdg hide">0</span></button>
     <button id="misBtn" class="box btn">Missões</button>
     <button id="sknBtn" class="box btn">Skins</button>
     <button id="cfg" class="box btn">Config</button>
@@ -267,7 +268,12 @@ Load.ui();
   <div class="grp hide" id="help"><div id="helpInfo" class="box"></div><input id="bkIn" class="box" placeholder="código de backup" autocomplete="off"><button id="bkOut" class="box btn">Gerar backup</button><button id="bkRes" class="box btn">Restaurar</button><button id="helpBack" class="box btn">Voltar</button></div>
   <div class="grp hide" id="modos"><div id="modoInfo" class="box">👆 Toque na tela pra soltar o bloco.\nQuanto mais alinhado, melhor o encaixe!</div><button id="mClas" class="box btn mod"><b>Clássico</b><small>Empilhe até errar. Vale pro ranking.</small></button><button id="mZen" class="box btn mod"><b>Zen 🌿</b><small>Sem game over e sem pressa.</small></button><button id="mRel" class="box btn mod"><b>Relógio ⏱</b><small>60s. Perfeito dá +2s, errar tira 3s.</small></button><button id="mDia" class="box btn mod"><b id="mDiaT">Desafio diário 📅</b><small>Mesma torre pra todos. 20 blocos = 60 🪙</small></button><button id="mBack" class="box btn">Voltar</button></div>
   <div class="grp hide" id="rnk"><div id="rankInfo" class="box"></div><div id="rkRow1"><input id="nickIn" class="box" maxlength="12" placeholder="seu apelido" autocomplete="off"><button id="nickB" class="box btn">Salvar</button></div><div id="rkRow2"><button id="amigB" class="box btn">👥 Amigos</button><button id="rankBack" class="box btn">Voltar</button></div></div>
-  <div class="grp hide" id="amigos"><div id="amigInfo" class="box"></div><div id="frRow"><input id="frIn" class="box" maxlength="6" placeholder="código do amigo" autocomplete="off"><button id="frAdd" class="box btn">Adicionar</button></div><button id="amigBack" class="box btn">Voltar</button></div>
+  <div class="grp hide" id="ami">
+    <div id="amiTabs"><button id="amiT1" class="box btn on">Lista</button><button id="amiT2" class="box btn">Adicionar</button><button id="amiT3" class="box btn">Pedidos<span id="amiBdgT" class="bdg hide">0</span></button></div>
+    <div id="amiInfo" class="box"></div>
+    <div id="amiSrch" class="hide"><input id="amiQ" class="box" maxlength="12" placeholder="apelido do jogador" autocomplete="off" autocapitalize="off" spellcheck="false"><button id="amiGo" class="box btn">Buscar</button></div>
+    <button id="amiBack" class="box btn">Voltar</button>
+  </div>
 </div>
 
 <div id="dev">desenvolvido por <span class="nekCard box">N E K</span></div>
@@ -300,7 +306,7 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 </script>
 <script>
 var ad=false; // <<< ANÚNCIOS: false = desligado (nada de anúncio aparece) · true = ligado (reviver + skins)
-const GAME_V=19; // aumente a cada versão nova
+const GAME_V=20; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
 const H=.6,BASE=3,LIM=3.10,TOL=.12,MENU_SHIFT=.4,VIEW=2.2,VEL=3.45; // VEL = velocidade fixa dos blocos
 const INIT=8; // blocos já empilhados quando a partida começa (como no Stack)
@@ -1080,10 +1086,10 @@ function mgCombo(n){ // texto no centro de cima a partir de 3 perfeitos; muda a 
   if(!FPS_ON)return;
   const st=document.createElement('style');
   st.textContent=`
-#fps{position:fixed;right:4vw;top:calc(env(safe-area-inset-top,0px) + .6vh);z-index:99999;pointer-events:none;display:flex;align-items:center;gap:6px;padding:4px 9px;background:#fffdf5;border:2px solid #1b1a3a;border-radius:12px;box-shadow:2px 2px 0 #1b1a3a;font-family:Bangers,Impact,sans-serif;color:#1b1a3a;line-height:1;opacity:.92}
+#fps{position:fixed;right:2vw;top:calc(env(safe-area-inset-top,0px) + .6vh);z-index:99999;pointer-events:none;display:flex;align-items:center;gap:4px;padding:2px 7px;background:#fffdf5;border:2px solid #1b1a3a;border-radius:12px;box-shadow:2px 2px 0 #1b1a3a;font-family:Bangers,Impact,sans-serif;color:#1b1a3a;line-height:1;opacity:.92}
 #bauTop:not(.hide)~#fps{right:calc(4vw + 33vmin + 8px)}
 #fps .fd{width:9px;height:9px;border-radius:50%;background:var(--fc,#5fd38d);border:2px solid #1b1a3a;flex:none}
-#fps .fn{font-size:19px;letter-spacing:.03em;min-width:2ch;text-align:right}
+#fps .fn{font-size:10px;letter-spacing:.03em;min-width:2ch;text-align:right}
 #fps .fl{font-size:10px;letter-spacing:.14em;opacity:.7}
 #fps .fm{display:block;width:34px;height:8px;border:2px solid #1b1a3a;border-radius:6px;background:#fff;overflow:hidden;flex:none}
 #fps .fm span{display:block;height:100%;width:var(--w,100%);background:var(--fc,#5fd38d);transition:width .3s}`;
@@ -1181,46 +1187,18 @@ async function abreRank(){
     e.innerHTML=sec('🏆 Ranking global')+(t.length?t.slice(0,10).map((p,i)=>linhaRank(i,p.n,p.s,p.u===Rank.uid)).join(''):'<div class="aviso">Ninguém pontuou ainda!</div>')+'<div class="meu">'+(sv.rkBest?'Seu recorde: <b>'+sv.rkBest+'</b>':'Jogue o Clássico pra entrar no ranking!')+'</div>';
   }catch(x){msg('Não foi possível carregar o ranking agora.');}
 }
-async function abreAmigos(){
-  showGrp('amigos');const e=$('amigInfo');
-  if(!sv.code)sv.code=novoCodigo();
-  const cod='<div class="cod"><small>Seu código de amigo (toque pra copiar)</small><b>'+sv.code+'</b>'+(sv.rkOk?'':'<small>Os amigos só te acham depois da 1ª pontuação</small>')+'</div>';
-  const msg=t=>{e.innerHTML=cod+sec('👥 Amigos')+'<div class="aviso">'+t+'</div>';};
-  if(!Rank.ativo()||navigator.onLine===false){msg('Precisa de internet e do ranking ativo.');return;}
-  msg('Carregando...');
-  try{
-    await Rank.carrega();
-    const rs=await Promise.all((sv.amigos||[]).map(f=>Rank.db.ref('ranking/'+f.u).once('value')));
-    const L=[{n:sv.nick||'Você',s:sv.rkBest||0,eu:1}];
-    rs.forEach(r=>{const v=r.val();if(v)L.push({n:v.n,s:v.s});});
-    L.sort((a,b)=>b.s-a.s);
-    e.innerHTML=cod+sec('👥 Você e seus amigos')+(L.length>1?'':'<div class="aviso">Adicione amigos pelo código deles.</div>')+L.map((p,i)=>linhaRank(i,p.n,p.s,p.eu)).join('');
-  }catch(x){msg('Não foi possível carregar.');}
-}
-$('amigInfo').onclick=ev=>{if(ev.target.closest&&ev.target.closest('.cod')){try{navigator.clipboard.writeText(sv.code);popText('Código copiado!',1,6,8);}catch(e){}}};
 $('rankB').onclick=abreRank;
 $('rankBack').onclick=()=>showGrp(net.api?'onl':'main');
-$('amigB').onclick=abreAmigos;
-$('amigBack').onclick=abreRank;
-$('nickB').onclick=()=>{
+$('amigB').onclick=()=>{if(window.Amigos)Amigos.abre();};
+$('nickB').onclick=async()=>{
+  if(window.Amigos&&Amigos.ativo()){ // conta: apelido único, igual pra todo mundo
+    try{await Amigos.trocaNick($('nickIn').value);popText('Apelido salvo!',1,6,8);abreRank();}
+    catch(e){popText(e&&e.code==='nick-em-uso'?'Esse apelido já está em uso':e&&e.code==='nick-invalido'?'3 a 12: letras sem acento, números, _ ou -':e&&e.code==='rede'?'Sem conexão':'Não foi possível salvar',2,6,8);}
+    return;
+  }
   const n=$('nickIn').value.replace(/[^\wÀ-ú -]/g,'').trim().slice(0,12);
   if(n.length<2)return popText('Mínimo 2 letras',2,6,8);
   sv.nick=n;sv.rkOk=0;salvar();popText('Apelido salvo!',1,6,8);abreRank();
-};
-$('frAdd').onclick=async()=>{
-  const c=$('frIn').value.trim().toUpperCase();
-  if(c.length!==6)return popText('O código tem 6 letras',2,6,8);
-  if(c===sv.code)return popText('Esse é o seu código',2,6,8);
-  if((sv.amigos||[]).length>=20)return popText('Limite de 20 amigos',2,6,8);
-  try{
-    await Rank.carrega();
-    const sn=await Rank.db.ref('ranking').orderByChild('c').equalTo(c).limitToFirst(1).once('value');
-    let achou=null;sn.forEach(x=>{achou={u:x.key,n:x.val().n};});
-    if(!achou)return popText('Código não encontrado',2,6,8);
-    sv.amigos=sv.amigos||[];
-    if(sv.amigos.some(f=>f.u===achou.u))return popText('Já é seu amigo',2,6,8);
-    sv.amigos.push(achou);salvar();$('frIn').value='';popText('Amigo: '+achou.n,1,7,8);abreAmigos();
-  }catch(x){popText('Sem conexão',2,6,8);}
 };
 // ================= Níveis, missões semanais, baú e sorteio =================
 const niv=()=>Math.floor(Math.sqrt((sv.xp||0)/25))+1;
@@ -1379,7 +1357,7 @@ const net={api:null,room:null,code:'',host:false,ready:false,active:false,done:f
 (async()=>{try{net.api=await claude.use('room');}catch(e){}if(!net.api)$('onlBtn').textContent='Ranking';})();
 const setStatus=t=>{$('bestTxt').textContent=t;};
 const idleStatus=()=>setStatus(best||sv.moedas?'Nv '+niv()+' · Melhor '+best+'\n🪙 '+sv.moedas:'empilhe tudo!');
-const GRPS=['main','conf','onl','lobby','mis','skn','help','ach','modos','rnk','amigos'],LARGAS=['mis','skn','help','ach','rnk','amigos','lobby','modos'];
+const GRPS=['main','conf','onl','lobby','mis','skn','help','ach','modos','rnk','ami'],LARGAS=['mis','skn','help','ach','rnk','ami','lobby','modos'];
 const showGrp=id=>{GRPS.forEach(g=>$(g).classList.toggle('hide',g!==id));$('menu').classList.toggle('wide',LARGAS.indexOf(id)>=0);$('menu').classList.toggle('sk',id==='skn');skinOn=id==='skn';$('bauTop').classList.toggle('hide',id!=='skn');if(id==='main')idleStatus();};
 async function joinRoom(code,host){
   if(!net.api)return setStatus('Online indisponível aqui');
@@ -1466,7 +1444,7 @@ addEventListener('message',e=>{if(e.data&&e.data.ota)popText(e.data.ota,1,5,12);
 (()=>{const sn=$('snow');for(let i=0;i<30;i++){const e=document.createElement('i'),z=3+Math.random()*5;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(6+Math.random()*7)+'s;animation-delay:-'+Math.random()*12+'s';sn.appendChild(e);}})();
 (()=>{const f=$('fl');for(let i=0;i<16;i++){const e=document.createElement('i'),z=3+Math.random()*6;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(10+Math.random()*10)+'s;animation-delay:-'+Math.random()*16+'s';f.appendChild(e);}})();
 // Bônus diário com sequência de dias (até 7)
-const NOV=(ad?'• Novo: veja um anúncio para reviver quando errar.\n• Skins podem ser desbloqueadas assistindo anúncios (10 ou 20).\n':'')+'• Novo botão Compartilhar no fim da partida: manda a imagem da sua torre.';
+const NOV='• Novo: Amigos! Crie uma conta com apelido único, procure jogadores pelo nome e veja quem está online.\n• Pedidos de amizade, lista de amigos e perfil de cada jogador (nível, medalha, recorde e mais).';
 setTimeout(pendenteBau,3500);
 setTimeout(()=>Rank.sync(),7000);
 setTimeout(()=>{if(sv.ver!==GAME_V&&(sv.ver||sv.st.jogos>0)){$('novT').textContent='✨ Versão '+GAME_V+'\n'+NOV;$('nov').classList.remove('hide');}sv.ver=GAME_V;salvar();},4500);
@@ -1584,7 +1562,7 @@ wrap.innerHTML=`
     <div id="accTabs"><button type="button" class="box btn axb on" data-t="in">Entrar</button><button type="button" class="box btn axb" data-t="new">Criar conta</button></div>
     <div id="accHint" class="axh"></div>
     <form id="accForm" novalidate>
-      <input id="accNick" class="axi hide" maxlength="12" placeholder="apelido (2 a 12 letras)" autocomplete="nickname" autocapitalize="off" spellcheck="false">
+      <input id="accNick" class="axi hide" maxlength="12" placeholder="apelido único (3 a 12, sem acento)" autocomplete="nickname" autocapitalize="off" spellcheck="false">
       <input id="accMail" class="axi" type="email" inputmode="email" placeholder="e-mail" autocomplete="email" autocapitalize="off" spellcheck="false">
       <div class="axp"><input id="accPass" class="axi" type="password" placeholder="senha (mín. 6)" autocomplete="current-password"><button type="button" id="accEye" class="axe" aria-label="mostrar senha">👁</button></div>
       <input id="accPass2" class="axi hide" type="password" placeholder="repita a senha" autocomplete="new-password">
@@ -1620,6 +1598,8 @@ function erro(e){
     'auth/weak-password':'Senha fraca: use 6 ou mais caracteres',
     'auth/email-already-in-use':'Esse e-mail já tem conta. Use "Entrar"',
     'auth/credential-already-in-use':'Esse e-mail já tem conta. Use "Entrar"',
+    'nick-em-uso':'Esse apelido já está em uso. Escolha outro',
+    'nick-invalido':'Apelido: 3 a 12 caracteres, só letras sem acento, números, _ ou -',
     'auth/user-not-found':'E-mail ou senha incorretos',
     'auth/wrong-password':'E-mail ou senha incorretos',
     'auth/invalid-credential':'E-mail ou senha incorretos',
@@ -1710,9 +1690,9 @@ async function verify(){
     await boot();render();
   }catch(e){setSt('☁ Sem conexão — salvo só neste aparelho');}
 }
-function open(){
+function open(t){
   if(typeof mode!=='undefined'&&mode!=='menu')return;
-  g('acc').classList.remove('hide');setTab('in');render();
+  g('acc').classList.remove('hide');setTab(t==='new'?'new':'in');render();
   if(sv.acc&&!expired)verify();
 }
 function close(){g('acc').classList.add('hide');if(typeof idleStatus==='function')idleStatus();}
@@ -1720,12 +1700,16 @@ function close(){g('acc').classList.add('hide');if(typeof idleStatus==='function
 // ---------------- Criar conta / Entrar ----------------
 async function criar(nick,email,pass){
   await Rank.carrega();
+  const cur=(await Rank.db.ref('nomes/'+nick.toLowerCase()).once('value')).val(); // apelido único
+  if(cur&&cur!==Rank.uid)throw{code:'nick-em-uso'};
   const a=firebase.auth(),cred=firebase.auth.EmailAuthProvider.credential(email,pass),u=a.currentUser;
   if(u&&u.isAnonymous)await u.linkWithCredential(cred); // mantém o mesmo uid: ranking e progresso continuam
   else await a.createUserWithEmailAndPassword(email,pass);
   Rank.uid=a.currentUser.uid;
-  sv.acc={e:email};sv.nick=nick;sv.rkOk=0;expired=false;pulled=true;salvarJa();
+  try{await a.currentUser.getIdToken(true);}catch(e){} // atualiza o token: agora é conta de verdade (não anônima)
+  sv.acc={e:email};sv.nick=nick;sv.rkOk=0;expired=false;pulled=true;delete sv.nickPend;salvarJa();
   try{await up(true);}catch(e){}
+  try{if(window.Amigos)await Amigos.registra(nick);}catch(e){sv.nickPend=1;salvarJa();} // perde a corrida pelo nome: pede outro depois
   Rank.sync();
 }
 async function entrar(email,pass){
@@ -1746,8 +1730,8 @@ g('accForm').onsubmit=async ev=>{
   if(pass.length<6)return setMsg('A senha precisa ter 6 ou mais caracteres','err');
   let nick='';
   if(tab==='new'){
-    nick=g('accNick').value.replace(/[^\wÀ-ú -]/g,'').trim().slice(0,12);
-    if(nick.length<2)return setMsg('O apelido precisa de pelo menos 2 letras','err');
+    nick=g('accNick').value.trim();
+    if(!/^[A-Za-z0-9_-]{3,12}$/.test(nick))return setMsg(erro({code:'nick-invalido'}),'err');
     if(pass!==g('accPass2').value)return setMsg('As senhas não são iguais','err');
   }
   if(navigator.onLine===false)return setMsg('Sem internet','err');
@@ -1790,6 +1774,7 @@ g('accLogout').onclick=async()=>{
     if(!pulled)throw{code:'rede'};
     loggingOut=true;
     await up(true);
+    try{if(window.Amigos)await Amigos.offline();}catch(e){}
     await firebase.auth().signOut();
   }catch(e){loggingOut=false;b.textContent='Sair da conta';setMsg('Não consegui salvar na nuvem: '+erro(e)+'. Tente de novo.','err');return;}
   clearTimeout(svT);svT=0; // impede o jogo de regravar o save antigo
@@ -2058,6 +2043,452 @@ var SHARE_CFG={url:'',titulo:'NEKO TOWER'}; // coloque o link do seu jogo/loja e
     b.disabled=false;
   };
   setInterval(()=>{const v=mode==='over'&&!net.active&&score>0&&!document.getElementById('shareV');b.classList.toggle('hide',!v);},300);
+})();
+
+</script>
+<script>
+/* ===== NEKO TOWER: amigos (apelido único, pedidos, lista online/offline, perfil) ===== */
+var Amigos=(function(){
+'use strict';
+const g=id=>document.getElementById(id);
+const NICK_RE=/^[A-Za-z0-9_-]{3,12}$/,MAX=50;
+const TS=()=>firebase.database.ServerValue.TIMESTAMP;
+const U=()=>{try{const u=firebase.auth().currentUser;return u&&!u.isAnonymous?u:null;}catch(e){return null;}};
+const meId=()=>{const u=U();return u?u.uid:null;};
+const logadoSv=()=>typeof NekoAuth!=='undefined'&&!!NekoAuth.logged;
+const db=()=>Rank.db;
+const toast=t=>popText(t,2,6,8),bom=t=>popText(t,1,7,8);
+const fmt=n=>(+n||0).toLocaleString('pt-BR');
+const titulo=l=>TIT[Math.min(Math.max((+l||1)-1,0),TIT.length-1)];
+
+// ---------------- estado ----------------
+let estado='novo',boot=null,ligado=false,tela=false,aba='lista',busca={q:'',res:null,carregando:false};
+let amigos={},pedIn={},outSet={},meus={},PC={},PR={},subs={},srvOff=0,lastP='',renderT=0,primA=true,primP=true,modal=null,tmConf=0;
+const agora=()=>Date.now()+srvOff;
+const ha=t=>{const s=Math.max(0,(agora()-t)/1000);return s<60?'agora há pouco':s<3600?'há '+Math.floor(s/60)+' min':s<86400?'há '+Math.floor(s/3600)+' h':'há '+Math.floor(s/86400)+' d';};
+
+// ---------------- estilo ----------------
+const st=document.createElement('style');
+st.textContent=`
+#amiBtn{position:relative}
+.bdg{position:absolute;top:-1.2vmin;right:-1.2vmin;min-width:6vmin;height:6vmin;padding:0 1vmin;box-sizing:border-box;border-radius:3vmin;background:#ff3b5c;color:#fff;border:.5vmin solid var(--ink);font-size:3.8vmin;line-height:5vmin;text-align:center;pointer-events:none}
+#amiTabs{display:flex;gap:2vw;flex:none;height:7.5vh}
+#amiTabs .bdg{top:auto;bottom:-1.6vmin;right:-.8vmin}
+#menu.wide #amiTabs .btn{flex:1;min-width:0;height:100%;min-height:44px;font-size:min(5.2vmin,30px);position:relative}
+#amiTabs .btn.on{background:var(--sun)}
+#amiInfo{flex:1 1 0;min-height:0;overflow-y:auto;display:block;filter:none;font-family:'Trebuchet MS','Segoe UI',system-ui,sans-serif;font-weight:700;letter-spacing:0;font-size:clamp(14px,3.5vmin,21px);line-height:1.4;text-align:left;padding:1.2vh 3vw;white-space:normal;touch-action:pan-y;-webkit-overflow-scrolling:touch}
+#amiSrch{display:flex;gap:2.5vw;flex:none;height:8.5vh}
+#menu.wide #amiSrch input{flex:1.6;min-width:0;height:100%;font-family:'Trebuchet MS','Segoe UI',system-ui,sans-serif;font-weight:700;letter-spacing:0;font-size:min(4.4vmin,24px);outline:none;padding:0 3vw;text-align:left;-webkit-user-select:text;user-select:text}
+#menu.wide #amiSrch .btn{flex:1;min-width:0;height:100%;font-size:min(5.6vmin,32px)}
+.fr{display:flex;align-items:center;gap:2.6vw;background:#fff;border:.4vmin solid var(--ink);border-radius:2.4vmin;padding:.8vh 2.4vw;margin:.7vh 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.fr:active{background:#fff4c9}
+.fr.eu{background:#ffeaf2;border-width:.6vmin}
+.fr .tx{flex:1;min-width:0}
+.fr .nm{font-size:clamp(15px,4vmin,23px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fr .sb2{font-size:clamp(11px,2.9vmin,16px);opacity:.75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fr .stt{display:flex;flex-direction:column;align-items:center;gap:.3vh;font-size:clamp(10px,2.7vmin,15px);min-width:12vmin;text-align:center}
+.dot{width:3.2vmin;height:3.2vmin;max-width:18px;max-height:18px;border-radius:50%;border:.45vmin solid var(--ink);background:#c9c5d6;display:inline-block;box-sizing:border-box}
+.dot.on{background:#3ddc84}
+.av{position:relative;flex:none;width:clamp(40px,11vmin,58px);height:clamp(40px,11vmin,58px);border-radius:50%;border:.5vmin solid var(--ink);display:flex;align-items:center;justify-content:center;box-sizing:border-box;box-shadow:.4vmin .4vmin 0 var(--ink)}
+.av i{font-style:normal;font-size:clamp(22px,6.2vmin,32px);line-height:1}
+.av b{position:absolute;right:-1.6vmin;bottom:-1.2vmin;font-size:clamp(13px,3.6vmin,20px);line-height:1}
+.av.big{width:clamp(72px,20vmin,104px);height:clamp(72px,20vmin,104px);border-width:.8vmin}
+.av.big i{font-size:clamp(40px,11.5vmin,60px)}.av.big b{font-size:clamp(22px,6.4vmin,34px);right:-2vmin;bottom:-1.4vmin}
+.mb{flex:none;width:clamp(42px,10.5vmin,56px);height:clamp(42px,10.5vmin,56px);border-radius:50%;border:.5vmin solid var(--ink);background:#fff;font:700 clamp(18px,5vmin,28px) 'Trebuchet MS',system-ui,sans-serif;color:var(--ink);padding:0;cursor:pointer;box-shadow:.4vmin .4vmin 0 var(--ink);-webkit-tap-highlight-color:transparent}
+.mb:active{transform:translate(.3vmin,.3vmin);box-shadow:0 0 0 var(--ink)}
+.mb.add,.mb.ok{background:#9be3b0}.mb.no{background:#ffb3c1}
+.fr .acs{display:flex;gap:1.8vw}
+.tag{background:#ffe9a8;border:.4vmin solid var(--ink);border-radius:2vmin;padding:.3vh 2vw;font-size:clamp(11px,2.9vmin,16px);white-space:nowrap}
+.meuNick{background:#fff;border:.5vmin dashed var(--ink);border-radius:2.4vmin;padding:.8vh 3vw;text-align:center;margin:.4vh 0 .2vh}
+.meuNick small{display:block;font-size:clamp(11px,2.8vmin,16px);opacity:.7}
+.meuNick b{display:block;font-family:Bangers,Impact,sans-serif;font-weight:400;font-size:clamp(24px,7vmin,38px);letter-spacing:.08em}
+.gst .btn{flex:none;width:100%;margin-top:1vh;padding:1.2vh 0;font-size:clamp(18px,5vmin,28px)}
+#amiM{position:fixed;inset:0;z-index:40;display:flex;overflow-y:auto;touch-action:pan-y;padding:calc(env(safe-area-inset-top,0px) + 3vh) 5vw calc(env(safe-area-inset-bottom,0px) + 3vh);background:rgba(27,26,58,.6);box-sizing:border-box}
+#amiM .pf{margin:auto;width:min(90vw,440px);box-sizing:border-box;background:var(--paper);color:var(--ink);border:clamp(3px,.8vmin,6px) solid var(--ink);border-radius:255px 15px 225px 15px/15px 225px 15px 255px;box-shadow:clamp(4px,1.2vmin,9px) clamp(4px,1.2vmin,9px) 0 var(--ink);padding:2.4vh 5vw 2.4vh;display:flex;flex-direction:column;gap:1.3vh;font-family:'Trebuchet MS','Segoe UI',system-ui,sans-serif;font-weight:700;animation:accIn .4s cubic-bezier(.2,1.5,.4,1) backwards}
+@keyframes accIn{from{opacity:0;transform:translateY(8vh) rotate(-3deg) scale(.9)}}
+.pfTop{display:flex;flex-direction:column;align-items:center;gap:.5vh;text-align:center}
+.pfNm{font-family:Bangers,Impact,sans-serif;font-weight:400;font-size:clamp(32px,9vmin,52px);letter-spacing:.05em;line-height:1;margin-top:.8vh;word-break:break-all}
+.pfS{font-size:clamp(12px,3.2vmin,17px);opacity:.75}.pfS.on{color:#1f8a4c;opacity:1}
+.pfMd{background:var(--sun);border:.5vmin solid var(--ink);border-radius:2.4vmin;padding:.3vh 4vw;font-size:clamp(15px,4vmin,22px)}
+.pfG{display:grid;grid-template-columns:1fr 1fr;gap:1.2vw}
+.pfG div{background:#fff;border:.4vmin solid var(--ink);border-radius:2vmin;padding:.6vh 2.4vw;text-align:center;min-width:0}
+.pfG small{display:block;font-size:clamp(10px,2.7vmin,15px);opacity:.7}
+.pfG b{display:block;font-size:clamp(14px,3.8vmin,21px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pfAc{display:flex;flex-direction:column;gap:1vh}
+.pfB{flex:none;width:100%;min-height:46px;border:.6vmin solid var(--ink);border-radius:2.4vmin;background:#fff;color:var(--ink);font:400 clamp(18px,5vmin,28px) Bangers,Impact,sans-serif;letter-spacing:.05em;padding:1vh 2vw;cursor:pointer;box-shadow:.6vmin .6vmin 0 var(--ink);-webkit-tap-highlight-color:transparent}
+.pfB:active{transform:translate(.4vmin,.4vmin);box-shadow:0 0 0 var(--ink)}
+.pfB.go{background:var(--sun)}.pfB.no{background:#ffd0da}.pfB[disabled]{opacity:.6;pointer-events:none}
+.pfIn{width:100%;box-sizing:border-box;min-height:48px;font:700 clamp(16px,4.4vmin,24px) 'Trebuchet MS',system-ui,sans-serif;padding:1.2vh 4vw;background:#fff;color:var(--ink);border:.5vmin solid var(--ink);border-radius:2.4vmin;outline:none;-webkit-user-select:text;user-select:text}
+.pfM{font-size:clamp(12px,3.4vmin,18px);text-align:center;line-height:1.3;min-height:1.2em}.pfM.err{color:#c4223e}.pfM.ok{color:#1f8a4c}
+.pfH{text-align:center;font-size:clamp(14px,3.8vmin,21px);line-height:1.3}
+`;
+document.head.appendChild(st);
+
+// ---------------- avatar / medalha ----------------
+const ACE={festa:'🎉',chef:'🍳',presente:'🎁',coroa:'👑',antena:'📡',halo:'✨',rei:'👑',bruxa:'🧙',gorro:'🎅',manga:'⚔️'};
+function corSkin(s){try{const c=SK[s].cor(0,330),f=v=>Math.round(Math.max(0,Math.min(1,v))*255);return 'rgb('+f(c.r)+','+f(c.g)+','+f(c.b)+')';}catch(e){return '#ffb3cf';}}
+function av(s,big){s=SK[s]?s:0;const k=SK[s];return '<span class="av'+(big?' big':'')+'" style="background:'+corSkin(s)+'"><i>🐱</i>'+(ACE[k.acess]?'<b>'+ACE[k.acess]+'</b>':'')+'</span>';}
+function med(b){b=+b||0;return b>=200?['💎','Diamante']:b>=100?['🥇','Ouro']:b>=50?['🥈','Prata']:b>=25?['🥉','Bronze']:['🐾','Novato'];}
+
+// ---------------- dados do meu perfil ----------------
+function dados(){
+  const s=sv.st||{};
+  return {l:niv(),b:(+best||0)|0,c:(+s.combo||0)|0,p:(+s.perf||0)|0,j:(+s.jogos||0)|0,a:ACH.filter(x=>sv.ach&&sv.ach[x[0]]).length,s:sv.skin|0};
+}
+function euPerfil(){return Object.assign({n:sv.nick||'Você'},dados());}
+async function syncPerfil(){
+  if(estado!=='ok')return;
+  const o=dados(),j=JSON.stringify(o);if(j===lastP)return;
+  await db().ref('perfis/'+meId()).update(Object.assign({t:TS()},o));
+  lastP=j;
+}
+
+// ---------------- apelido único ----------------
+async function claim(nick){
+  const k=nick.toLowerCase(),r=db().ref('nomes/'+k),id=meId();
+  const cur=(await r.once('value')).val();
+  if(cur===id)return;
+  if(cur)throw{code:'nick-em-uso'};
+  try{await r.set(id);}
+  catch(e){
+    if(e&&e.code==='PERMISSION_DENIED'){ // pode ser o token ainda antigo (acabou de virar conta): espera e tenta 1 vez
+      try{const u=U();if(u)await u.getIdToken(true);}catch(x){}
+      await new Promise(ok=>setTimeout(ok,1500));
+      const c2=(await r.once('value')).val();
+      if(c2===id)return;
+      if(!c2){try{await r.set(id);return;}catch(x){}}
+      throw{code:'nick-em-uso'};
+    }
+    throw{code:(e&&e.code)||'erro'};
+  }
+}
+async function garante(){ // cria o perfil público se ainda não existir
+  const id=meId(),d=db();
+  const p=(await d.ref('perfis/'+id).once('value')).val();
+  if(p&&p.n&&p.k===String(p.n).toLowerCase()){if(sv.nick!==p.n){sv.nick=p.n;}delete sv.nickPend;salvar();lastP='';return true;}
+  const nick=sv.nick||'';
+  if(!NICK_RE.test(nick)){sv.nickPend=1;salvar();return false;}
+  try{await claim(nick);}catch(e){if(e&&e.code==='nick-em-uso'){sv.nickPend=1;salvar();return false;}throw e;}
+  await d.ref('perfis/'+id).update(Object.assign({n:nick,k:nick.toLowerCase(),t:TS()},dados()));
+  delete sv.nickPend;salvar();lastP=JSON.stringify(dados());return true;
+}
+async function registra(nick){ // usado logo depois de criar a conta
+  await Rank.carrega();if(!meId())throw{code:'rede'};
+  await claim(nick);
+  await db().ref('perfis/'+meId()).update(Object.assign({n:nick,k:nick.toLowerCase(),t:TS()},dados()));
+  delete sv.nickPend;estado='ok';lastP=JSON.stringify(dados());inicia();atualizaBadge();
+}
+async function trocaNick(n){
+  n=String(n||'').trim();
+  if(!NICK_RE.test(n))throw{code:'nick-invalido'};
+  const st0=await init();if(st0==='off')throw{code:'rede'};
+  const d=db(),id=meId(),velho=NICK_RE.test(sv.nick||'')?sv.nick:'';
+  const tinha=(await d.ref('perfis/'+id+'/k').once('value')).exists();
+  await claim(n); // sai na hora se o nome já for meu
+  if(tinha)await d.ref('perfis/'+id).update({n,k:n.toLowerCase()});
+  else await d.ref('perfis/'+id).update(Object.assign({n,k:n.toLowerCase(),t:TS()},dados()));
+  if(velho&&velho.toLowerCase()!==n.toLowerCase())d.ref('nomes/'+velho.toLowerCase()).remove().catch(()=>{});
+  sv.nick=n;delete sv.nickPend;sv.rkOk=0;salvar();try{Rank.sync();}catch(e){}
+  if(estado!=='ok'){estado='ok';lastP=JSON.stringify(dados());inicia();}
+  PC[id]=Object.assign(PC[id]||{},{n});atualizaBadge();pedirRender();
+}
+
+// ---------------- conexão, presença e listeners ----------------
+function init(){
+  if(estado==='ok')return Promise.resolve('ok');
+  if(boot)return boot;
+  const p=(async()=>{
+    try{
+      if(!logadoSv()||navigator.onLine===false)return 'off';
+      await Rank.carrega();if(!U())return 'off';
+      if(await garante()){estado='ok';inicia();return 'ok';}
+      return 'nick';
+    }catch(e){return 'off';}
+  })();
+  boot=p;p.then(()=>{if(boot===p)boot=null;},()=>{if(boot===p)boot=null;});
+  return p;
+}
+function inicia(){
+  if(ligado)return;ligado=true;
+  const d=db(),id=meId(),pr=d.ref('presenca/'+id),noop=()=>{};
+  d.ref('.info/serverTimeOffset').on('value',s=>{srvOff=s.val()||0;},noop);
+  d.ref('.info/connected').on('value',s=>{
+    if(s.val()!==true)return;
+    pr.onDisconnect().set({o:false,t:TS()}).then(()=>pr.set({o:!document.hidden,t:TS()})).catch(noop);
+  },noop);
+  document.addEventListener('visibilitychange',()=>{pr.set({o:!document.hidden,t:TS()}).catch(noop);if(document.hidden)syncPerfil().catch(noop);});
+  d.ref('amigos/'+id).on('value',s=>{
+    const nv=s.val()||{};
+    if(!primA)Object.keys(nv).forEach(u=>{if(!amigos[u]&&!meus[u]&&typeof mode!=='undefined'&&mode==='menu')perfil(u).then(p=>{if(p&&p.n)bom('🎉 '+p.n+' agora é seu amigo!');});});
+    Object.keys(meus).forEach(u=>{if(nv[u])delete meus[u];});
+    primA=false;amigos=nv;ligaPresenca();pedirRender();
+  },noop);
+  d.ref('pedidos/'+id).on('value',s=>{
+    const nv=s.val()||{};
+    if(!primP)Object.keys(nv).forEach(u=>{if(!pedIn[u]&&typeof mode!=='undefined'&&mode==='menu')perfil(u).then(p=>{if(p&&p.n)bom('📨 '+p.n+' quer ser seu amigo!');});});
+    primP=false;pedIn=nv;atualizaBadge();pedirRender();
+  },noop);
+}
+function ligaPresenca(){
+  if(!tela||estado!=='ok')return;
+  Object.keys(amigos).forEach(u=>{
+    if(subs[u])return;
+    const r=db().ref('presenca/'+u),cb=s=>{PR[u]=s.val()||null;pedirRender();};
+    r.on('value',cb,()=>{});subs[u]=()=>r.off('value',cb);
+  });
+  Object.keys(subs).forEach(u=>{if(!amigos[u]){subs[u]();delete subs[u];}});
+}
+function desligaPresenca(){Object.keys(subs).forEach(u=>{subs[u]();delete subs[u];});}
+async function offline(){try{if(estado==='ok'&&Rank.db)await Rank.db.ref('presenca/'+meId()).set({o:false,t:TS()});}catch(e){}}
+
+// ---------------- perfis ----------------
+const emVoo={};
+async function perfil(u,forca){
+  const c=PC[u];if(c&&!forca&&Date.now()-(c._f||0)<60000)return c;
+  if(emVoo[u])return emVoo[u];
+  return emVoo[u]=db().ref('perfis/'+u).once('value').then(s=>{
+    const v=s.val();PC[u]=v?Object.assign(v,{_f:Date.now()}):{n:'(removido)',l:1,s:0,_f:Date.now(),_x:1};return PC[u];
+  }).catch(()=>c||null).finally(()=>{delete emVoo[u];});
+}
+function garantePerfis(ids){
+  const falta=ids.filter(u=>!PC[u]);
+  if(falta.length)Promise.all(falta.map(u=>perfil(u))).then(pedirRender);
+}
+const rel=u=>u===meId()?'eu':amigos[u]?'amigo':pedIn[u]?'recebido':outSet[u]?'enviado':'nada';
+async function checaEnviado(u){
+  if(amigos[u]||pedIn[u]){delete outSet[u];return;}
+  try{const s=await db().ref('pedidos/'+u+'/'+meId()).once('value');if(s.exists())outSet[u]=1;else delete outSet[u];}catch(e){}
+}
+
+// ---------------- ações ----------------
+function msgErro(e){
+  const c=(e&&e.code)||'';
+  if(c==='PERMISSION_DENIED')return 'Sem permissão. Confira as regras do Firebase.';
+  if(c==='nick-em-uso')return 'Esse apelido já está em uso. Escolha outro';
+  if(c==='nick-invalido')return 'Apelido: 3 a 12 caracteres, só letras sem acento, números, _ ou -';
+  if(c==='rede'||navigator.onLine===false)return 'Sem conexão com a internet';
+  return 'Algo deu errado. Tente de novo';
+}
+const nomeDe=u=>(PC[u]&&PC[u].n)||'jogador';
+async function pedir(u){
+  if(Object.keys(amigos).length>=MAX)return toast('Limite de '+MAX+' amigos');
+  if(pedIn[u])return aceitar(u);
+  try{await db().ref('pedidos/'+u+'/'+meId()).set({t:TS()});outSet[u]=1;beep(660,.15);bom('Pedido enviado para '+nomeDe(u));}
+  catch(e){toast(msgErro(e));}
+  pedirRender();reabre();
+}
+async function aceitar(u){
+  if(Object.keys(amigos).length>=MAX)return toast('Limite de '+MAX+' amigos');
+  const id=meId(),d=db();
+  meus[u]=1;
+  try{
+    await d.ref('amigos/'+id+'/'+u).set({t:TS()});   // meu lado (autorizado pelo pedido)
+    await d.ref('amigos/'+u+'/'+id).set({t:TS()});   // lado dele (autorizado porque o meu já existe)
+    await d.ref('pedidos/'+id+'/'+u).remove();
+    d.ref('pedidos/'+u+'/'+id).remove().catch(()=>{}); // se ele também tinha me pedido
+    delete outSet[u];beep(784,.2);vib([15,30,15]);bom('🎉 Agora você e '+nomeDe(u)+' são amigos!');
+    pedirRender();fechaModal();return;
+  }catch(e){toast(msgErro(e)+' (toque em aceitar de novo)');}
+  pedirRender();reabre();
+}
+async function recusar(u){
+  try{await db().ref('pedidos/'+meId()+'/'+u).remove();}catch(e){toast(msgErro(e));}
+  pedirRender();fechaModal();
+}
+async function cancelar(u){
+  try{await db().ref('pedidos/'+u+'/'+meId()).remove();delete outSet[u];}catch(e){toast(msgErro(e));}
+  pedirRender();reabre();
+}
+async function remover(u){
+  const id=meId(),up={};up['amigos/'+id+'/'+u]=null;up['amigos/'+u+'/'+id]=null;
+  try{await db().ref().update(up);bom('Amigo removido');}catch(e){toast(msgErro(e));}
+  pedirRender();fechaModal();
+}
+async function buscar(){
+  const q=g('amiQ').value.trim().toLowerCase();
+  if(q.length<2)return toast('Digite pelo menos 2 letras');
+  if(!/^[a-z0-9_-]+$/.test(q))return toast('Use só letras sem acento, números, _ ou -');
+  if(navigator.onLine===false)return toast('Sem conexão com a internet');
+  busca={q,res:null,carregando:true};render();
+  try{
+    const sn=await db().ref('perfis').orderByChild('k').startAt(q).endAt(q+'').limitToFirst(10).once('value'),res=[];
+    sn.forEach(c=>{const v=c.val();if(c.key!==meId()&&v&&v.n){PC[c.key]=Object.assign(v,{_f:Date.now()});res.push(c.key);}});
+    res.sort((a,b)=>(PC[b].k===q)-(PC[a].k===q));
+    await Promise.all(res.map(checaEnviado));
+    busca={q,res};
+  }catch(e){busca={q,res:[]};toast(msgErro(e));}
+  render();
+}
+
+// ---------------- tela ----------------
+function atualizaBadge(){
+  const n=Object.keys(pedIn).length,pend=!!sv.nickPend;
+  const b=g('amiBdg');if(b){b.textContent=pend?'!':n;b.classList.toggle('hide',!(n||pend));}
+  const t=g('amiBdgT');if(t){t.textContent=n;t.classList.toggle('hide',!n);}
+}
+function pedirRender(){if(!tela)return;clearTimeout(renderT);renderT=setTimeout(render,60);}
+const sec2=t=>'<div class="sec">'+t+'</div>';
+function linha(u,tipo){
+  const p=PC[u];
+  if(!p)return '<div class="fr"><span class="av"></span><div class="tx"><div class="nm">Carregando...</div></div></div>';
+  const on=!!(PR[u]&&PR[u].o),r=rel(u);
+  let sub='Nv '+(p.l||1)+' · '+titulo(p.l),dir='';
+  if(tipo==='amigo'){dir='<div class="stt"><span class="dot'+(on?' on':'')+'"></span>'+(on?'Online':(PR[u]&&PR[u].t?'Visto<br>'+ha(PR[u].t):'Offline'))+'</div>';}
+  else if(tipo==='pedido'){dir='<div class="acs"><button class="mb ok" data-a="aceitar" data-u="'+u+'" aria-label="Aceitar">✔</button><button class="mb no" data-a="recusar" data-u="'+u+'" aria-label="Recusar">✖</button></div>';}
+  else if(tipo==='busca'){
+    dir=r==='amigo'?'<span class="tag">✔ Amigo</span>':r==='enviado'?'<span class="tag">⏳ Enviado</span>':r==='recebido'?'<button class="mb ok" data-a="aceitar" data-u="'+u+'" aria-label="Aceitar">✔</button>':'<button class="mb add" data-a="pedir" data-u="'+u+'" aria-label="Enviar pedido">+</button>';
+  }
+  return '<div class="fr" data-a="perfil" data-u="'+u+'">'+av(p.s)+'<div class="tx"><div class="nm">'+esc(p.n)+'</div><div class="sb2">'+sub+'</div></div>'+dir+'</div>';
+}
+function htmlLista(){
+  const ids=Object.keys(amigos),on=ids.filter(u=>PR[u]&&PR[u].o).length,eu=euPerfil();
+  let h='<div class="fr eu" data-a="perfil" data-u="'+meId()+'">'+av(sv.skin)+'<div class="tx"><div class="nm">'+esc(eu.n)+' <small>(você)</small></div><div class="sb2">Nv '+eu.l+' · '+titulo(eu.l)+'</div></div><div class="stt"><span class="dot on"></span>Online</div></div>';
+  h+=sec2('👥 Amigos '+ids.length+' · '+on+' online');
+  if(!ids.length)h+='<div class="aviso">Você ainda não tem amigos.<br>Toque em <b>Adicionar</b> e procure pelo apelido.</div>';
+  else{
+    garantePerfis(ids);
+    ids.sort((a,b)=>((PR[b]&&PR[b].o)?1:0)-((PR[a]&&PR[a].o)?1:0)||String((PC[a]||{}).n||'').toLowerCase().localeCompare(String((PC[b]||{}).n||'').toLowerCase()));
+    h+=ids.map(u=>linha(u,'amigo')).join('');
+  }
+  return h;
+}
+function htmlAdd(){
+  let h='<div class="meuNick"><small>Seu apelido (seus amigos te encontram por ele)</small><b>'+esc(sv.nick||'')+'</b></div>';
+  if(busca.carregando)return h+'<div class="aviso">Buscando...</div>';
+  if(busca.res===null)return h+'<div class="aviso">Digite o apelido do jogador e toque em <b>Buscar</b>.</div>';
+  if(!busca.res.length)return h+'<div class="aviso">Ninguém encontrado com “'+esc(busca.q)+'”.<br>Confira o apelido.</div>';
+  return h+sec2('🔎 Resultados')+busca.res.map(u=>linha(u,'busca')).join('');
+}
+function htmlPed(){
+  const ids=Object.keys(pedIn).sort((a,b)=>(pedIn[b].t||0)-(pedIn[a].t||0));
+  if(!ids.length)return '<div class="aviso">Nenhum pedido de amizade no momento.</div>';
+  garantePerfis(ids);
+  return sec2('📨 Pedidos recebidos')+ids.map(u=>linha(u,'pedido')).join('');
+}
+function htmlConvidado(){
+  return '<div class="gst"><div class="aviso">🐱 Crie uma conta para jogar com amigos.<br>Você escolhe um apelido único e seu progresso fica salvo na nuvem.</div><button class="box btn" data-a="criarConta">Criar conta</button><button class="box btn" data-a="entrarConta">Já tenho conta</button></div>';
+}
+function render(){
+  if(!tela)return;
+  const box=g('amiInfo'),ok=estado==='ok',sc=box.scrollTop;
+  g('amiTabs').classList.toggle('hide',!ok);g('amiSrch').classList.toggle('hide',!ok||aba!=='add');
+  ['lista','add','ped'].forEach((k,i)=>g('amiT'+(i+1)).classList.toggle('on',aba===k));
+  atualizaBadge();
+  if(!logadoSv()){box.innerHTML=htmlConvidado();return;}
+  if(estado==='off'){box.innerHTML='<div class="aviso">Sem conexão com o servidor.<br>Conecte-se à internet e tente de novo.</div><div class="gst"><button class="box btn" data-a="tenta">Tentar de novo</button></div>';return;}
+  if(estado==='carregando'){box.innerHTML='<div class="aviso">Carregando...</div>';return;}
+  if(!ok){box.innerHTML='<div class="aviso">Escolha seu apelido para usar os amigos.</div><div class="gst"><button class="box btn" data-a="nick">Escolher apelido</button></div>';return;}
+  box.innerHTML=aba==='lista'?htmlLista():aba==='add'?htmlAdd():htmlPed();
+  box.scrollTop=sc;
+}
+async function abre(){
+  if(typeof mode!=='undefined'&&mode!=='menu')return;
+  tela=true;showGrp('ami');aba='lista';
+  const prev=estado;estado=logadoSv()?(prev==='ok'?'ok':'carregando'):'novo';render();
+  if(!logadoSv())return;
+  const r=await init();
+  if(!tela)return;
+  estado=r==='ok'?'ok':r;render();
+  if(r==='ok'){ligaPresenca();garantePerfis(Object.keys(amigos).concat(Object.keys(pedIn)));Object.keys(amigos).forEach(u=>perfil(u,true).then(pedirRender));}
+  else if(r==='nick')pedeNick(true);
+}
+function fecha(){tela=false;desligaPresenca();fechaModal();showGrp('main');}
+function mudaAba(k){aba=k;if(k==='ped')garantePerfis(Object.keys(pedIn));render();if(k==='add')setTimeout(()=>{try{g('amiQ').focus({preventScroll:true});}catch(e){}},50);}
+
+// ---------------- janelas ----------------
+function abreModal(html){
+  fechaModal();
+  const m=document.createElement('div');m.id='amiM';m.innerHTML='<div class="pf">'+html+'</div>';
+  document.body.appendChild(m);
+  m.addEventListener('pointerdown',e=>e.stopPropagation());
+  m.addEventListener('click',e=>{if(e.target===m){fechaModal();return;}const b=e.target.closest('[data-a]');if(b)acaoModal(b);});
+  modal={el:m,u:null};return m;
+}
+function fechaModal(){if(modal&&modal.el)modal.el.remove();modal=null;clearTimeout(tmConf);}
+function reabre(){if(modal&&modal.u)abrePerfil(modal.u,true);}
+function tile(t,v){return '<div><small>'+t+'</small><b>'+v+'</b></div>';}
+function htmlPerfil(u,p){
+  const eu=u===meId(),r=rel(u),md=med(p.b),on=!!(PR[u]&&PR[u].o),n=+p.l||1;
+  const stt=eu?'<span class="pfS on">● Online</span>':r==='amigo'?(on?'<span class="pfS on">● Online</span>':'<span class="pfS">○ '+(PR[u]&&PR[u].t?'Visto '+ha(PR[u].t):'Offline')+'</span>'):'';
+  let ac='';
+  if(eu)ac='<button class="pfB go" data-a="nick">✏ Mudar apelido</button>';
+  else if(r==='amigo')ac='<button class="pfB no" data-a="remover" data-u="'+u+'">Remover amigo</button>';
+  else if(r==='recebido')ac='<button class="pfB go" data-a="aceitar" data-u="'+u+'">✔ Aceitar pedido</button><button class="pfB no" data-a="recusar" data-u="'+u+'">✖ Recusar</button>';
+  else if(r==='enviado')ac='<button class="pfB" data-a="cancelar" data-u="'+u+'">⏳ Pedido enviado · Cancelar</button>';
+  else ac='<button class="pfB go" data-a="pedir" data-u="'+u+'">➕ Adicionar amigo</button>';
+  return '<div class="pfTop">'+av(p.s,1)+'<div class="pfNm">'+esc(p.n)+'</div>'+stt+'<div class="pfMd">'+md[0]+' '+md[1]+'</div></div>'
+    +'<div class="pfG">'+tile('Nível','Nv '+n)+tile('Título',esc(titulo(n)))+tile('Recorde',fmt(p.b))+tile('Maior combo',fmt(p.c))+tile('Perfeitos',fmt(p.p))+tile('Partidas',fmt(p.j))+tile('Conquistas',fmt(p.a)+'/'+ACH.length)+tile('Skin',esc((SK[p.s]||SK[0]).nome))+'</div>'
+    +'<div class="pfAc">'+ac+'<button class="pfB" data-a="fechar">Fechar</button></div>';
+}
+async function abrePerfil(u,sem){
+  if(!u)return;
+  if(!sem)abreModal('<div class="pfH">Carregando...</div>');
+  if(modal)modal.u=u;
+  let p=u===meId()?Object.assign({},PC[u]||{},euPerfil()):await perfil(u,true);
+  if(!modal||modal.u!==u)return;
+  if(!p||p._x){modal.el.querySelector('.pf').innerHTML='<div class="pfH">Jogador não encontrado.</div><div class="pfAc"><button class="pfB" data-a="fechar">Fechar</button></div>';return;}
+  if(u!==meId()&&rel(u)==='nada')await checaEnviado(u);
+  if(!modal||modal.u!==u)return;
+  modal.el.querySelector('.pf').innerHTML=htmlPerfil(u,p);
+}
+function pedeNick(obrig){
+  const velho=NICK_RE.test(sv.nick||'')?sv.nick:'';
+  const m=abreModal('<div class="pfNm">'+(obrig?'Escolha seu apelido':'Mudar apelido')+'</div><div class="pfH">'+(obrig?'Seus amigos vão te encontrar por ele. ':'')+'3 a 12 caracteres: letras sem acento, números, _ ou -</div><input class="pfIn" id="pnIn" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="seu apelido" value="'+esc(velho)+'"><div class="pfM" id="pnM"></div><div class="pfAc"><button class="pfB go" data-a="salvaNick">Salvar</button><button class="pfB" data-a="fechar">'+(obrig?'Depois':'Cancelar')+'</button></div>');
+  setTimeout(()=>{try{m.querySelector('#pnIn').focus();}catch(e){}},80);
+}
+async function salvaNick(btn){
+  const el=modal&&modal.el,inp=el&&el.querySelector('#pnIn'),msg=el&&el.querySelector('#pnM');if(!inp)return;
+  const n=inp.value.trim();
+  msg.className='pfM';msg.textContent='Salvando...';btn.disabled=true;
+  try{await trocaNick(n);fechaModal();bom('Apelido: '+n);if(tela){estado='ok';ligaPresenca();render();}}
+  catch(e){msg.className='pfM err';msg.textContent=msgErro(e);btn.disabled=false;}
+}
+function acaoModal(b){
+  const a=b.dataset.a,u=b.dataset.u;
+  if(a==='fechar')return fechaModal();
+  if(a==='pedir')return pedir(u);
+  if(a==='aceitar')return aceitar(u);
+  if(a==='recusar')return recusar(u);
+  if(a==='cancelar')return cancelar(u);
+  if(a==='nick')return pedeNick(false);
+  if(a==='salvaNick')return salvaNick(b);
+  if(a==='remover'){ // confirma com um segundo toque
+    if(b.dataset.c){clearTimeout(tmConf);return remover(u);}
+    b.dataset.c='1';b.textContent='Toque de novo para remover';tmConf=setTimeout(()=>{b.dataset.c='';b.textContent='Remover amigo';},3000);
+  }
+}
+
+// ---------------- ligações com a tela ----------------
+g('amiBtn').onclick=abre;
+g('amiBack').onclick=fecha;
+g('amiT1').onclick=()=>mudaAba('lista');g('amiT2').onclick=()=>mudaAba('add');g('amiT3').onclick=()=>mudaAba('ped');
+g('amiGo').onclick=buscar;
+g('amiQ').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();buscar();}});
+g('amiInfo').addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b)return;e.stopPropagation();
+  const a=b.dataset.a,u=b.dataset.u;
+  if(a==='perfil')return abrePerfil(u);
+  if(a==='pedir')return pedir(u);
+  if(a==='aceitar')return aceitar(u);
+  if(a==='recusar')return recusar(u);
+  if(a==='criarConta'){if(window.NekoAuth)NekoAuth.open('new');return;}
+  if(a==='entrarConta'){if(window.NekoAuth)NekoAuth.open('in');return;}
+  if(a==='nick')return pedeNick(true);
+  if(a==='tenta')return abre();
+});
+
+// ---------------- rotinas ----------------
+setTimeout(()=>{if(logadoSv())init().then(()=>atualizaBadge());else atualizaBadge();},6500);
+setInterval(()=>{if(estado==='ok'&&navigator.onLine!==false)syncPerfil().catch(()=>{});},20000);
+addEventListener('pagehide',()=>{if(estado==='ok')syncPerfil().catch(()=>{});});
+atualizaBadge();
+
+return {abre,fecha,init,offline,registra,trocaNick,abrePerfil,sync:()=>syncPerfil(),
+  ativo:()=>logadoSv(),
+  get pronto(){return estado==='ok';},
+  get amigos(){return amigos;},
+  perfil,rel,presenca:u=>PR[u]||null,
+  ids:()=>Object.keys(amigos)};
 })();
 
 </script>
