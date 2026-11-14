@@ -19,7 +19,8 @@ body{background:linear-gradient(var(--c1,#ffb3cf),var(--c2,#ffd9c2) 62%,var(--c3
 canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;outline:none}
 .box{background:var(--paper);border:.8vmin solid var(--ink);border-radius:255px 15px 225px 15px/15px 225px 15px 255px;box-shadow:1.2vmin 1.2vmin 0 var(--ink);filter:url(#rough);text-align:center;letter-spacing:.06em;color:var(--ink);font-family:inherit;appearance:none;padding:0;margin:0}
 #menu{position:fixed;z-index:3;left:5vw;top:calc(env(safe-area-inset-top,0px) + 6vh);width:42vw;max-width:340px;height:66vh;display:flex;flex-direction:column;gap:2.2vh;transition:transform .95s cubic-bezier(.65,-.25,.75,1)}
-#menu.out{transform:translateX(-150%)}
+#menu.out{transform:translateX(-150%);visibility:hidden;transition:transform .95s cubic-bezier(.65,-.25,.75,1),visibility 0s .95s} /* depois de sair da tela, o menu some de vez (sem camadas/animações escondidas gastando GPU na partida) */
+#menu.out #logo{animation:none}
 .grp{display:contents}
 #logo{flex:1.5;background:var(--sun);transform:rotate(-2deg);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10.5vmin;line-height:.95;animation:bob 3.2s ease-in-out infinite}
 #logo small{font-size:3.6vmin;letter-spacing:.08em;margin-top:.6vh}
@@ -60,11 +61,14 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;out
 .cl{position:absolute;width:34vmin;height:20vmin;background-size:contain;background-repeat:no-repeat;animation:drift 16s ease-in-out infinite alternate}
 .cl:nth-child(even){animation-duration:23s;animation-direction:alternate-reverse}
 @keyframes drift{to{transform:translateX(10vw)}}
-#stars{left:0;right:0;top:-20vh;height:140vh;opacity:0;background-size:300px 300px;animation:twinkle 3s infinite alternate}
+#sky{left:0;right:0;top:0;bottom:0;background:linear-gradient(#ffb3cf,#ffd9c2 62%,#fff6d6)} /* degradê do céu: só esta camada repinta quando a cor muda */
+#stars{left:0;right:0;top:-20vh;height:140vh;opacity:0}
+#stars2{position:absolute;inset:0;background-size:300px 300px;animation:twinkle 3s infinite alternate} /* o brilho das estrelas agora é só opacidade (antes era um filtro pesado) */
+#bg .off,#bg .off *{animation-play-state:paused} /* camada invisível não gasta animação */
 #shoot{position:absolute;top:30%;right:-25vmin;width:22vmin;height:.7vmin;border-radius:1vmin;background:linear-gradient(90deg,transparent,#fff);opacity:0;animation:shoot 6s linear infinite}
 @keyframes shoot{0%,72%{opacity:0;transform:translate(0,0) rotate(-28deg)}75%{opacity:1}100%{opacity:0;transform:translate(-130vw,62vh) rotate(-28deg)}}
 #moon{right:9vw;top:7vh;width:30vmin;height:30vmin;opacity:0;background-size:contain}
-@keyframes twinkle{from{filter:brightness(.7)}to{filter:brightness(1.3)}}
+@keyframes twinkle{from{opacity:.68}to{opacity:1}}
 #pop{position:fixed;z-index:4;left:0;right:0;top:24vh;text-align:center;pointer-events:none}
 .pw{position:absolute;left:0;right:0;font-size:11vmin;color:#fff;-webkit-text-stroke:1.5vmin var(--ink);paint-order:stroke fill;text-shadow:.9vmin .9vmin 0 var(--ink);animation:pw .95s forwards}
 @keyframes pw{0%{transform:scale(.3) rotate(-14deg);opacity:0}18%{transform:scale(1.25) rotate(-5deg);opacity:1}35%{transform:scale(1) rotate(-3deg)}75%{opacity:1}100%{transform:translateY(-9vh) rotate(-3deg);opacity:0}}
@@ -94,9 +98,10 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;out
 #pauseT{background:var(--sun)}
 #fl{left:0;right:0;top:0;bottom:0}
 #achInfo{flex:5;font-size:2.9vmin;white-space:pre-line;display:flex;align-items:center;justify-content:center;line-height:1.25;padding:0 2vw}
-#fl i{position:absolute;bottom:-3vh;background:#fff;opacity:0;animation:rise linear infinite}
-@keyframes rise{10%{opacity:.85}90%{opacity:.6}to{transform:translateY(-108vh) rotate(200deg);opacity:0}}
-@media(prefers-reduced-motion:reduce){#fl i{animation:none}}
+#fl b,#snow b{position:absolute;left:0;right:0;top:0;height:200vh;background-repeat:repeat-y;background-size:100% 100vh;will-change:transform} /* brilhos e neve: poucas camadas de imagem repetida (antes eram 46 bolinhas animadas, cada uma uma camada) */
+#fl b{animation:tileUp linear infinite}
+@keyframes tileUp{to{transform:translateY(-100vh)}}
+@media(prefers-reduced-motion:reduce){#fl b,#snow b{animation:none}}
 #bkIn{flex:1;font-size:4vmin;min-width:0;outline:none}
 #helpInfo{font-size:2.8vmin;flex:5}
 #misInfo{font-size:2.9vmin;flex:5}
@@ -106,9 +111,9 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;out
 #novT{white-space:pre-line;font-size:4.2vmin;line-height:1.3;text-align:left}
 #nov .btn{flex:none;padding:1.2vh 0;font-size:6vmin;background:var(--pink)}
 #snow{left:0;right:0;top:0;bottom:0;opacity:0}
-#snow i{position:absolute;top:-4vh;background:#fff;border-radius:50%;animation:fall linear infinite}
-@keyframes fall{to{transform:translate(4vw,108vh)}}
-@media(prefers-reduced-motion:reduce){#snow i{animation:none}}
+#snow b{animation:tileDn linear infinite}
+@keyframes tileDn{from{transform:translateY(-100vh)}to{transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){#snow b{animation:none}}
 #rankInfo,#amigInfo{flex:5;font-size:2.8vmin;white-space:pre-line;display:flex;align-items:center;justify-content:center;line-height:1.3;padding:0 2vw}
 #nickIn,#frIn{flex:1;font-size:4.4vmin;min-width:0;outline:none}
 /* telas largas: lista rola e os botões ficam sempre visíveis */
@@ -230,7 +235,7 @@ const Load=(()=>{
 Load.ui();
 </script>
 <svg width="0" height="0" style="position:absolute"><filter id="rough"><feTurbulence type="fractalNoise" baseFrequency=".03" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="5"/></filter></svg>
-<div id="bg"><div id="stars"><i id="shoot"></i></div><div id="moon"></div><div id="fl"></div><div id="snow"></div><div id="clouds"></div><div id="city"></div></div>
+<div id="bg"><div id="sky"></div><div id="stars" class="off"><div id="stars2"></div><i id="shoot"></i></div><div id="moon"></div><div id="fl"></div><div id="snow" class="off"></div><div id="clouds" class="off"></div><div id="city"></div></div>
 <canvas id="c"></canvas>
 <div id="score">0</div><div id="combo"></div>
 <div id="menu">
@@ -306,7 +311,7 @@ if(window.BABYLON)Load.done('motor');else Load.fail('Não foi possível baixar o
 </script>
 <script>
 var ad=false; // <<< ANÚNCIOS: false = desligado (nada de anúncio aparece) · true = ligado (reviver + skins)
-const GAME_V=24; // aumente a cada versão nova
+const GAME_V=25; // aumente a cada versão nova
 const $=id=>document.getElementById(id);
 const H=.6,BASE=3,LIM=3.10,TOL=.12,MENU_SHIFT=.4,VIEW=2.4,VEL=3.62; // VEL = velocidade fixa dos blocos
 const INIT=8; // blocos já empilhados quando a partida começa (como no Stack)
@@ -400,6 +405,28 @@ function applyGfx(){
 }
 applyGfx();
 
+// ---- Desempenho ----
+// Reinicia uma animação SEM "void el.offsetWidth": isso obrigava o navegador a recalcular a página inteira (3x a cada toque).
+const KF_SB=[{transform:'scale(1)'},{transform:'scale(1.22)'},{transform:'scale(1)'}],KF_CB=[{transform:'scale(1.7) rotate(-4deg)'},{transform:'none'}],KF_RY=[{opacity:.9,transform:'scale(.8)'},{opacity:0,transform:'scale(1.5)'}];
+function bump(el,kf,ms,ease,cls){
+  if(el.animate){try{el.animate(kf,{duration:ms,easing:ease});return;}catch(e){}}
+  el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls); // navegador sem Web Animations
+}
+// Modo leve: se o celular não segura 60 FPS, desliga só os enfeites do fundo e do brilho (a torre continua igual)
+let lite=false,liteMode=0; // liteMode: 0 = automático, 1 = sempre ligado, 2 = sempre desligado (painel de FPS)
+function setLite(on){if(lite===on)return;lite=on;document.body.classList.toggle('lite',on);if(on)trail.emitRate=0;}
+const PERF={ft:16.7,js:0,rn:0,mx:0,tap:0}; // ft = tempo entre quadros, js = nosso código por quadro, rn = só o desenho 3D, mx = pior quadro, tap = custo do último toque (ms)
+let plT=0,gvN=0,gvS=0;
+function govern(pl,fi){ // vigia o tempo dos quadros enquanto joga
+  if(!pl){plT=0;gvN=gvS=0;return;}
+  plT+=fi;if(plT<3000||liteMode)return; // ignora os 3 primeiros segundos (carga e compilação de shader)
+  gvN++;gvS+=fi;
+  if(gvN>=90){const m=gvS/gvN;gvN=gvS=0;
+    if(!lite&&m>19)setLite(true); // abaixo de ~52 FPS: liga o modo leve
+    else if(lite&&m>26&&cfg.gfx>0){cfg.gfx--;applyGfx();saveOpt();popText('Gráfico reduzido p/ ficar liso',2,6,12);} // o leve não bastou: baixa o gráfico um degrau
+  }
+}
+
 function mk(x,z,w,d,y,hue){
   const c3=skinColor(Math.round(y/H),hue),c=new BABYLON.Color4(c3.r,c3.g,c3.b,1);
   const m=BABYLON.MeshBuilder.CreateBox('b',{width:w,height:H,depth:d,faceColors:[c,c,c,c,c,c]},scene);
@@ -431,7 +458,7 @@ trail.blendMode=BABYLON.ParticleSystem.BLENDMODE_STANDARD;trail.start();
 function burst(x,y,z,w,d,n,c){
   if(skinI===12){mgGlyphs(x,y,z,w,d,n);return;} // mangá: letras no lugar das estrelas
   ps.emitter.copyFromFloats(x,y,z);const kk=skinI===12?.45:1;ps.minEmitBox.copyFromFloats(-w*kk/2,0,-d*kk/2);ps.maxEmitBox.copyFromFloats(w*kk/2,0,d*kk/2);
-  ps.particleTexture=PTX[FXMAP[skinI]||0];ps.color1.copyFromFloats(1,.82,.25,1);ps.color2.copyFromFloats(c.r,c.g,c.b,1);ps.manualEmitCount=n;
+  const ptt=PTX[FXMAP[skinI]||0];if(ps.particleTexture!==ptt)ps.particleTexture=ptt;ps.color1.copyFromFloats(1,.82,.25,1);ps.color2.copyFromFloats(c.r,c.g,c.b,1);ps.manualEmitCount=n;
 }
 const rm=new BABYLON.StandardMaterial('rm',scene);rm.disableLighting=true;rm.emissiveColor=BABYLON.Color3.White();rm.alpha=0;
 const ring=BABYLON.MeshBuilder.CreateTorus('ring',{diameter:1,thickness:.07,tessellation:40},scene);
@@ -645,7 +672,7 @@ function spawn(){
   mv[axis]=(fromLeft?-LIM:LIM)-(axis==='x'?mv.w:mv.d)/2;
   mv.mesh=mk(mv.x,mv.z,mv.w,mv.d,n*H,mv.hue);
   dressCat(mv.mesh,mv.w,mv.d,skinColor(n,mv.hue));
-  const tc=skinI===12?{r:0,g:0,b:0}:skinColor(n,mv.hue);trail.color1.copyFromFloats(tc.r,tc.g,tc.b,.9);trail.emitter=mv.mesh;trail.emitRate=cfg.gfx?16:0;
+  const tc=skinI===12?{r:0,g:0,b:0}:skinColor(n,mv.hue);trail.color1.copyFromFloats(tc.r,tc.g,tc.b,.9);trail.emitter=mv.mesh;trail.emitRate=cfg.gfx&&!lite?16:0;
 }
 function fall(x,z,w,d,y,hue){debris.push({mesh:mk(x,z,w,d,y,hue),vy:0});}
 // Só desenha os blocos que aparecem na tela (otimização para torres altas)
@@ -678,19 +705,19 @@ function place(){
   popM=nb.mesh;pop=perfect?1:.55;
   if(perfect){
     const cx=nb.x+nb.w/2,cz=nb.z+nb.d/2,c=skinColor(stack.length,nb.hue);
-    burst(cx,lvl+H,cz,nb.w,nb.d,(Math.min(10+combo*5,60)*(cfg.gfx?1:.5))|0,c);
+    burst(cx,lvl+H,cz,nb.w,nb.d,(Math.min(10+combo*5,60)*(cfg.gfx&&!lite?1:.5))|0,c);
     ring.position.set(cx,lvl+H+.02,cz);ring.isVisible=true;ringT=1;ringB=Math.max(nb.w,nb.d);rm.emissiveColor.copyFromFloats(skinI===12?0:1,skinI===12?0:1,skinI===12?0:1);if(skinI===12)mgPerf(cx,lvl+H,cz,combo);
   }
   stack.push(nb);score++;$('score').textContent=score;recLine();
   if(best>0&&score===best+1&&(modo==='classico'||modo==='diario')){popText('★ Novo recorde! ★',1,8,10);vib([20,40,20]);}
-  const s=$('score');s.classList.remove('bump');void s.offsetWidth;s.classList.add('bump');
+  bump($('score'),KF_SB,250,'ease','bump');
   hud();spawn();
   if(net.active)net.room.presence({sc:score});
   onScore();cull();
 }
 function hud(){
   const e=$('combo');
-  if(combo>=2){e.textContent=(combo>=5?'🔥 FRENESI x':'✨ x')+combo;e.classList.add('on');e.classList.remove('bump');void e.offsetWidth;e.classList.add('bump');}
+  if(combo>=2){e.textContent=(combo>=5?'🔥 FRENESI x':'✨ x')+combo;e.classList.add('on');bump(e,KF_CB,300,'ease','bump');}
   else e.classList.remove('on');
 }
 function gameOver(){
@@ -717,8 +744,8 @@ function toMenu(){
   $('menu').classList.remove('out');showGrp('main');modo='classico';reset();mode='menu';shift=MENU_SHIFT;zoom=1;
 }
 function tap(e){
-  if(paused||(e.target.closest&&e.target.closest('#menu,#home,#pz,#pauseBox,#nov,#bgBtn,#shareB,#shareV')))return;
-  if(mode==='play')place();
+  if(paused||(e.target.closest&&e.target.closest('#menu,#home,#pz,#pauseBox,#nov,#bgBtn,#shareB,#shareV,#fps,#fpsD')))return;
+  if(mode==='play'){const t=performance.now();place();PERF.tap=performance.now()-t;}
   else if(mode==='over'&&performance.now()-overT>500){
     if(net.active){if(net.done)backToLobby();return;}
     $('over').classList.add('hide');$('home').classList.add('hide');reset();mode='play';
@@ -760,6 +787,7 @@ const skinColor=(n,h)=>SK[skinI].cor(n,h);
 function setSkin(i){skinI=i;bgAplica();altAnt=-9;toon.setFloat('skin',i);reset(4);camY=stack.length*H;} // torrezinha de 4 blocos só pra mostrar a skin
 
 const dmCache={};
+const earMat=Object.assign(new BABYLON.StandardMaterial('ear',scene),{diffuseColor:BABYLON.Color3.Black(),specularColor:BABYLON.Color3.Black()}); // UM material só p/ as orelhas (só o bloco que se mexe tem orelhas). Antes: um material novo a cada cor de bloco = um a cada toque
 const dm=c=>dmCache[c.toHexString()]||(dmCache[c.toHexString()]=Object.assign(new BABYLON.StandardMaterial('dm',scene),{diffuseColor:BABYLON.Color3.Black(),specularColor:BABYLON.Color3.Black(),emissiveColor:c}));
 const ROSA=new BABYLON.Color3(1,.36,.58),OURO=new BABYLON.Color3(1,.82,.24),BRANCO=new BABYLON.Color3(1,1,1),CIAN=new BABYLON.Color3(.2,1,.95),PURP=new BABYLON.Color3(.35,.2,.55),VERM=new BABYLON.Color3(.9,.15,.2),NEGRO=new BABYLON.Color3(.06,.06,.09);
 
@@ -781,10 +809,11 @@ const MBC={};['CreateSphere','CreateCylinder','CreateBox','CreateTorus','CreateT
 // Gato no bloco: orelhas que mexem, olhos que piscam, carinha por humor e enfeite da skin
 function dressCat(m,w,d,col){
   const sk=SK[skinI],MB=MBC,top=H/2,ears=[],eyes=[];
-  const add=(me,x,y,z,c,line=true)=>{me.parent=m;me.position.set(x,y,z);me.material=dm(c);me.isPickable=false;me.renderOutline=line&&Q().line;me.outlineWidth=.014;me.outlineColor=INK;return me;};
+  const add=(me,x,y,z,c,line=true,mat)=>{me.parent=m;me.position.set(x,y,z);me.material=mat||dm(c);me.isPickable=false;me.renderOutline=line&&Q().line;me.outlineWidth=.014;me.outlineColor=INK;return me;};
   const ball=(x,y,z,dia,c)=>add(MB.CreateSphere('a',{diameter:dia,segments:8},scene),x,y,z,c);
   const laco=(x,y,z,c,s)=>{ball(x-.14*s,y,z-.14*s,.26*s,c);ball(x+.14*s,y,z+.14*s,.26*s,c);ball(x,y,z,.18*s,c);};
-  [-1,1].forEach(s=>ears.push(add(MB.CreateCylinder('o',{diameterTop:0,diameterBottom:.6,height:.6,tessellation:3},scene),s*.3*w-.12*w,top+.3,s*.3*d+.12*d,col)));
+  earMat.emissiveColor.copyFrom(col);
+  [-1,1].forEach(s=>ears.push(add(MB.CreateCylinder('o',{diameterTop:0,diameterBottom:.6,height:.6,tessellation:3},scene),s*.3*w-.12*w,top+.3,s*.3*d+.12*d,col,true,earMat)));
   const eye=(x,z,face)=>{
     if(sk.acess==='manga'){ // olho bravo em ciano (contorno neon), colado na face do bloco
       const P=EYEP[face==='x'?1:0],ex=face==='x'?x+.025:x,ez=face==='z'?z-.025:z;
@@ -839,7 +868,7 @@ const INKH='#1b1a3a',SVG=(vb,body)=>'<svg xmlns="http://www.w3.org/2000/svg" vie
   BGV.nuv=SVG('0 0 200 120','<path d="M30 100a28 28 0 0 1 8-54a42 42 0 0 1 78-12a34 34 0 0 1 48 30a24 24 0 0 1-4 36z" fill="#fff" stroke="'+INKH+'" stroke-width="6" stroke-linejoin="round"/>');const nuv=uri(BGV.nuv);
   [[5,8],[58,18],[18,36],[64,52],[6,68],[52,84]].forEach(([l,t])=>{const c=document.createElement('div');c.className='cl';c.style.cssText='left:'+l+'%;top:'+t+'%;background-image:'+nuv;$('clouds').appendChild(c);});
   let st='';for(let i=0;i<34;i++)st+='<circle cx="'+(i*97%300)+'" cy="'+((i*61+i*i*13)%300)+'" r="'+(1.2+(i%3)*.8)+'" fill="#fff"/>';
-  BGV.stars=SVG('0 0 300 300',st);$('stars').style.backgroundImage=uri(BGV.stars);
+  BGV.stars=SVG('0 0 300 300',st);$('stars2').style.backgroundImage=uri(BGV.stars);
   BGV.moon=SVG('0 0 200 200','<circle cx="100" cy="100" r="92" fill="#fff6d6" stroke="'+INKH+'" stroke-width="7"/><ellipse cx="70" cy="80" rx="20" ry="16" fill="#e8dcae"/><ellipse cx="125" cy="125" rx="26" ry="20" fill="#e8dcae"/><ellipse cx="128" cy="62" rx="12" ry="10" fill="#e8dcae"/>');$('moon').style.backgroundImage=uri(BGV.moon);
 })();
 // ---- Lua muda com a skin: abóbora (Halloween), gorro (Natal), espada atrás (manga) ----
@@ -863,23 +892,47 @@ function bgAplica(){ // trocar a imagem do cenário é bem mais leve que um filt
   document.body.classList.toggle('mgc',skinI===12);
   if(k===bgKey)return;bgKey=k;
   const f=x=>on?x.replace(/#7a5fb5|#ffe27a|#fff6d6|#e8dcae/g,m=>CINZA[m]):x;
-  $('city').style.backgroundImage=uri(f(BGV.city));$('stars').style.backgroundImage=uri(f(BGV.stars));$('moon').style.backgroundImage=uri(f(moonSvg(skinI)));
+  $('city').style.backgroundImage=uri(f(BGV.city));$('stars2').style.backgroundImage=uri(f(BGV.stars));$('moon').style.backgroundImage=uri(f(moonSvg(skinI)));
   [...$('clouds').children].forEach(c=>c.style.backgroundImage=uri(f(BGV.nuv)));
 }
-const LY={city:$('city').style,clouds:$('clouds').style,stars:$('stars').style,moon:$('moon').style,snow:$('snow').style};
+const LYE={city:$('city'),clouds:$('clouds'),stars:$('stars'),moon:$('moon'),snow:$('snow')},LYS={},LYO={};
+for(const k in LYE)LYS[k]=LYE[k].style;
 const hsl2rgb=(h,s,l)=>{s/=100;l/=100;const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l),f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));return[f(0),f(8),f(4)];};
-let ceu='',faseAnt=0,altAnt=-9;
+let ceu='',faseAnt=0,altAnt=-9,skyT=0,skyCs=null,skyWant=null,skyKey='',rootOk=true;
+const skyEl=$('sky');
+function rootFlush(){ // quem lê --c1..3 (chat, foto de compartilhar) só precisa dessas cores fora da partida
+  if(rootOk||!skyCs)return;rootOk=true;const st=document.documentElement.style;skyCs.forEach((c,k)=>st.setProperty('--c'+(k+1),c));
+}
+function lay(k,op,tf){ // só escreve o que mudou; camada invisível não é mexida e fica com as animações pausadas (classe off)
+  op=op<.004?0:op>.996?1:Math.round(op*1000)/1000;
+  const o=LYO[k];
+  if(op===0&&o===0)return;
+  if(op!==o){LYS[k].opacity=op;if(o===undefined||(op===0)!==(o===0))LYE[k].classList.toggle('off',op===0);LYO[k]=op;}
+  if(tf&&op>0)LYS[k].transform=tf;
+}
 function scenery(alt){
-  if(Math.abs(alt-altAnt)<.015)return;altAnt=alt; // só atualiza o fundo quando a altura muda
-  const i=Math.max(0,FASES.filter(p=>alt>=p.de+4).length-1),a=FASES[i],b=FASES[i+1];
-  const t=b?ss(b.de-4,b.de+4,alt):0;
-  const cs=[0,1,2].map(k=>{const c=a.c[k].map((v,j)=>b?v+(b.c[k][j]-v)*t:v);return'hsl('+c[0].toFixed(0)+','+(pbOn()?0:c[1]).toFixed(0)+'%,'+c[2].toFixed(0)+'%)';});
-  if(cs.join()!==ceu){ceu=cs.join();cs.forEach((c,k)=>{document.documentElement.style.setProperty('--c'+(k+1),c);const m=c.match(/\d+/g),rgb=hsl2rgb(+m[0],+m[1],+m[2]);toon.setColor3('fogC'+(k+1),new BABYLON.Color3(rgb[0],rgb[1],rgb[2]));});}
-  LY.city.opacity=1-ss(6,16,alt);LY.city.transform='translateY('+alt*1.4+'vh)';
-  LY.clouds.opacity=ss(5,12,alt)*(1-ss(24,32,alt));LY.clouds.transform='translateY('+(alt-6)*1.1+'vh)';
-  LY.stars.opacity=ss(20,30,alt);LY.stars.transform='translateY('+alt*.25+'vh)';
-  LY.moon.opacity=ss(38,46,alt);LY.moon.transform='translateY('+(1-ss(40,55,alt))*30+'vh)';
-  LY.snow.opacity=ss(44,52,alt)*(1-ss(68,76,alt));
+  if(!rootOk&&mode!=='play')rootFlush();
+  if(Math.abs(alt-altAnt)>=.015){ // só atualiza o fundo quando a altura muda
+    altAnt=alt;
+    const i=Math.max(0,FASES.filter(p=>alt>=p.de+4).length-1),a=FASES[i],b=FASES[i+1];
+    const t=b?ss(b.de-4,b.de+4,alt):0;
+    skyWant=[0,1,2].map(k=>{const c=a.c[k].map((v,j)=>b?v+(b.c[k][j]-v)*t:v);return'hsl('+c[0].toFixed(0)+','+(pbOn()?0:c[1]).toFixed(0)+'%,'+c[2].toFixed(0)+'%)';});
+    skyKey=skyWant.join('|');
+    lay('city',1-ss(6,16,alt),'translateY('+(alt*1.4).toFixed(3)+'vh)');
+    lay('clouds',ss(5,12,alt)*(1-ss(24,32,alt)),'translateY('+((alt-6)*1.1).toFixed(3)+'vh)');
+    lay('stars',ss(20,30,alt),'translateY('+(alt*.25).toFixed(3)+'vh)');
+    lay('moon',ss(38,46,alt),'translateY('+((1-ss(40,55,alt))*30).toFixed(3)+'vh)');
+    lay('snow',ss(44,52,alt)*(1-ss(68,76,alt)));
+  }
+  if(skyWant&&skyKey!==ceu){ // a cor do céu muda aos poucos: repinta só a camada #sky, ~9x por segundo (antes: a página inteira, todo quadro)
+    const nw=performance.now();
+    if(nw-skyT>=110){
+      skyT=nw;ceu=skyKey;skyCs=skyWant;rootOk=false;
+      skyEl.style.background='linear-gradient('+skyWant[0]+','+skyWant[1]+' 62%,'+skyWant[2]+')';
+      skyWant.forEach((c,k)=>{const m=c.match(/\d+/g),rgb=hsl2rgb(+m[0],+m[1],+m[2]);toon.setColor3('fogC'+(k+1),new BABYLON.Color3(rgb[0],rgb[1],rgb[2]));});
+      if(mode!=='play')rootFlush();
+    }
+  }
 }
 function onScore(){
   Mis.max('score',score);sv.st.score=Math.max(sv.st.score,score);ach();
@@ -899,7 +952,7 @@ function comboFx(n){
   if(skinI===12){mgCombo(n);return;}
   const w=['PERFEITO!','COMBO x2!','ÓTIMO x3!','INCRÍVEL x4!','LENDÁRIO x5!'];
   popText(n<=5?w[n-1]:'LENDÁRIO x'+n+'!',n,Math.min(10+n,15));
-  const r=$('rays');r.classList.remove('on');void r.offsetWidth;r.classList.add('on');
+  if(!lite)bump($('rays'),KF_RY,500,'ease-out','on');
 }
 
 
@@ -1075,22 +1128,44 @@ function mgCombo(n){ // texto no centro de cima a partir de 3 perfeitos; muda a 
   if(!FPS_ON)return;
   const st=document.createElement('style');
   st.textContent=`
-#fps{position:fixed;right:2vw;top:calc(env(safe-area-inset-top,0px) + .6vh);z-index:99999;pointer-events:none;display:flex;align-items:center;gap:4px;padding:2px 7px;background:#fffdf5;border:2px solid #1b1a3a;border-radius:12px;box-shadow:2px 2px 0 #1b1a3a;font-family:Bangers,Impact,sans-serif;color:#1b1a3a;line-height:1;opacity:.92}
+#fps{position:fixed;right:2vw;top:calc(env(safe-area-inset-top,0px) + .6vh);z-index:99999;pointer-events:none;display:flex;align-items:center;gap:4px;padding:2px 7px;background:#fffdf5;border:2px solid #1b1a3a;border-radius:12px;box-shadow:2px 2px 0 #1b1a3a;font-family:Bangers,Impact,sans-serif;color:#1b1a3a;line-height:1}
 #bauTop:not(.hide)~#fps{right:calc(4vw + 33vmin + 8px)}
 #fps .fd{width:9px;height:9px;border-radius:50%;background:var(--fc,#5fd38d);border:2px solid #1b1a3a;flex:none}
 #fps .fn{font-size:10px;letter-spacing:.03em;min-width:2ch;text-align:right}
 #fps .fl{font-size:10px;letter-spacing:.14em;opacity:.7}
 #fps .fm{display:block;width:34px;height:8px;border:2px solid #1b1a3a;border-radius:6px;background:#fff;overflow:hidden;flex:none}
-#fps .fm span{display:block;height:100%;width:var(--w,100%);background:var(--fc,#5fd38d);transition:width .3s}`;
+#fps .fm span{display:block;height:100%;width:100%;transform-origin:0 50%;transform:scaleX(var(--w,1));background:var(--fc,#5fd38d);transition:transform .3s}
+#fpsD{position:fixed;right:2vw;bottom:calc(env(safe-area-inset-bottom,0px) + 1vh);z-index:99999;display:none;padding:6px 9px;background:#fffdf5;border:2px solid #1b1a3a;border-radius:12px;box-shadow:2px 2px 0 #1b1a3a;font:700 11px/1.4 'Trebuchet MS','Segoe UI',system-ui,sans-serif;color:#1b1a3a;white-space:pre;pointer-events:none;text-align:left}
+#fpsD.on{display:block}
+body.lite #rays,body.lite #fl,body.lite #snow,body.lite #shoot{display:none}
+body.lite #stars2,body.lite .cl{animation:none}`;
   document.head.appendChild(st);
   const el=document.createElement('div');el.id='fps';
   el.innerHTML='<span class="fd"></span><span class="fn">--</span><span class="fl">FPS</span><span class="fm"><span></span></span>';
   document.body.appendChild(el);
   const num=el.querySelector('.fn');
   const cor=f=>f>=50?'#5fd38d':f>=30?'#ffd23f':'#ff5a7a'; // verde fluido, amarelo ok, vermelho travando
-  function show(f){el.style.setProperty('--fc',cor(f));el.style.setProperty('--w',Math.min(100,f/60*100).toFixed(0)+'%');num.textContent=f;}
+  function show(f){el.style.setProperty('--fc',cor(f));el.style.setProperty('--w',Math.min(1,f/60).toFixed(2));num.textContent=f;}
+  // Painel de diagnóstico: toque no contador para abrir/fechar. Ele mostra se o peso está no nosso código, no desenho 3D ou na tela (GPU).
+  const dg=document.createElement('div');dg.id='fpsD';document.body.appendChild(dg);
+  let aberto=false;
+  const nomeLeve=()=>liteMode===1?'LIGADO':liteMode===2?'DESLIGADO':'AUTO ('+(lite?'ligado':'desligado')+')';
+  function diag(f){
+    let nm='?',dc='?',mt='?',ma='?',am='?';
+    try{nm=scene.getActiveMeshes().length+'/'+scene.meshes.length;mt=scene.materials.length;}catch(e){}
+    try{const d=eng._drawCalls;if(d&&d.current!==undefined)dc=d.current;}catch(e){}
+    let rs='?';try{rs=eng.getHardwareScalingLevel().toFixed(2);}catch(e){}
+    dg.textContent='FPS '+f+'  ·  quadro '+PERF.ft.toFixed(1)+' ms  ·  pior '+PERF.mx.toFixed(0)+' ms\n'+
+      'nosso código '+PERF.js.toFixed(1)+' ms (3D '+PERF.rn.toFixed(1)+' ms)  ·  toque '+PERF.tap.toFixed(1)+' ms\n'+
+      'malhas '+nm+'  ·  materiais '+mt+'  ·  draws '+dc+'\n'+
+      'tela '+innerWidth+'x'+innerHeight+'  ·  escala '+rs+'  ·  '+(typeof Q==='function'?Q().nome:'?')+'\n'+
+      'modo leve: '+nomeLeve()+(mode==='play'?'':'   (toque aqui p/ trocar)');
+    PERF.mx=0;
+  }
+  el.addEventListener('pointerdown',e=>{e.stopPropagation();aberto=!aberto;dg.classList.toggle('on',aberto);if(aberto)diag(+num.textContent||0);});
+  dg.addEventListener('pointerdown',e=>{e.stopPropagation();if(mode==='play')return;liteMode=(liteMode+1)%3;if(liteMode===1)setLite(true);else if(liteMode===2)setLite(false);diag(+num.textContent||0);});
   let n=0,t0=performance.now();
-  (function tick(t){n++;if(t-t0>=500){show(Math.round(n*1000/(t-t0)));n=0;t0=t;}requestAnimationFrame(tick);})(t0);
+  (function tick(t){n++;if(t-t0>=500){const f=Math.round(n*1000/(t-t0));show(f);if(aberto)diag(f);const pe=mode==='play'?'none':'auto';if(el.style.pointerEvents!==pe){el.style.pointerEvents=pe;dg.style.pointerEvents=pe;}n=0;t0=t;}requestAnimationFrame(tick);})(t0);
 })();
 
 // ================= Missões diárias =================
@@ -1430,10 +1505,19 @@ const arranca=()=>{if(!cfg.mus)return;Mus.start();if(ac&&ac.state==='running')re
 addEventListener('pointerup',arranca);
 document.addEventListener('visibilitychange',()=>{if(!ac)return;document.hidden?ac.suspend():ac.resume();});
 addEventListener('message',e=>{if(e.data&&e.data.ota)popText(e.data.ota,1,5,12);});
-(()=>{const sn=$('snow');for(let i=0;i<30;i++){const e=document.createElement('i'),z=3+Math.random()*5;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(6+Math.random()*7)+'s;animation-delay:-'+Math.random()*12+'s';sn.appendChild(e);}})();
-(()=>{const f=$('fl');for(let i=0;i<16;i++){const e=document.createElement('i'),z=3+Math.random()*6;e.style.cssText='left:'+Math.random()*100+'%;width:'+z+'px;height:'+z+'px;animation-duration:'+(10+Math.random()*10)+'s;animation-delay:-'+Math.random()*16+'s';f.appendChild(e);}})();
+// Neve e brilhos: 3 + 2 camadas de imagem repetida (antes eram 46 bolinhas animadas, cada uma virava uma camada na GPU)
+(()=>{
+  let r=7;const rnd=()=>(r=r*16807%2147483647)/2147483647;
+  const tile=(n,r0,r1,round,op)=>{let t='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 400" preserveAspectRatio="none">';
+    for(let i=0;i<n;i++){const x=(rnd()*200).toFixed(1),y=(rnd()*400).toFixed(1),z=r0+rnd()*(r1-r0),o=(op*(.6+rnd()*.4)).toFixed(2);
+      t+=round?'<circle cx="'+x+'" cy="'+y+'" r="'+z.toFixed(2)+'" fill="#fff" fill-opacity="'+o+'"/>':'<rect x="'+x+'" y="'+y+'" width="'+(z*2).toFixed(2)+'" height="'+(z*2).toFixed(2)+'" fill="#fff" fill-opacity="'+o+'"/>';}
+    return uri(t+'</svg>');};
+  const mkL=(host,img,dur)=>{const e=document.createElement('b');e.style.backgroundImage=img;e.style.animationDuration=dur+'s';host.appendChild(e);};
+  [[10,.7,1,21],[8,1,1.5,15],[6,1.4,1.9,10]].forEach(([n,a,b,d])=>mkL($('snow'),tile(n,a,b,true,1),d));
+  [[9,.7,1.4,18],[7,1,2,27]].forEach(([n,a,b,d])=>mkL($('fl'),tile(n,a,b,false,.8),d));
+})();
 // Bônus diário com sequência de dias (até 7)
-const NOV='• Ranking só de amigos na tela de Amigos.\n• Desafie um amigo (⚔️ no chat): ele aceita e joga para te superar.\n• Reaja às mensagens tocando nelas.\n• Bloquear e denunciar jogadores pelo perfil.\n• Novo: Chat com amigos! Toque no 💬 da lista de amigos para conversar.\n• Compartilhe a foto da sua torre com um amigo no fim da partida.\n• Mensagens novas aparecem com um aviso vermelho.\n• Skin Kensei Densetsu: os olhos bravos agora aparecem e piscam a cada 5 segundos.\n• As skins Doces, Sushi, Pixel, Galáxia, Ouro, Gelo e Arco-íris saíram do jogo. Quem usava uma delas volta pro Gatinho.';
+const NOV='• Jogo mais liso: menos travadas nos combos e nas alturas grandes. Se o celular não aguentar, ele liga um modo leve sozinho.\n• Toque no contador de FPS (fora da partida) para ver o painel de desempenho.\n• Ranking só de amigos na tela de Amigos.\n• Desafie um amigo (⚔️ no chat): ele aceita e joga para te superar.\n• Reaja às mensagens tocando nelas.\n• Bloquear e denunciar jogadores pelo perfil.\n• Novo: Chat com amigos! Toque no 💬 da lista de amigos para conversar.\n• Compartilhe a foto da sua torre com um amigo no fim da partida.\n• Mensagens novas aparecem com um aviso vermelho.\n• Skin Kensei Densetsu: os olhos bravos agora aparecem e piscam a cada 5 segundos.\n• As skins Doces, Sushi, Pixel, Galáxia, Ouro, Gelo e Arco-íris saíram do jogo. Quem usava uma delas volta pro Gatinho.';
 setTimeout(pendenteBau,3500);
 setTimeout(()=>Rank.sync(),7000);
 setTimeout(()=>{if(sv.ver!==GAME_V&&(sv.ver||sv.st.jogos>0)){$('novT').textContent='✨ Versão '+GAME_V+'\n'+NOV;$('nov').classList.remove('hide');}sv.ver=GAME_V;salvar();},4500);
@@ -1445,6 +1529,7 @@ reset();
 scene.executeWhenReady(()=>Load.done('cena'));
 let frames=0,fpsT=0,fpsN=0;
 eng.runRenderLoop(()=>{
+  const t0=performance.now();
   const dt=paused?0:Math.min(eng.getDeltaTime()/1000,.05),now=performance.now()/1000;
   const pl=mode==='play'&&!net.active&&!paused;if(pl!==plAnt){plAnt=pl;$('pz').classList.toggle('hide',!pl);Mus.mood(pl);}
   if(mode==='play'&&!paused){sv.st.tempo=(sv.st.tempo||0)+dt;if(modo==='relogio'){tmpR-=dt;if(tmpR<=0){tmpR=0;if(mv){mv.mesh.dispose();mv=null;}gameOver();}}}
@@ -1491,7 +1576,10 @@ eng.runRenderLoop(()=>{
   cm.orthoTop=hh*(1.24-.74*skinK)+sy;cm.orthoBottom=-hh*(.76+.74*skinK)+sy;
   const sh=shift*(1-skinK);cm.orthoLeft=-hw-sh*hw+sx;cm.orthoRight=hw-sh*hw+sx;
   if(bauOn)bauFrame(dt,now);
-  scene.render();
+  const tr=performance.now();scene.render();const t2=performance.now();
+  PERF.rn+=(t2-tr-PERF.rn)*.1;PERF.js+=(t2-t0-PERF.js)*.1;
+  const fi=Math.min(eng.getDeltaTime()||0,100);if(fi>0){PERF.ft+=(fi-PERF.ft)*.08;if(fi>PERF.mx)PERF.mx=fi;}
+  govern(mode==='play'&&!paused,fi);
   if(frames<2&&++frames===2){Load.done('imagem');try{localStorage.setItem('nekoTry',0)}catch(e){}}
   // Auto-otimização: se o celular engasgar, baixa o gráfico sozinho
   if(mode==='play'&&frames>=2){fpsT+=dt;if(++fpsN>=150){if(fpsT/fpsN>.036&&cfg.gfx>0){cfg.gfx--;applyGfx();saveOpt();popText('Gráfico reduzido p/ ficar liso',2,6,12);}fpsT=fpsN=0;}}
